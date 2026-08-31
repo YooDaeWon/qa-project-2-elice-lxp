@@ -1,0 +1,111 @@
+import secrets
+
+import pytest
+from playwright.sync_api import expect
+
+from framework.e2euiux.pages import (
+    ClassroomPage,
+    CourseListPage,
+    CoursePage,
+    ExamCompletePage,
+    ExamNoticePage,
+    ExamPage,
+    ExamPreparePage,
+    ExamResultPage,
+    LoginPage,
+    MainPage,
+    MyClassesPage,
+)
+
+
+pytestmark = pytest.mark.exam_retake_flow
+
+
+@pytest.fixture(scope="module")
+def retake_answer():
+    """재응시 답안용 8자리 랜덤 문자열"""
+    return secrets.token_hex(4)
+
+
+def _open_exam_page(page):
+    """시험 응시 페이지 열기"""
+    prepare_page = ExamPreparePage(page)
+    prepare_page.verify_loaded()
+    prepare_page.agree_and_next()
+
+    notice_page = ExamNoticePage(page)
+    notice_page.verify_loaded()
+    notice_page.start_test()
+
+    exam_page = ExamPage(page)
+    exam_page.verify_loaded()
+
+
+@pytest.fixture(scope="module")
+def retake_course_page(e2e_page, credentials):
+    """재응시 시험 과목 페이지 상태 준비"""
+    login_page = LoginPage(e2e_page)
+    login_page.open()
+    login_page.login(credentials["user_id"], credentials["password"])
+    login_page.verify_redirect()
+
+    main_page = MainPage(e2e_page)
+    main_page.open_my_classes()
+
+    my_classes_page = MyClassesPage(e2e_page)
+    my_classes_page.verify_loaded()
+    my_classes_page.open_classroom()
+
+    classroom_page = ClassroomPage(e2e_page)
+    classroom_page.verify_loaded()
+    classroom_page.open_learning_subjects()
+
+    course_list_page = CourseListPage(e2e_page)
+    course_page = CoursePage(e2e_page)
+    expect(
+        course_list_page.page_title.or_(course_page.lesson_list_tab).first
+    ).to_be_visible()
+
+    if course_list_page.has_page_title():
+        course_list_page.open_sandbox()
+
+    course_page.verify_loaded()
+
+    return e2e_page
+
+
+def test_id_24_retake_exam(retake_course_page):
+    """ID 24 시험 재응시 버튼 확인"""
+    course_page = CoursePage(retake_course_page)
+    course_page.retake_test("e2e-retake")
+    course_page.verify_retake_available("e2e-retake")
+
+
+def test_id_25_submit_retake_exam(retake_course_page, retake_answer):
+    """ID 25 재응시 답안 제출 후 결과 페이지 확인"""
+    course_page = CoursePage(retake_course_page)
+    course_page.start_test("e2e-retake")
+    _open_exam_page(retake_course_page)
+
+    exam_page = ExamPage(retake_course_page)
+    exam_page.enter_answer(retake_answer)
+    exam_page.submit_answer()
+    exam_page.open_end_modal()
+    exam_page.check_end_confirmation()
+    exam_page.confirm_end_test()
+
+    complete_page = ExamCompletePage(retake_course_page)
+    complete_page.verify_loaded()
+    complete_page.open_result()
+
+    result_page = ExamResultPage(retake_course_page)
+    result_page.verify_loaded()
+
+
+def test_id_26_verify_retake_answer(retake_course_page, retake_answer):
+    """ID 26 재응시 답안 확인"""
+    result_page = ExamResultPage(retake_course_page)
+    result_page.verify_loaded()
+    result_page.open_answers()
+    result_page.open_question()
+    result_page.verify_answer(retake_answer)

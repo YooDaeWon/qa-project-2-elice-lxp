@@ -16,7 +16,7 @@ from framework.e2euiux.pages import (
 )
 
 
-pytestmark = pytest.mark.e2e_exam_flow
+pytestmark = pytest.mark.exam_flow
 
 
 def test_id_01_login(

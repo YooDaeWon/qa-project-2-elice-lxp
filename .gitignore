@@ -6,7 +6,6 @@ env/
 # 환경변수
 .env
 .env.*
-!.env.example
 
 # Python
 __pycache__/
@@ -17,3 +16,5 @@ __pycache__/
 # allure 
 allure-results/
 allure-report/
+
+AGENTS.md
