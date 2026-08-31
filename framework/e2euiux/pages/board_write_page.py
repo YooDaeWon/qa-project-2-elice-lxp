@@ -10,11 +10,6 @@ class BoardWritePage:
 
     def __init__(self, page):
         self.page = page
-        self.page_title = page.get_by_role(
-            "heading",
-            name="글쓰기",
-            exact=True,
-        )
         self.title_input = page.locator('input[name="title"]')
         self.content_editor = page.locator(
             '[data-lexical-editor="true"][contenteditable="true"]'
@@ -28,7 +23,7 @@ class BoardWritePage:
     def verify_loaded(self):
         """게시물 글쓰기 페이지 확인"""
         expect(self.page).to_have_url(self.URL)
-        expect(self.page_title).to_be_visible()
+        expect(self.save_button).to_be_visible()
 
     def fill_title(self, title):
         """게시물 제목 입력"""

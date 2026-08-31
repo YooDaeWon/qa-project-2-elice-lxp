@@ -11,7 +11,7 @@ from framework.e2euiux.pages import (
 )
 
 
-pytestmark = pytest.mark.e2e_board_flow
+pytestmark = pytest.mark.board_flow
 
 
 @pytest.fixture(scope="module")

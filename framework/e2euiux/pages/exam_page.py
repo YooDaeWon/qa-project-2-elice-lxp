@@ -29,7 +29,9 @@ class ExamPage:
 
     def enter_answer(self, answer):
         """답안 입력"""
+        self.answer_input.click()
         self.answer_input.fill(answer)
+        self.page.wait_for_timeout(500)
 
     def submit_answer(self):
         """답안 제출"""

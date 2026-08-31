@@ -33,14 +33,55 @@ class CoursePage:
         """학습 과목 목록 페이지 열기"""
         self.course_list_button.click()
 
+    def _test_card(self, test_name):
+        """시험 이름으로 테스트 카드 찾기"""
+        return self.page.get_by_role(
+            "button",
+            name=re.compile(
+                rf"^\d+\s+{re.escape(test_name)}(?:\s|$)"
+            ),
+        )
+
+    def _test_action_button(self, test_name, button_name):
+        """테스트 카드 또는 상세 영역에서 버튼 찾기"""
+        test_card = self._test_card(test_name)
+        test_region = test_card.locator("xpath=..").get_by_role("region")
+
+        card_button = test_card.get_by_role(
+            "button",
+            name=button_name,
+            exact=True,
+        )
+        region_button = test_region.get_by_role(
+            "button",
+            name=button_name,
+            exact=True,
+        )
+
+        return card_button.or_(region_button).first
+
     def start_test(self, test_name):
         """지정한 테스트 시작하기"""
-        test_card = self.page.get_by_role(
-            "button",
-            name=re.compile(re.escape(test_name)),
+        start_button = self._test_action_button(
+            test_name,
+            "테스트 시작하기",
         )
-        test_card.get_by_role(
-            "button",
-            name="테스트 시작하기",
-            exact=True,
-        ).click()
+        expect(start_button).to_be_visible()
+        start_button.click()
+
+    def retake_test(self, test_name):
+        """지정한 테스트 재응시하기"""
+        retake_button = self._test_action_button(
+            test_name,
+            "테스트 재응시",
+        )
+        expect(retake_button).to_be_visible()
+        retake_button.click()
+
+    def verify_retake_available(self, test_name):
+        """재응시 후 테스트 시작 버튼 확인"""
+        start_button = self._test_action_button(
+            test_name,
+            "테스트 시작하기",
+        )
+        expect(start_button).to_be_visible()

@@ -16,6 +16,11 @@ class ClassroomPage:
             name="게시판",
             exact=True,
         )
+        self.schedule_link = page.get_by_role(
+            "link",
+            name="수업 일정",
+            exact=True,
+        )
         self.welcome_message = page.get_by_text(
             "안녕하세요, qa6_st14님",
             exact=True,
@@ -32,3 +37,7 @@ class ClassroomPage:
     def open_board(self):
         """게시판 페이지 열기"""
         self.board_link.click()
+
+    def open_schedule(self):
+        """수업 일정 페이지 열기"""
+        self.schedule_link.click()
