@@ -2,7 +2,6 @@ pipeline {
     agent any
 
     stages {
-        // Stage 1. Checkout (GitLab 소스코드 동기화)
         stage('Checkout') {
             steps {
                 echo 'Checking out source code from GitLab...'
@@ -10,11 +9,9 @@ pipeline {
             }
         }
 
-        // Stage 2. Environment Setup (Python 가상환경 및 requirements.txt 설치)
         stage('Environment Setup') {
             steps {
                 echo 'Setting up Python environment and installing dependencies...'
-                // Jenkins 서버 환경이 Windows인 경우 (bat 사용)
                 bat '''
                     python -m venv venv
                     call venv\\Scripts\\activate
@@ -24,7 +21,6 @@ pipeline {
             }
         }
 
-        // Stage 3. Test Execution (pytest 실행 및 리포트 아카이빙)
         stage('Test Execution') {
             steps {
                 echo 'Running pytest...'
@@ -35,14 +31,12 @@ pipeline {
             }
             post {
                 always {
-                    // 테스트 결과 XML 리포트 아카이빙
                     junit 'report.xml'
                 }
             }
         }
     }
     
-    // 빌드 성공/실패 시 디스코드 웹훅 알림 전송
     post {
         success {
             discordSend(
