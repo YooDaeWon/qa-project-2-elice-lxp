@@ -1,5 +1,6 @@
 # seethrough
 
+__test jenkins__
 
 ## E2E/UI/UX TEST pytest 실행 방법
 
