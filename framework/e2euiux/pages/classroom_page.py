@@ -1,3 +1,5 @@
+import re
+
 from playwright.sync_api import expect
 
 
@@ -25,10 +27,17 @@ class ClassroomPage:
             "안녕하세요, qa6_st14님",
             exact=True,
         )
+        self.educator_welcome_message = page.get_by_text(
+            re.compile(r"안녕하세요, .+님"),
+        )
 
     def verify_loaded(self):
         """클래스 대시보드 페이지 확인"""
         expect(self.welcome_message).to_be_visible()
+
+    def verify_educator_loaded(self):
+        """교육자 클래스 대시보드 페이지 확인"""
+        expect(self.educator_welcome_message).to_be_visible()
 
     def open_learning_subjects(self):
         """학습 과목 페이지 열기"""

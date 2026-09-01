@@ -23,6 +23,7 @@ pytest -m exam_flow -v
 pytest -m board_flow -v
 pytest -m schedule_flow -v
 pytest -m exam_retake_flow -v
+pytest -m schedule_management_flow -v
 ```
 
 | Marker | TC ID | 테스트 흐름 |
@@ -31,6 +32,7 @@ pytest -m exam_retake_flow -v
 | `board_flow` | ID 16~20 | 게시판 |
 | `schedule_flow` | ID 21~23 | 수업 일정 |
 | `exam_retake_flow` | ID 24~26 | 시험 재응시 |
+| `schedule_management_flow` | ID 27~35 | 수업 일정 관리 |
 
 ### 브라우저 표시 및 실행 속도 조절
 
