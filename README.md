@@ -25,6 +25,12 @@ pytest -m schedule_flow -v
 pytest -m exam_retake_flow -v
 pytest -m schedule_management_flow -v
 pytest -m exam_status_flow -v
+pytest -m exam_multi -v
+pytest -m exam_auto_save -v
+pytest -m board_offline -v
+pytest -m board_duplicate -v
+pytest -m board_title_limit -v
+pytest -m exam_offline -v
 ```
 
 | Marker | TC ID | 테스트 흐름 |
@@ -35,6 +41,12 @@ pytest -m exam_status_flow -v
 | `exam_retake_flow` | ID 24~26 | 시험 재응시 |
 | `schedule_management_flow` | ID 27~35 | 수업 일정 관리 |
 | `exam_status_flow` | ID 36~40 | 시험 응시 현황 |
+| `exam_multi` | ID 41 | 다중 탭 시험 |
+| `exam_auto_save` | ID 42 | 답안 자동 저장 |
+| `board_offline` | ID 43~44 | 네트워크 중단 게시물 저장 검증 |
+| `board_duplicate` | ID 45 | 게시물 중복 요청 검증 |
+| `board_title_limit` | ID 46 | 게시물 제목 글자 수 제한 검증 |
+| `exam_offline` | ID 47 | 네트워크 중단 시험 문제 불러오기 검증 |
 
 ### 브라우저 표시 및 실행 속도 조절
 
