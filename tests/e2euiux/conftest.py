@@ -12,10 +12,19 @@ load_dotenv(PROJECT_ROOT / ".env")
 
 @pytest.fixture(scope="session")
 def credentials():
-    """환경변수에서 로그인 정보 읽기"""
+    """환경변수에서 학습자 로그인 정보 읽기"""
     return {
-        "user_id": os.environ["VAILD_ID"],
-        "password": os.environ["VAILD_PASSWORD"],
+        "user_id": os.environ["ST_ID"],
+        "password": os.environ["ST_PW"],
+    }
+
+
+@pytest.fixture(scope="session")
+def educator_credentials():
+    """환경변수에서 교육자 로그인 정보 읽기"""
+    return {
+        "user_id": os.environ["TC_ID"],
+        "password": os.environ["TC_PW"],
     }
 
 
