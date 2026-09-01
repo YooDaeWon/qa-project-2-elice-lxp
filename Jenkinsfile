@@ -39,20 +39,44 @@ pipeline {
     
     post {
         success {
-            discordSend(
-                webhookURL: 'https://discord.com/api/webhooks/1544267640154103849/3_Lr6kUahhWLpqslIk0WBvZ6KtDUhMggMpatqzWUY6SoWCw7OUoT8yBmY_urSu5X-iht',
-                result: 'SUCCESS',
-                title: '빌드가 성공했습니다! 🚀',
-                description: "프로젝트: ${env.JOB_NAME} (#${env.BUILD_NUMBER})"
-            )
+            script {
+                def webhookUrl = 'https://discord.com/api/webhooks/1544267640154103849/3_Lr6kUahhWLpqslIk0WBvZ6KtDUhMggMpatqzWUY6SoWCw7OUoT8yBmY_urSu5X-iht'
+                def titleMsg = "Jenkins Build #${env.BUILD_NUMBER} - SUCCESS"
+                def descMsg = "• 프로젝트: ${env.JOB_NAME}\\n• 빌드 상태: 성공\\n• [상세 로그 및 Jenkins 링크 확인하기](${env.BUILD_URL})"
+                
+                def jsonPayload = """
+                {
+                    "embeds": [{
+                        "title": "${titleMsg}",
+                        "description": "${descMsg}",
+                        "color": 3066993
+                    }]
+                }
+                """
+                
+                writeFile file: 'discord_success.json', text: jsonPayload
+                bat 'curl -H "Content-Type: application/json" -X POST -d "@discord_success.json" ' + webhookUrl
+            }
         }
         failure {
-            discordSend(
-                webhookURL: 'https://discord.com/api/webhooks/1544267640154103849/3_Lr6kUahhWLpqslIk0WBvZ6KtDUhMggMpatqzWUY6SoWCw7OUoT8yBmY_urSu5X-iht',
-                result: 'FAILURE',
-                title: '빌드가 실패했습니다! ❌',
-                description: "확인이 필요합니다. 프로젝트: ${env.JOB_NAME} (#${env.BUILD_NUMBER})"
-            )
+            script {
+                def webhookUrl = 'https://discord.com/api/webhooks/1544267640154103849/3_Lr6kUahhWLpqslIk0WBvZ6KtDUhMggMpatqzWUY6SoWCw7OUoT8yBmY_urSu5X-iht'
+                def titleMsg = "Jenkins Build #${env.BUILD_NUMBER} - FAILURE"
+                def descMsg = "• 프로젝트: ${env.JOB_NAME}\\n• 빌드 상태: 실패 (확인 필요)\\n• [상세 로그 및 Jenkins 링크 확인하기](${env.BUILD_URL})"
+                
+                def jsonPayload = """
+                {
+                    "embeds": [{
+                        "title": "${titleMsg}",
+                        "description": "${descMsg}",
+                        "color": 15158332
+                    }]
+                }
+                """
+                
+                writeFile file: 'discord_fail.json', text: jsonPayload
+                bat 'curl -H "Content-Type: application/json" -X POST -d "@discord_fail.json" ' + webhookUrl
+            }
         }
     }
 }
