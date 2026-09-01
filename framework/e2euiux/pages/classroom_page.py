@@ -28,6 +28,14 @@ class ClassroomPage:
         self.educator_welcome_message = page.get_by_text(
             re.compile(r"안녕하세요, .+님"),
         )
+        self.class_error_message = page.get_by_text(
+            "존재하지 않는 클래스입니다.",
+            exact=True,
+        )
+        self.class_url_error_message = page.get_by_text(
+            "URL 정보가 올바른지 확인해주세요.",
+            exact=True,
+        )
 
     def verify_loaded(self):
         """클래스 대시보드 페이지 확인"""
@@ -36,6 +44,11 @@ class ClassroomPage:
     def verify_educator_loaded(self):
         """교육자 클래스 대시보드 페이지 확인"""
         expect(self.educator_welcome_message).to_be_visible()
+
+    def verify_error_loaded(self):
+        """클래스 조회 오류 안내 확인"""
+        expect(self.class_error_message).to_be_visible()
+        expect(self.class_url_error_message).to_be_visible()
 
     def open_learning_subjects(self):
         """학습 과목 페이지 열기"""
