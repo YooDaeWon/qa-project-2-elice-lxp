@@ -22,6 +22,10 @@ class ExamPage:
             "제출 완료",
             exact=True,
         )
+        self.question_load_error_message = page.get_by_text(
+            "테스트 문제를 불러오는 중 문제가 발생하였습니다.",
+            exact=True,
+        )
 
     def verify_loaded(self):
         """테스트 응시 페이지 확인"""
@@ -32,6 +36,16 @@ class ExamPage:
         self.answer_input.click()
         self.answer_input.fill(answer)
         self.page.wait_for_timeout(500)
+
+    def verify_answer_saved(self, answer):
+        """새로고침 후 답안 유지 확인"""
+        expect(self.answer_input).to_have_value(answer)
+
+    def verify_question_load_error(self):
+        """테스트 문제 불러오기 오류 확인"""
+        expect(self.question_load_error_message).to_be_visible(
+            timeout=10_000,
+        )
 
     def submit_answer(self):
         """답안 제출"""

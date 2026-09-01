@@ -69,6 +69,15 @@ class CoursePage:
         expect(start_button).to_be_visible()
         start_button.click()
 
+    def resume_test(self, test_name):
+        """진행 중인 테스트 이어하기"""
+        resume_button = self._test_action_button(
+            test_name,
+            "테스트 이어하기",
+        )
+        expect(resume_button).to_be_visible()
+        resume_button.click()
+
     def retake_test(self, test_name):
         """지정한 테스트 재응시하기"""
         retake_button = self._test_action_button(

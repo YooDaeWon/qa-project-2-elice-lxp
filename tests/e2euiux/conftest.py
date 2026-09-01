@@ -10,6 +10,28 @@ LECTURE_IDS = ("1645", "1741")
 load_dotenv(PROJECT_ROOT / ".env")
 
 
+def _reset_lectures(e2e_page, lecture_ids):
+    """지정한 시험 재응시 허용"""
+    api_base_url = os.getenv("API_BASE_URL")
+    org_name = os.getenv("ORG_NAME")
+    session_key = os.getenv("TCSESSION_KEY")
+
+    if not all((api_base_url, org_name, session_key)):
+        pytest.fail(".env에 API 설정값을 입력하세요")
+
+    for lecture_id in lecture_ids:
+        response = e2e_page.request.post(
+            f"{api_base_url.rstrip('/')}/org/{org_name}/lecture/test/reset/",
+            headers={"Authorization": f"Bearer {session_key}"},
+            multipart={"lecture_id": lecture_id},
+        )
+
+        assert response.ok, f"{lecture_id} 재응시 허용 API 호출 실패"
+        assert response.json().get("_result", {}).get("status") == "ok", (
+            f"{lecture_id} 재응시 허용 API 처리 실패"
+        )
+
+
 @pytest.fixture(scope="session")
 def credentials():
     """환경변수에서 학습자 로그인 정보 읽기"""
@@ -40,21 +62,10 @@ def e2e_page(browser, browser_context_args):
 @pytest.fixture
 def reset_exam(e2e_page):
     """시험 재응시 허용"""
-    api_base_url = os.getenv("API_BASE_URL")
-    org_name = os.getenv("ORG_NAME")
-    session_key = os.getenv("TCSESSION_KEY")
+    _reset_lectures(e2e_page, LECTURE_IDS)
 
-    if not all((api_base_url, org_name, session_key)):
-        pytest.fail(".env에 API 설정값을 입력하세요")
 
-    for lecture_id in LECTURE_IDS:
-        response = e2e_page.request.post(
-            f"{api_base_url.rstrip('/')}/org/{org_name}/lecture/test/reset/",
-            headers={"Authorization": f"Bearer {session_key}"},
-            multipart={"lecture_id": lecture_id},
-        )
-
-        assert response.ok, f"{lecture_id} 재응시 허용 API 호출 실패"
-        assert response.json().get("_result", {}).get("status") == "ok", (
-            f"{lecture_id} 재응시 허용 API 처리 실패"
-        )
+@pytest.fixture(scope="module")
+def reset_e2e01(e2e_page):
+    """e2e-01 시험 재응시 허용"""
+    _reset_lectures(e2e_page, ("1645",))

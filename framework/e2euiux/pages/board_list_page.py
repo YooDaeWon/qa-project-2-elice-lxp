@@ -25,3 +25,17 @@ class BoardListPage:
     def open_write(self):
         """글쓰기 페이지 열기"""
         self.write_button.click()
+
+    def get_post_count(self, title):
+        """제목과 일치하는 게시글 개수 확인"""
+        post_items = self.page.locator(
+            'main ul > div[role="button"]'
+        ).filter(has_text=title)
+        return post_items.count()
+
+    def verify_post_count(self, title, expected_count):
+        """제목과 일치하는 게시글 개수 확인"""
+        post_items = self.page.locator(
+            'main ul > div[role="button"]'
+        ).filter(has_text=title)
+        expect(post_items).to_have_count(expected_count)

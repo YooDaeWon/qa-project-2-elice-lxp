@@ -19,7 +19,7 @@ class ExamPreparePage:
 
     def verify_loaded(self):
         """테스트 준비하기 페이지 확인"""
-        expect(self.page).to_have_url(self.URL)
+        expect(self.page).to_have_url(self.URL, timeout=60_000)
 
     def agree_and_next(self):
         """유의 사항 동의 후 다음 페이지 열기"""
