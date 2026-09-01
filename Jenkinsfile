@@ -21,15 +21,6 @@ pipeline {
                     python -m pip install --upgrade pip
                     pip install -r requirements.txt
                 '''
-                // 만약 Linux/Docker 환경이라면 아래 sh 블록을 사용하세요:
-                /*
-                sh '''
-                    python3 -m venv venv
-                    . venv/bin/activate
-                    pip install --upgrade pip
-                    pip install -r requirements.txt
-                '''
-                */
             }
         }
 
