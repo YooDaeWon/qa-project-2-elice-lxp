@@ -85,3 +85,25 @@ class CoursePage:
             "테스트 시작하기",
         )
         expect(start_button).to_be_visible()
+
+    def expand_test_card(self, test_name):
+        """시험 카드 상세 내용 열기"""
+        test_card = self._test_card(test_name)
+        if test_card.get_attribute("aria-expanded") != "true":
+            test_card.click()
+
+    def verify_status_button(self, test_name):
+        """시험 카드의 응시 현황 버튼 확인"""
+        status_button = self._test_action_button(
+            test_name,
+            "응시 현황",
+        )
+        expect(status_button).to_be_visible()
+
+    def open_status(self, test_name):
+        """시험 응시 현황 열기"""
+        status_button = self._test_action_button(
+            test_name,
+            "응시 현황",
+        )
+        status_button.click()
