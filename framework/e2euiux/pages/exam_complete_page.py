@@ -15,6 +15,10 @@ class ExamCompletePage:
             name="다음",
             exact=True,
         )
+        self.result_message = page.get_by_text(
+            "테스트 응시 완료",
+            exact=True,
+        )
 
     def verify_loaded(self):
         """테스트 완료 페이지 확인"""
@@ -23,3 +27,4 @@ class ExamCompletePage:
     def open_result(self):
         """테스트 결과 페이지 열기"""
         self.next_button.click()
+        expect(self.result_message).to_be_visible(timeout=10_000)
