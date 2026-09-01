@@ -42,14 +42,14 @@ pipeline {
             discordSend(
                 webhookURL: 'https://discord.com/api/webhooks/1544267640154103849/3_Lr6kUahhWLpqslIk0WBvZ6KtDUhMggMpatqzWUY6SoWCw7OUoT8yBmY_urSu5X-iht',
                 result: 'SUCCESS',
-                description: "빌드가 성공했습니다! 🚀\n프로젝트: ${env.JOB_NAME} (#${env.BUILD_NUMBER})"
+                message: "빌드가 성공했습니다! 🚀 (프로젝트: ${env.JOB_NAME} #${env.BUILD_NUMBER})"
             )
         }
         failure {
             discordSend(
                 webhookURL: 'https://discord.com/api/webhooks/1544267640154103849/3_Lr6kUahhWLpqslIk0WBvZ6KtDUhMggMpatqzWUY6SoWCw7OUoT8yBmY_urSu5X-iht',
                 result: 'FAILURE',
-                description: "빌드가 실패했습니다! ❌\n확인이 필요합니다.\n프로젝트: ${env.JOB_NAME} (#${env.BUILD_NUMBER})"
+                message: "빌드가 실패했습니다! ❌ 확인이 필요합니다. (프로젝트: ${env.JOB_NAME} #${env.BUILD_NUMBER})"
             )
         }
     }
