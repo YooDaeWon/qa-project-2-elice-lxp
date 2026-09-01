@@ -26,6 +26,10 @@ class ExamPage:
             "테스트 문제를 불러오는 중 문제가 발생하였습니다.",
             exact=True,
         )
+        self.timeout_message = page.get_by_text(
+            "제한 시간이 종료되었습니다.",
+            exact=False,
+        )
 
     def verify_loaded(self):
         """테스트 응시 페이지 확인"""
@@ -45,6 +49,12 @@ class ExamPage:
         """테스트 문제 불러오기 오류 확인"""
         expect(self.question_load_error_message).to_be_visible(
             timeout=10_000,
+        )
+
+    def verify_timeout_modal(self, timeout=310_000):
+        """제한 시간 종료 모달 확인"""
+        expect(self.timeout_message).to_be_visible(
+            timeout=timeout,
         )
 
     def submit_answer(self):
