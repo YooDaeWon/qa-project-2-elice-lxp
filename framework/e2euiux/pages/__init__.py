@@ -9,6 +9,7 @@ from .course_page import CoursePage
 from .login_page import LoginPage
 from .main_page import MainPage
 from .my_classes_page import MyClassesPage
+from .not_found_page import NotFoundPage
 from .schedule_page import SchedulePage
 from .exam_status_page import ExamStatusPage
 from .exam_complete_page import ExamCompletePage
@@ -36,5 +37,6 @@ __all__ = [
     "ExamStatusPage",
     "MainPage",
     "MyClassesPage",
+    "NotFoundPage",
     "SchedulePage",
 ]

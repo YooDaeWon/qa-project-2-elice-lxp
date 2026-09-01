@@ -69,3 +69,9 @@ def reset_exam(e2e_page):
 def reset_e2e01(e2e_page):
     """e2e-01 시험 재응시 허용"""
     _reset_lectures(e2e_page, ("1645",))
+
+
+@pytest.fixture
+def reset_timeout(e2e_page):
+    """timeout 시험 재응시 허용"""
+    _reset_lectures(e2e_page, ("1741",))
