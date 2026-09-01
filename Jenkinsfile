@@ -39,18 +39,20 @@ pipeline {
     
     post {
         success {
-            discordSend(
-                webhookURL: 'https://discord.com/api/webhooks/1544267640154103849/3_Lr6kUahhWLpqslIk0WBvZ6KtDUhMggMpatqzWUY6SoWCw7OUoT8yBmY_urSu5X-iht',
-                result: 'SUCCESS',
-                message: "빌드가 성공했습니다! 🚀 (프로젝트: ${env.JOB_NAME} #${env.BUILD_NUMBER})"
-            )
+            script {
+                def msg = "빌드가 성공했습니다! 🚀 (프로젝트: ${env.JOB_NAME} #${env.BUILD_NUMBER})"
+                bat """
+                    curl -H "Content-Type: application/json" -X POST -d "{\\"content\\": \\"${msg}\\"}" https://discord.com/api/webhooks/1544267640154103849/3_Lr6kUahhWLpqslIk0WBvZ6KtDUhMggMpatqzWUY6SoWCw7OUoT8yBmY_urSu5X-iht
+                """
+            }
         }
         failure {
-            discordSend(
-                webhookURL: 'https://discord.com/api/webhooks/1544267640154103849/3_Lr6kUahhWLpqslIk0WBvZ6KtDUhMggMpatqzWUY6SoWCw7OUoT8yBmY_urSu5X-iht',
-                result: 'FAILURE',
-                message: "빌드가 실패했습니다! ❌ 확인이 필요합니다. (프로젝트: ${env.JOB_NAME} #${env.BUILD_NUMBER})"
-            )
+            script {
+                def msg = "빌드가 실패했습니다! ❌ 확인이 필요합니다. (프로젝트: ${env.JOB_NAME} #${env.BUILD_NUMBER})"
+                bat """
+                    curl -H "Content-Type: application/json" -X POST -d "{\\"content\\": \\"${msg}\\"}" https://discord.com/api/webhooks/1544267640154103849/3_Lr6kUahhWLpqslIk0WBvZ6KtDUhMggMpatqzWUY6SoWCw7OUoT8yBmY_urSu5X-iht
+                """
+            }
         }
     }
 }
