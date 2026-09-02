@@ -10,7 +10,8 @@
 | 동작 지연 추가 | `pytest --slowmo 500` |
 | 특정 marker 실행 | `pytest -m <marker명>` |
 
-각 E2E 흐름은 브라우저 상태를 공유하므로 개별 ID만 단독 실행하지 않습니다. 테스트 간 상태 충돌을 방지하기 위해 `pytest-xdist` 병렬 실행(`-n`)도 사용하지 않습니다.
+각 E2E 흐름은 브라우저 상태를 공유하므로 개별 ID만 단독 실행하지 않습니다.  
+테스트 간 상태 충돌을 방지하기 위해 `pytest-xdist` 병렬 실행(`-n`)도 사용하지 않습니다.
 
 ## E2E/UI/UX Marker
 
@@ -48,7 +49,8 @@ pytest -m exam_refresh_save -v --headed --slowmo 500
 | 전체 테스트 녹화 | `--video=on` |
 | 실패한 흐름만 보존 | `--video=retain-on-failure` |
 
-영상은 `videos/<테스트 파일명>/` 아래에 저장됩니다. `retain-on-failure`는 한 흐름 안에서 테스트 하나라도 실패하면 해당 흐름 전체 영상을 보존합니다.
+영상은 `videos/<테스트 파일명>/` 아래에 저장됩니다.  
+`retain-on-failure`는 한 흐름 안에서 테스트 하나라도 실패하면 해당 흐름 전체 영상을 보존합니다.
 
 ## Allure 리포트
 
