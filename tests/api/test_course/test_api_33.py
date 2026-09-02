@@ -1,0 +1,65 @@
+"""API TC33 전용 테스트 파일.
+
+기존 test_course.py의 TC33를 1개 파일로 분리한 테스트입니다.
+"""
+
+import pytest
+
+from uuid import uuid4
+
+from clients.classroom_client import ClassroomClient
+
+from clients.course_client import CourseClient
+
+from config.settings import settings
+
+from utils.assertions import (
+    assert_business_rejected,
+    assert_internal,
+    assert_not_success,
+    assert_permission_denied,
+    assert_success,
+)
+
+from utils.helpers import (
+    clone_payload,
+    contains_value,
+    dicts_with_key,
+    find_dict_by_value,
+    find_first_value,
+    first_list,
+    require_values,
+)
+
+def _lecture_records(data):
+    records = data.get("lectures", []) if isinstance(data, dict) else []
+    return records if isinstance(records, list) else []
+
+def _lecture(client, lecture_id):
+    data = assert_success(client.lecture_list(settings.ORG, settings.COURSE_ID))
+    row = find_dict_by_value(data, "id", lecture_id)
+    assert row is not None, f"lecture_id={lecture_id}를 목록에서 찾지 못했습니다."
+    return row
+
+def _material_page(client, page_id=None, material_id=None):
+    data = assert_success(client.lecture_page_list(settings.ORG, settings.LECTURE_ID, settings.LOCATOR_TYPE))
+    if page_id is not None:
+        return find_dict_by_value(data, "id", page_id), data
+    if material_id is not None:
+        return find_dict_by_value(data, "material_id", material_id), data
+    return None, data
+
+
+@pytest.mark.course
+@pytest.mark.destructive
+def test_api_33(educator_client, payloads):
+    require_values(ORG=settings.ORG, LECTURE_ID=settings.LECTURE_ID, MATERIAL_NOTE_ID=settings.MATERIAL_NOTE_ID)
+    client = CourseClient(educator_client)
+    payload = clone_payload(payloads, "course", "material_note_update")
+    payload.update(lecture_id=settings.LECTURE_ID, material_note_id=settings.MATERIAL_NOTE_ID, id=settings.MATERIAL_NOTE_ID)
+    payload["title"] = f"pytest-tc33-{uuid4().hex[:10]}"
+    data = assert_success(client.material_note_edit(settings.ORG, payload))
+    returned = find_first_value(data, ("material_note_id",))
+    assert str(returned) == str(settings.MATERIAL_NOTE_ID)
+    page, _ = _material_page(client, material_id=settings.MATERIAL_NOTE_ID)
+    assert page is not None and contains_value(page, payload["title"])
