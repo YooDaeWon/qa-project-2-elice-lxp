@@ -16,6 +16,9 @@ class MainPage:
         self.menu_drawer = page.locator(
             '[class~="MuiDrawer-paper"]:visible'
         )
+        self.menu_close_button = self.menu_drawer.locator(
+            "button:has(svg[data-testid='xmark-largeIcon'])"
+        )
         self.menu_links = [
             self.menu_drawer.get_by_text("탐색", exact=True),
             self.menu_drawer.get_by_text("내 클래스", exact=True),
@@ -43,6 +46,12 @@ class MainPage:
     def open_menu(self):
         """전체 메뉴 열기"""
         self.menu_button.click()
+
+    def close_menu(self):
+        """전체 메뉴 닫기"""
+        if self.menu_drawer.is_visible():
+            self.menu_close_button.click()
+            expect(self.menu_drawer).to_be_hidden()
 
     def verify_menu_visible(self):
         """전체 메뉴 표시 확인"""

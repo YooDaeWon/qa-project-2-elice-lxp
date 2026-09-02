@@ -14,9 +14,9 @@ pytestmark = pytest.mark.board_offline
 
 
 @pytest.fixture(scope="module")
-def board_write_page(browser, browser_context_args, credentials):
+def board_write_page(browser, flow_browser_context_args, credentials):
     """게시물 저장 후 오프라인 상태 유지"""
-    context = browser.new_context(**browser_context_args)
+    context = browser.new_context(**flow_browser_context_args)
     page = context.new_page()
 
     try:

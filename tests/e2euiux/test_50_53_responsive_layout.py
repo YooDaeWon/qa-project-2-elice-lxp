@@ -33,11 +33,11 @@ def mobile_main_page(logged_in_page):
 
 
 @pytest.fixture(scope="module")
-def tablet_main_page(logged_in_page):
+def tablet_main_page(mobile_main_page):
     """태블릿 viewport의 메인 페이지 상태 준비"""
-    logged_in_page.set_viewport_size({"width": 810, "height": 1080})
-    logged_in_page.reload()
-    return MainPage(logged_in_page)
+    mobile_main_page.close_menu()
+    mobile_main_page.page.set_viewport_size({"width": 810, "height": 1080})
+    return mobile_main_page
 
 
 def test_id_50_mobile_menu_button(mobile_main_page):

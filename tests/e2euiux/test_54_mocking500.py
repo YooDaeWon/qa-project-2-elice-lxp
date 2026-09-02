@@ -10,7 +10,7 @@ from framework.e2euiux.pages import (
 )
 
 
-pytestmark = pytest.mark.mocking_500
+pytestmark = pytest.mark.mocking500
 
 CLASSROOM_API_URL = re.compile(
     r"^https://dev-qatrack-classroom-api\.dev\.elicer\.io/classroom/[^/]+/?$"

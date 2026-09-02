@@ -16,4 +16,7 @@ __pycache__/
 allure-results/
 allure-report/
 
+# 테스트 영상
+videos/
+
 AGENTS.md
