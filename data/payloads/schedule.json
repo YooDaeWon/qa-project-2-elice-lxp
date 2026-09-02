@@ -1,0 +1,21 @@
+{
+  "create": {
+    "summary": "pytest 신규 일정 테스트",
+    "dt_start": "2026-08-30T10:00:00+09:00",
+    "dt_end": "2026-08-30T11:00:00+09:00"
+  },
+  "update": {
+    "summary": "pytest 일정 수정 테스트"
+  },
+  "invalid_date": {
+    "summary": "pytest 잘못된 날짜 범위 테스트",
+    "dt_start": "2026-08-30T12:00:00+09:00",
+    "dt_end": "2026-08-30T11:00:00+09:00"
+  },
+  "live_create": {
+    "summary": "pytest 라이브 강의실 일정 테스트",
+    "dt_start": "2026-08-31T10:00:00+09:00",
+    "dt_end": "2026-08-31T11:00:00+09:00",
+    "enable_lectureroom": true
+  }
+}
