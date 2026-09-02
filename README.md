@@ -24,7 +24,7 @@
 | `schedule_management_flow` | ID 27~35 | 수업 일정 관리 |
 | `exam_status_flow` | ID 36~40 | 시험 응시 현황 |
 | `exam_multi` | ID 41 | 다중 탭 시험 |
-| `exam_refresh_save` | ID 42 | 새로고침 후 답안 저장 |
+| `exam_reload_save` | ID 42 | 새로고침 후 답안 저장 |
 | `board_offline` | ID 43~44 | 네트워크 중단 게시물 저장 |
 | `board_duplicate` | ID 45 | 게시물 중복 요청 |
 | `board_title_limit` | ID 46 | 게시물 제목 글자 수 제한 |
@@ -39,7 +39,7 @@
 ```powershell
 pytest -m exam_flow -v
 pytest -m responsive_layout -v --headed
-pytest -m exam_refresh_save -v --headed --slowmo 500
+pytest -m exam_reload_save -v --headed --slowmo 500
 ```
 
 ## 영상 녹화
@@ -79,4 +79,3 @@ python -m playwright install chromium
 ```powershell
 작성 중
 ```
-

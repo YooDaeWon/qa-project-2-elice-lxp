@@ -17,7 +17,7 @@ from framework.e2euiux.pages import (
 )
 
 
-pytestmark = pytest.mark.exam_refresh_save
+pytestmark = pytest.mark.exam_reload_save
 
 
 @pytest.fixture(scope="module")
