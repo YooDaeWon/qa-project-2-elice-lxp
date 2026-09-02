@@ -1,6 +1,11 @@
 pipeline {
     agent any
 
+    environment {
+        PYTHONUTF8 = '1'
+        PYTHONIOENCODING = 'utf-8'
+    }
+
     stages {
         stage('Checkout') {
             steps {
@@ -26,6 +31,7 @@ pipeline {
             steps {
                 echo 'Running pytest with Allure...'
                 bat '''
+                    chcp 65001
                     call venv\\Scripts\\activate
                     pytest --alluredir=allure-results --clean-alluredir
                 '''
