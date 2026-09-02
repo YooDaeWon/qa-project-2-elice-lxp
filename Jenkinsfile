@@ -11,7 +11,7 @@ pipeline {
 
         stage('Environment Setup') {
             steps {
-                echo 'Setting up Python environment and installing dependencies...'
+                echo 'Setting up Python environment and dependencies...'
                 bat '''
                     python -m venv venv
                     call venv\\Scripts\\activate
@@ -23,15 +23,16 @@ pipeline {
 
         stage('Test Execution') {
             steps {
-                echo 'Running pytest...'
+                echo 'Running pytest with Allure...'
                 bat '''
                     call venv\\Scripts\\activate
-                    pytest --junitxml=report.xml --alluredir=allure-results
+                    pytest --alluredir=allure-results --clean-alluredir
                 '''
             }
             post {
                 always {
-                    junit 'report.xml'
+                    // JUnit XML 리포트가 필요할 경우 아래 주석을 해제하여 사용하세요
+                    // junit 'report.xml'
                 }
             }
         }
