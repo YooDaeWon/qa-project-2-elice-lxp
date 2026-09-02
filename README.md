@@ -1,6 +1,4 @@
-# seethrough QA 자동화
-
-Elice LXP QA 환경의 E2E/UI/UX 테스트를 Playwright와 pytest로 실행합니다.
+# seethrough
 
 ## 기본 실행
 
@@ -14,9 +12,9 @@ Elice LXP QA 환경의 E2E/UI/UX 테스트를 Playwright와 pytest로 실행합�
 
 각 E2E 흐름은 브라우저 상태를 공유하므로 개별 ID만 단독 실행하지 않습니다. 테스트 간 상태 충돌을 방지하기 위해 `pytest-xdist` 병렬 실행(`-n`)도 사용하지 않습니다.
 
-## Marker별 실행
+## E2E/UI/UX Marker
 
-| Marker | TC ID | 테스트 흐름 |
+| Marker | E2E/UI/UX TC ID | 테스트 흐름 |
 | --- | --- | --- |
 | `exam_flow` | ID 1~15 | 시험 응시 및 제출 |
 | `board_flow` | ID 16~20 | 게시판 기본 흐름 |
@@ -40,17 +38,15 @@ Elice LXP QA 환경의 E2E/UI/UX 테스트를 Playwright와 pytest로 실행합�
 ```powershell
 pytest -m exam_flow -v
 pytest -m responsive_layout -v --headed
-pytest -m exam_refresh_save -v
-pytest -m mocking500 -v
+pytest -m exam_refresh_save -v --headed --slowmo 500
 ```
 
 ## 영상 녹화
 
 | 목적 | 명령어 |
 | --- | --- |
-| 특정 흐름 전체 녹화 | `pytest -m exam_flow -v --video=on` |
-| 전체 테스트 녹화 | `pytest -v --headed --video=on` |
-| 실패한 흐름만 보존 | `pytest -v --video=retain-on-failure` |
+| 전체 테스트 녹화 | `--video=on` |
+| 실패한 흐름만 보존 | `--video=retain-on-failure` |
 
 영상은 `videos/<테스트 파일명>/` 아래에 저장됩니다. `retain-on-failure`는 한 흐름 안에서 테스트 하나라도 실패하면 해당 흐름 전체 영상을 보존합니다.
 
@@ -62,3 +58,23 @@ allure serve allure-results
 ```
 
 첫 번째 명령어로 결과를 생성하고, 두 번째 명령어로 로컬 리포트를 엽니다.
+
+## 설치 및 실행
+
+### 1. 가상환경
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+```
+
+### 2. 패키지
+```powershell
+python -m pip install -r requirements.txt
+python -m playwright install chromium
+```
+
+### 3. .env 환경변수
+```powershell
+작성 중
+```
+
