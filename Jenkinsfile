@@ -32,8 +32,13 @@ pipeline {
                 echo 'Running pytest with Allure...'
                 bat '''
                     chcp 65001
-                    call venv\\Scripts\\activate
-                    pytest --alluredir=allure-results --clean-alluredir
+                    cd /d "%WORKSPACE%"
+                    if not exist allure-results mkdir allure-results
+                    venv\\Scripts\\python.exe -m pytest tests/e2euiux tests/api --alluredir=allure-results --clean-alluredir -v
+                    set PYTEST_EXIT=%ERRORLEVEL%
+                    echo ===== allure-results =====
+                    dir allure-results
+                    exit /b %PYTEST_EXIT%
                 '''
             }
             post {
