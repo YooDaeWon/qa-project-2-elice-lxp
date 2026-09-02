@@ -26,7 +26,7 @@ pipeline {
                 echo 'Running pytest...'
                 bat '''
                     call venv\\Scripts\\activate
-                    pytest --junitxml=report.xml
+                    pytest --junitxml=report.xml --alluredir=allure-results
                 '''
             }
             post {
