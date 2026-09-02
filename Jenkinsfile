@@ -17,6 +17,7 @@ pipeline {
                     call venv\\Scripts\\activate
                     python -m pip install --upgrade pip
                     pip install -r requirements.txt
+                    python -m playwright install chromium
                 '''
             }
         }
@@ -31,8 +32,7 @@ pipeline {
             }
             post {
                 always {
-                    // JUnit XML 리포트가 필요할 경우 아래 주석을 해제하여 사용하세요
-                    // junit 'report.xml'
+                    allure includeProperties: false, jdk: '', results: [[path: 'allure-results']]
                 }
             }
         }
