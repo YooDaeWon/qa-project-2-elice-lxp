@@ -79,3 +79,35 @@ python -m playwright install chromium
 ```powershell
 작성 중
 ```
+
+## LOAD TEST pytest 실행 방법
+
+부하 테스트는 E2E와 분리되어 있으므로 `pytest` 전체 실행에 포함되지 않는다.
+프로젝트 루트에서 아래 명령어를 사용한다.
+
+```powershell
+pytest tests/loadtest -v -s
+pytest tests/loadtest -m load_login -v -s
+pytest tests/loadtest -m load_token -v -s
+pytest tests/loadtest -m load_transaction -v -s
+pytest tests/loadtest -m load_profile -v -s
+pytest tests/loadtest -m load_safety -v -s
+```
+
+| Marker | TC ID | 테스트 흐름 |
+| --- | --- | --- |
+| `load_login` | ID 1 | 동시 로그인 |
+| `load_token` | ID 2 | 토큰 연동 과목 조회 |
+| `load_transaction` | ID 3~7 | 시험 입장·제출·재응시 트랜잭션 |
+| `load_profile` | ID 8~11 | 3회 루프 부하 프로필 |
+| `load_safety` | ID 12~15 | Kill Switch·Timer 안전성 통제 |
+
+### Allure 결과 누적 생성
+
+`--clean-alluredir`는 사용하지 않는다. 이전 `allure-report/history`를 다음 실행에 이어 붙여 TREND 그래프가 쌓인다.
+
+```powershell
+pytest tests/loadtest -v -s --alluredir allure-results
+allure generate allure-results -o allure-report --clean
+allure open allure-report
+```
