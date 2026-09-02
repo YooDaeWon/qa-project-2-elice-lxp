@@ -29,6 +29,7 @@ class Settings:
     API_BASE_URL = _env("API_BASE_URL")
     CLASSROOM_API_BASE_URL = _env("CLASSROOM_API_BASE_URL")
     DASHBOARD_API_BASE_URL = _env("DASHBOARD_API_BASE_URL")
+    ACCOUNT_API_BASE_URL = _env("ACCOUNT_API_BASE_URL")
 
     AUTH_HEADER = _env("AUTH_HEADER", "Authorization")
     # 따옴표로 "Bearer "를 넣어 trailing space 유지
