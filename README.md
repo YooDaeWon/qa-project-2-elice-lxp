@@ -1,73 +1,64 @@
-# seethrough
+# seethrough QA 자동화
 
-__re_test jenkins__ 
+Elice LXP QA 환경의 E2E/UI/UX 테스트를 Playwright와 pytest로 실행합니다.
 
-## E2E/UI/UX TEST pytest 실행 방법
+## 기본 실행
 
-| 실행 목적 | 명령어 또는 옵션 |
+| 목적 | 명령어 |
 | --- | --- |
-| 전체 실행 | `pytest` |
-| 상세 실행 결과 표시 | `-v` |
-| 브라우저 표시 | `--headed` |
-| 실행 속도 조절 | `--slowmo 500` |
-| 마커 사용 | `-m <marker명>` |
+| 전체 테스트 | `pytest` |
+| 상세 결과 표시 | `pytest -v` |
+| 브라우저 표시 | `pytest --headed` |
+| 동작 지연 추가 | `pytest --slowmo 500` |
+| 특정 marker 실행 | `pytest -m <marker명>` |
 
-```bash
-각 E2E 흐름은 브라우저 상태를 공유하므로 개별 ID만 실행하지 않는다.
--x, --maxfail=1, pytest-xdist의 -n 옵션을 사용하지 않는다.
-```
+각 E2E 흐름은 브라우저 상태를 공유하므로 개별 ID만 단독 실행하지 않습니다. 테스트 간 상태 충돌을 방지하기 위해 `pytest-xdist` 병렬 실행(`-n`)도 사용하지 않습니다.
 
-### marker로 실행
-
-```powershell
-pytest -m exam_flow -v
-pytest -m board_flow -v
-pytest -m schedule_flow -v
-pytest -m exam_retake_flow -v
-pytest -m schedule_management_flow -v
-pytest -m exam_status_flow -v
-pytest -m exam_multi -v
-pytest -m exam_auto_save -v
-pytest -m board_offline -v
-pytest -m board_duplicate -v
-pytest -m board_title_limit -v
-pytest -m exam_offline -v
-```
+## Marker별 실행
 
 | Marker | TC ID | 테스트 흐름 |
 | --- | --- | --- |
-| `exam_flow` | ID 1~15 | 시험 응시 |
-| `board_flow` | ID 16~20 | 게시판 |
-| `schedule_flow` | ID 21~23 | 수업 일정 |
+| `exam_flow` | ID 1~15 | 시험 응시 및 제출 |
+| `board_flow` | ID 16~20 | 게시판 기본 흐름 |
+| `schedule_flow` | ID 21~23 | 수업 일정 조회 |
 | `exam_retake_flow` | ID 24~26 | 시험 재응시 |
 | `schedule_management_flow` | ID 27~35 | 수업 일정 관리 |
 | `exam_status_flow` | ID 36~40 | 시험 응시 현황 |
 | `exam_multi` | ID 41 | 다중 탭 시험 |
-| `exam_auto_save` | ID 42 | 답안 자동 저장 |
-| `board_offline` | ID 43~44 | 네트워크 중단 게시물 저장 검증 |
-| `board_duplicate` | ID 45 | 게시물 중복 요청 검증 |
-| `board_title_limit` | ID 46 | 게시물 제목 글자 수 제한 검증 |
-| `exam_offline` | ID 47 | 네트워크 중단 시험 문제 불러오기 검증 |
+| `exam_refresh_save` | ID 42 | 새로고침 후 답안 저장 |
+| `board_offline` | ID 43~44 | 네트워크 중단 게시물 저장 |
+| `board_duplicate` | ID 45 | 게시물 중복 요청 |
+| `board_title_limit` | ID 46 | 게시물 제목 글자 수 제한 |
+| `exam_offline` | ID 47 | 네트워크 중단 시험 문제 불러오기 |
+| `exam_timeout` | ID 48 | 제한 시간 종료 |
+| `invalid_url` | ID 49 | 존재하지 않는 URL 접근 |
+| `responsive_layout` | ID 50~53 | 반응형 메뉴 |
+| `mocking500` | ID 54 | 클래스 조회 API 500 Mock |
 
-### 브라우저 표시 및 실행 속도 조절
+예시:
 
 ```powershell
-pytest -m exam_flow -v --headed
-pytest -m exam_flow -v --headed --slowmo 500
+pytest -m exam_flow -v
+pytest -m responsive_layout -v --headed
+pytest -m exam_refresh_save -v
+pytest -m mocking500 -v
 ```
 
-- `--headed`: 브라우저를 화면에 표시함
-- `--slowmo 500`: Playwright 동작마다 500ms 지연함
+## 영상 녹화
 
-### Allure 결과 생성
+| 목적 | 명령어 |
+| --- | --- |
+| 특정 흐름 전체 녹화 | `pytest -m exam_flow -v --video=on` |
+| 전체 테스트 녹화 | `pytest -v --headed --video=on` |
+| 실패한 흐름만 보존 | `pytest -v --video=retain-on-failure` |
+
+영상은 `videos/<테스트 파일명>/` 아래에 저장됩니다. `retain-on-failure`는 한 흐름 안에서 테스트 하나라도 실패하면 해당 흐름 전체 영상을 보존합니다.
+
+## Allure 리포트
 
 ```powershell
 pytest -v --alluredir allure-results --clean-alluredir
-```
-전체 TC를 ID 순서로 실행하면서 Allure 결과를 생성하려면 다음 명령어를 사용한다.
-
-### Allure 보고서 열기
-
-```powershell
 allure serve allure-results
 ```
+
+첫 번째 명령어로 결과를 생성하고, 두 번째 명령어로 로컬 리포트를 엽니다.
