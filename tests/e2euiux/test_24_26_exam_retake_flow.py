@@ -1,5 +1,6 @@
 import secrets
 
+import allure
 import pytest
 from playwright.sync_api import expect
 
@@ -18,7 +19,11 @@ from framework.e2euiux.pages import (
 )
 
 
-pytestmark = pytest.mark.exam_retake_flow
+pytestmark = [
+    pytest.mark.exam_retake_flow,
+    allure.label("owner", "hongseongwoo"),
+    allure.label("team", "QA4"),
+]
 
 
 @pytest.fixture(scope="module")
@@ -74,6 +79,8 @@ def retake_course_page(e2e_page, credentials):
     return e2e_page
 
 
+@allure.label("tc_id", "24")
+@allure.label("priority", "P1")
 def test_id_24_retake_exam(retake_course_page):
     """ID 24 시험 재응시 버튼 확인"""
     course_page = CoursePage(retake_course_page)
@@ -81,6 +88,8 @@ def test_id_24_retake_exam(retake_course_page):
     course_page.verify_retake_available("e2e-retake")
 
 
+@allure.label("tc_id", "25")
+@allure.label("priority", "P1")
 def test_id_25_submit_retake_exam(retake_course_page, retake_answer):
     """ID 25 재응시 답안 제출 후 결과 페이지 확인"""
     course_page = CoursePage(retake_course_page)
@@ -102,6 +111,8 @@ def test_id_25_submit_retake_exam(retake_course_page, retake_answer):
     result_page.verify_loaded()
 
 
+@allure.label("tc_id", "26")
+@allure.label("priority", "P1")
 def test_id_26_verify_retake_answer(retake_course_page, retake_answer):
     """ID 26 재응시 답안 확인"""
     result_page = ExamResultPage(retake_course_page)

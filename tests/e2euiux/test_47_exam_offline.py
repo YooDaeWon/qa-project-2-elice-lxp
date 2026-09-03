@@ -1,3 +1,4 @@
+import allure
 import pytest
 
 from framework.e2euiux.pages import (
@@ -14,7 +15,11 @@ from framework.e2euiux.pages import (
 )
 
 
-pytestmark = pytest.mark.exam_offline
+pytestmark = [
+    pytest.mark.exam_offline,
+    allure.label("owner", "hongseongwoo"),
+    allure.label("team", "QA4"),
+]
 
 
 def _open_exam_page(page, credentials):
@@ -68,6 +73,8 @@ def _open_exam_page(page, credentials):
     return exam_page
 
 
+@allure.label("tc_id", "47")
+@allure.label("priority", "P2")
 def test_id_47_submit_exam_offline(
     e2e_page,
     credentials,
