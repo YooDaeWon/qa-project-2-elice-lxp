@@ -36,9 +36,16 @@ def _lecture_records(data):
     return records if isinstance(records, list) else []
 
 def _lecture(client, lecture_id):
-    data = assert_success(client.lecture_list(settings.ORG, settings.COURSE_ID))
-    row = find_dict_by_value(data, "id", lecture_id)
-    assert row is not None, f"lecture_id={lecture_id}를 목록에서 찾지 못했습니다."
+    response, row = client.lecture_find(
+        settings.ORG,
+        settings.COURSE_ID,
+        lecture_id,
+    )
+    assert response is not None, "lecture/list 응답을 받지 못했습니다."
+    assert_success(response)
+    assert row is not None, (
+        f"lecture_id={lecture_id}를 전체 lecture 목록에서 찾지 못했습니다."
+    )
     return row
 
 def _material_page(client, page_id=None, material_id=None):
