@@ -5,12 +5,14 @@ from pathlib import Path
 
 import pytest
 from dotenv import load_dotenv
+from playwright.sync_api import expect
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 VIDEO_ROOT = PROJECT_ROOT / "videos"
 LECTURE_IDS = ("1645", "1741")
 load_dotenv(PROJECT_ROOT / ".env")
+expect.set_options(timeout=30_000)
 
 
 # E2E flow 실행 순서

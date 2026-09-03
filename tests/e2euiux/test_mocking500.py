@@ -65,4 +65,3 @@ def test_classroom_api_500(mock_classroom_api):
     """클래스 조회 API 500 오류 안내 확인"""
     mock_classroom_api.page.reload()
     mock_classroom_api.verify_error_loaded()
-    mock_classroom_api.page.wait_for_timeout(5_000)
