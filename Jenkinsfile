@@ -13,7 +13,6 @@ pipeline {
             steps {
                 echo 'Setting up isolated Python virtual environment and Playwright browsers...'
                 sh '''
-                    # 매 빌드마다 깨끗한 격리 환경을 위해 기존 venv 폴더 삭제 후 재생성
                     rm -rf venv
                     python3 -m venv venv
                     . venv/bin/activate
@@ -21,7 +20,6 @@ pipeline {
                     if [ -f requirements.txt ]; then
                         pip install -r requirements.txt
                     fi
-                    # Playwright 브라우저 바이너리 설치 (Chromium)
                     python -m playwright install chromium
                 '''
             }
@@ -36,12 +34,13 @@ pipeline {
                     pytest --alluredir=allure-results --clean-alluredir -v || true
                 '''
             }
-            post {
-                always {
-                    // 테스트 완료 후 Allure 결과물을 Jenkins 대시보드에 리포트로 시각화
-                    allure includeProperties: false, jdk: '', results: [[path: 'allure-results']]
-                }
-            }
+        }
+    }
+    
+    post {
+        always {
+            // Allure 결과물을 아티팩트로 보존하여 다운로드 및 수동 확인 가능하게 설정
+            archiveArtifacts artifacts: 'allure-results/**/*', allowEmptyArchive: true
         }
     }
 }
