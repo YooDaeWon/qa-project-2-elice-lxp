@@ -69,3 +69,7 @@ class LxpApi:
             self._org_url("board/article/get/"),
             params={"board_article_id": board_article_id},
         )
+
+    def get_user(self):
+        """본인 프로필 조회 (응답에 불필요한 민감 필드가 실리는지 확인용)"""
+        return self.api.get(self._org_url("user/get/"))

@@ -7,6 +7,12 @@
 - XSS: 사용자 입력의 스크립트 태그가 무해화 없이 저장·반사되면 타 사용자 브라우저에서 실행
 - SQLi: 입력값이 SQL 구문으로 해석되면 데이터 열람·조작 가능
 - CORS: 허용 출처를 화이트리스트로 관리하지 않으면 악성 사이트가 인증정보로 API 호출 가능
+
+ID-38만 실행 방식이 다르다.
+판정 기준이 "저장된 스크립트가 브라우저에서 실제로 실행되는가"이므로
+requests(HTML 파서·자바스크립트 엔진 없음)로는 확인할 수 없다.
+팀 UI 테스트와 동일하게 Playwright로 실제 브라우저를 띄워 검증하며,
+sec_browser 마커로 구분해 브라우저 없는 환경에서는 제외할 수 있다.
 """
 
 import os
@@ -38,6 +44,18 @@ SQLI_POST_PAYLOAD = "a` OR `1`=`1"
 
 # 이 서비스와 무관한 임의 출처 (허용되면 안 되는 Origin)
 UNTRUSTED_ORIGIN = "https://evil.com"
+
+# ID-38 브라우저 검증용
+WEB_BASE_URL = "https://dev-qatrack-web.dev.elicer.io"
+
+# 실행되면 안 되는 이벤트 핸들러 속성
+EVENT_HANDLER_ATTRIBUTES = ("onerror", "onload", "onclick", "onmouseover")
+
+# 렌더링 완료를 기다리는 시간 (ms) - 지연 실행되는 스크립트까지 포착
+RENDER_WAIT_MS = 3000
+
+# 게시글 본문이 렌더링되는 영역 (이 안만 검사해야 광고·애널리틱스 스크립트를 오탐하지 않음)
+ARTICLE_CONTENT_ID = "boardArticleContent"
 
 # DB·서버 내부 정보가 응답에 새어나왔는지 판별할 키워드
 DB_LEAK_KEYWORDS = (
@@ -113,12 +131,101 @@ class TestInjection:
 
     # -- ID 38 ---------------------------------------------------------------
     @allure.title("ID-38 저장된 스크립트 실행(Stored XSS) 차단")
-    @pytest.mark.skip(
-        reason="브라우저 렌더링 검증 대상: 저장된 스크립트가 실제로 실행되는지는 "
-        "게시글 상세 화면을 브라우저로 열어야 확인 가능하므로 API 자동화 범위 밖(수동 검증 완료)"
-    )
-    def test_id38_저장된_스크립트_실행_차단(self):
-        """저장된 콘텐츠가 타 사용자 브라우저에서 실행되지 않아야 함 (브라우저 검증 필요)"""
+    @pytest.mark.sec_browser
+    def test_id38_저장된_스크립트_실행_차단(self, student_client, page):
+        """저장된 XSS 페이로드가 브라우저에서 실행되는지 확인
+
+        [기대] 게시글을 열어도 스크립트가 실행되지 않음
+        [실제] alert 미발생 + onerror 속성 제거됨 → PASS
+
+        ID-37이 저장 계층(서버가 무해화하는가)을 본다면 ID-38은 표현 계층
+        (브라우저가 렌더링할 때 실행되는가)을 본다. 서버는 입력을 그대로
+        저장하지만 프론트엔드가 렌더링 단계에서 이벤트 핸들러 속성을 제거해
+        실행을 막는다. 다만 방어가 표현 계층에만 있어, 같은 데이터를 받는
+        다른 클라이언트에는 보호가 적용되지 않을 수 있다.
+
+        검증용 게시글은 이 테스트가 직접 만든다. 다른 테스트가 남긴 데이터에
+        의존하면 실행 순서에 따라 결과가 달라진다.
+        """
+        # 1단계: 검증용 게시글 생성 (API)
+        marker = uuid.uuid4().hex[:8]
+        lxp = LxpApi(student_client)
+        create_response = lxp.edit_board_article(
+            classroom_id=CLASSROOM_ID,
+            title=f"[SECTEST-XSS-BROWSER] {marker}",
+            content=XSS_PAYLOAD,
+        )
+
+        article_id = _extract_article_id(create_response)
+
+        target_url = f"{WEB_BASE_URL}/classrooms/{CLASSROOM_ID}/articles/{article_id}"
+        allure.attach(
+            f"게시글 id={article_id}\n저장 페이로드={XSS_PAYLOAD}\n주소={target_url}",
+            name="검증용 게시글 생성",
+            attachment_type=allure.attachment_type.TEXT,
+        )
+
+        # 2단계: 브라우저 로그인
+        dialogs = []
+        page.on("dialog", lambda dialog: (
+            dialogs.append(dialog.message), dialog.dismiss()
+        ))
+
+        page.goto(f"{WEB_BASE_URL}/lxp")
+        page.locator('input[name="loginId"]').fill(os.environ["ST_ID"])
+        page.locator('input[name="password"]').fill(os.environ["ST_PW"])
+        page.get_by_role("button", name="로그인").click()
+        page.wait_for_url(f"{WEB_BASE_URL}/lxp", timeout=60_000)
+
+        # 3단계: 게시글을 열고 렌더링 결과 확인
+        page.goto(target_url)
+        page.wait_for_timeout(RENDER_WAIT_MS)
+
+        # 페이지 전체가 아니라 게시글 본문 영역만 검사한다.
+        # 광고·애널리틱스 스크립트가 정상적으로 쓰는 onload 등을 오탐하지 않기 위함.
+        content_area = page.locator(f"#{ARTICLE_CONTENT_ID}")
+        content_html = (
+            content_area.inner_html() if content_area.count() else page.content()
+        )
+
+        # 주입한 요소에 이벤트 핸들러가 실제로 붙어 있는지 DOM 속성으로 확인
+        leaked_handlers = page.evaluate(
+            """([containerId, attributes]) => {
+                const root = document.getElementById(containerId) || document.body;
+                const found = [];
+                for (const element of root.querySelectorAll("*")) {
+                    for (const attribute of attributes) {
+                        if (element.hasAttribute(attribute)) {
+                            found.push(`${element.tagName.toLowerCase()}[${attribute}]`);
+                        }
+                    }
+                }
+                return found;
+            }""",
+            [ARTICLE_CONTENT_ID, list(EVENT_HANDLER_ATTRIBUTES)],
+        )
+
+        allure.attach(
+            f"발생한 대화상자={dialogs or '없음'}\n"
+            f"본문 내 이벤트 핸들러={leaked_handlers or '없음'}\n\n"
+            f"본문 HTML:\n{content_html[:1500]}",
+            name="브라우저 렌더링 결과",
+            attachment_type=allure.attachment_type.TEXT,
+        )
+        allure.attach(
+            page.screenshot(),
+            name="게시글 화면",
+            attachment_type=allure.attachment_type.PNG,
+        )
+
+        assert not dialogs, (
+            f"저장된 스크립트가 브라우저에서 실행됨 - 대화상자 발생: {dialogs} "
+            "(게시글을 여는 모든 사용자에게 스크립트가 실행되어 쿠키·세션 탈취 가능)"
+        )
+        assert not leaked_handlers, (
+            f"게시글 본문에 이벤트 핸들러 속성이 남아 있음: {leaked_handlers} - "
+            "지금은 실행되지 않아도 다른 경로로 발화할 여지가 있음"
+        )
 
     # -- ID 39 ---------------------------------------------------------------
     @allure.title("ID-39 반사형 XSS를 통한 악성 스크립트 실행 차단")
