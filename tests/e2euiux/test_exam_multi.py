@@ -110,7 +110,7 @@ def multi_tab_exam_pages(e2e_page, reset_e2e01, credentials):
 
 @allure.label("tc_id", "41")
 @allure.label("priority", "P2")
-def test_id_41_start_exam_in_two_tabs(multi_tab_exam_pages):
+def test_start_exam_in_two_tabs(multi_tab_exam_pages):
     """ID 41 두 탭에서 테스트 시작 및 오류 확인"""
     first_page = multi_tab_exam_pages["first_page"]
     second_page = multi_tab_exam_pages["second_page"]

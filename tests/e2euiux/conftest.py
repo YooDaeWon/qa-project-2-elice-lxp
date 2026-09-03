@@ -1,5 +1,4 @@
 import os
-import re
 import shutil
 import tempfile
 from pathlib import Path
@@ -60,11 +59,6 @@ def _get_tc_id(item):
             continue
         if marker.args and str(marker.args[0]).isdigit():
             return int(marker.args[0])
-
-    # Allure marker를 읽을 수 없는 환경의 기존 함수명 fallback
-    match = re.search(r"test_id_(\d+)", item.name)
-    if match:
-        return int(match.group(1))
     return None
 
 

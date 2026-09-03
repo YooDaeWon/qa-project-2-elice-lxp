@@ -51,7 +51,7 @@ def _open_exam_page(page):
 
 @allure.label("tc_id", "42")
 @allure.label("priority", "P2")
-def test_id_42_verify_answer_auto_save(
+def test_verify_answer_auto_save(
     e2e_page,
     credentials,
     reset_e2e01,

@@ -75,7 +75,7 @@ def _open_timeout_exam_page(page, credentials):
 
 @allure.label("tc_id", "48")
 @allure.label("priority", "P2")
-def test_id_48_timeout_without_submission(
+def test_timeout_without_submission(
     e2e_page,
     credentials,
     reset_timeout,

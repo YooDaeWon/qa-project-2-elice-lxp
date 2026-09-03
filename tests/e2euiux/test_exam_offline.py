@@ -75,7 +75,7 @@ def _open_exam_page(page, credentials):
 
 @allure.label("tc_id", "47")
 @allure.label("priority", "P2")
-def test_id_47_submit_exam_offline(
+def test_submit_exam_offline(
     e2e_page,
     credentials,
     reset_e2e01,

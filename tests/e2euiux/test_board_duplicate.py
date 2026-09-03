@@ -57,7 +57,7 @@ def board_duplicate_flow(e2e_page, credentials):
 
 @allure.label("tc_id", "45")
 @allure.label("priority", "P2")
-def test_id_45_prevent_duplicate_post(board_duplicate_flow):
+def test_prevent_duplicate_post(board_duplicate_flow):
     """ID 45 게시물 중복 생성 확인"""
     page = board_duplicate_flow["page"]
     board_write_page = BoardWritePage(page)

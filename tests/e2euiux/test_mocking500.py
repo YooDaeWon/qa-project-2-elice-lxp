@@ -61,7 +61,7 @@ def mock_classroom_api(classroom_page):
 
 @allure.label("tc_id", "54")
 @allure.label("priority", "P2")
-def test_id_54_classroom_api_500(mock_classroom_api):
+def test_classroom_api_500(mock_classroom_api):
     """ID 54 클래스 조회 API 500 오류 안내 확인"""
     mock_classroom_api.page.reload()
     mock_classroom_api.verify_error_loaded()

@@ -45,7 +45,7 @@ def exam_status_e2e_page(e2e_page, educator_credentials):
 
 @allure.label("tc_id", "36")
 @allure.label("priority", "P1")
-def test_id_36_open_course_list(exam_status_e2e_page):
+def test_open_course_list(exam_status_e2e_page):
     """ID 36 학습 과목 목록 페이지 진입"""
     classroom_page = ClassroomPage(exam_status_e2e_page)
     classroom_page.open_learning_subjects()
@@ -56,7 +56,7 @@ def test_id_36_open_course_list(exam_status_e2e_page):
 
 @allure.label("tc_id", "37")
 @allure.label("priority", "P1")
-def test_id_37_open_sandbox_course(exam_status_e2e_page):
+def test_open_sandbox_course(exam_status_e2e_page):
     """ID 37 SANDBOX 과목 페이지 진입"""
     course_list_page = CourseListPage(exam_status_e2e_page)
 
@@ -73,7 +73,7 @@ def test_id_37_open_sandbox_course(exam_status_e2e_page):
 
 @allure.label("tc_id", "38")
 @allure.label("priority", "P1")
-def test_id_38_open_test_status(exam_status_e2e_page):
+def test_open_test_status(exam_status_e2e_page):
     """ID 38 e2e-retake 응시 현황 버튼 확인"""
     course_page = CoursePage(exam_status_e2e_page)
     course_page.expand_test_card("e2e-retake")
@@ -82,7 +82,7 @@ def test_id_38_open_test_status(exam_status_e2e_page):
 
 @allure.label("tc_id", "39")
 @allure.label("priority", "P1")
-def test_id_39_open_exam_status(exam_status_e2e_page):
+def test_open_exam_status(exam_status_e2e_page):
     """ID 39 SANDBOX 시험 응시 현황 모달 확인"""
     course_page = CoursePage(exam_status_e2e_page)
     course_page.open_status("e2e-retake")
@@ -93,7 +93,7 @@ def test_id_39_open_exam_status(exam_status_e2e_page):
 
 @allure.label("tc_id", "40")
 @allure.label("priority", "P1")
-def test_id_40_verify_student_status(exam_status_e2e_page):
+def test_verify_student_status(exam_status_e2e_page):
     """ID 40 qa6_dm01 응시 완료 상태 확인"""
     status_page = ExamStatusPage(exam_status_e2e_page)
     status_page.verify_student_completed("qa6_dm01")
