@@ -1,0 +1,22 @@
+# 가상환경
+.venv/
+venv/
+env/
+
+# 환경변수
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.log
+
+# allure 
+allure-results/
+allure-report/
+
+# 테스트 영상
+videos/
+
+AGENTS.md

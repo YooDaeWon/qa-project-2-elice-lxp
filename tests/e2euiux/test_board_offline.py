@@ -1,0 +1,76 @@
+import allure
+import pytest
+
+from framework.e2euiux.pages import (
+    BoardListPage,
+    BoardWritePage,
+    ClassroomPage,
+    LoginPage,
+    MainPage,
+    MyClassesPage,
+)
+
+
+pytestmark = [
+    pytest.mark.board_offline,
+    allure.label("owner", "hongseongwoo"),
+    allure.label("team", "QA4"),
+]
+
+
+@pytest.fixture(scope="module")
+def board_write_page(browser, flow_browser_context_args, credentials):
+    """게시물 저장 후 오프라인 상태 유지"""
+    context = browser.new_context(**flow_browser_context_args)
+    page = context.new_page()
+
+    try:
+        login_page = LoginPage(page)
+        login_page.open()
+        login_page.login(
+            credentials["user_id"],
+            credentials["password"],
+        )
+        login_page.verify_redirect()
+
+        main_page = MainPage(page)
+        main_page.open_my_classes()
+
+        my_classes_page = MyClassesPage(page)
+        my_classes_page.verify_loaded()
+        my_classes_page.open_classroom()
+
+        classroom_page = ClassroomPage(page)
+        classroom_page.verify_loaded()
+        classroom_page.open_board()
+
+        board_list_page = BoardListPage(page)
+        board_list_page.verify_loaded()
+        board_list_page.open_write()
+
+        write_page = BoardWritePage(page)
+        write_page.verify_loaded()
+        write_page.fill_title("test spinner")
+        write_page.fill_content("test spinner")
+        write_page.verify_save_enabled()
+        page.context.set_offline(True)
+        write_page.save()
+
+        yield write_page
+    finally:
+        context.close()
+
+
+@allure.label("tc_id", "43")
+@allure.label("priority", "P2")
+def test_board_save_offline_error(board_write_page):
+    """네트워크 중단 시 오류 토스트 확인"""
+    board_write_page.verify_error_toast()
+
+
+@allure.label("tc_id", "44")
+@allure.label("priority", "P2")
+def test_board_save_offline_spinner(board_write_page):
+    """네트워크 중단 시 저장 버튼 복귀 확인"""
+    board_write_page.verify_save_spinner()
+    board_write_page.verify_save_button_restored()
