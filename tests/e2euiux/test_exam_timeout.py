@@ -84,4 +84,4 @@ def test_verify_timeout_modal(
     e2e_page.clock.install()
     exam_page = _open_timeout_exam_page(e2e_page, credentials)
     e2e_page.clock.fast_forward("04:58")
-    exam_page.verify_timeout_modal(timeout=10_000)
+    exam_page.verify_timeout_modal()
