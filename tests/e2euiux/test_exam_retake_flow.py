@@ -71,7 +71,7 @@ def retake_course_page(e2e_page, credentials):
         course_list_page.page_title.or_(course_page.lesson_list_tab).first
     ).to_be_visible()
 
-    if course_list_page.has_page_title():
+    if course_list_page.is_course_list_visible():
         course_list_page.open_sandbox()
 
     course_page.verify_loaded()

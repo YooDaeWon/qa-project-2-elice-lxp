@@ -51,11 +51,9 @@ class ExamPage:
             timeout=10_000,
         )
 
-    def verify_timeout_modal(self, timeout=310_000):
+    def verify_timeout_modal(self):
         """제한 시간 종료 모달 확인"""
-        expect(self.timeout_message).to_be_visible(
-            timeout=timeout,
-        )
+        expect(self.timeout_message).to_be_visible()
 
     def submit_answer(self):
         """답안 제출"""
