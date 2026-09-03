@@ -39,8 +39,18 @@ pipeline {
     
     post {
         always {
-            // Allure 결과물을 아티팩트로 보존하여 다운로드 및 수동 확인 가능하게 설정
-            archiveArtifacts artifacts: 'allure-results/**/*', allowEmptyArchive: true
+            // 1. Jenkins 대시보드에 Allure 리포트 렌더링 (Allure Jenkins Plugin 필요)
+            allure includeProperties: false, jdk: '', results: [[path: 'allure-results']]
+        }
+        success {
+            // 2. 빌드 성공 시 Discord 알림 (Discord Notifier 플러그인 필요시 사용)
+            // discordSend webhookURL: "https://discord.com/api/webhooks/1544267640154103849/3_Lr6kUahhWLpqslIk0WBvZ6KtDUhMggMpatqzWUY6SoWCw7OUoT8yBmY_urSu5X-iht", result: 'SUCCESS', description: "빌드가 성공적으로 완료되었습니다."
+            echo 'Build Successful!'
+        }
+        failure {
+            // 3. 빌드 실패 시 Discord 알림
+            // discordSend webhookURL: "https://discord.com/api/webhooks/1544267640154103849/3_Lr6kUahhWLpqslIk0WBvZ6KtDUhMggMpatqzWUY6SoWCw7OUoT8yBmY_urSu5X-iht", result: 'FAILURE', description: "빌드가 실패했습니다."
+            echo 'Build Failed!'
         }
     }
 }
