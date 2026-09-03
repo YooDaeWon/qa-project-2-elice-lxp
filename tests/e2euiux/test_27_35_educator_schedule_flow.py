@@ -1,5 +1,6 @@
 import secrets
 
+import allure
 import pytest
 
 from framework.e2euiux.pages import (
@@ -11,7 +12,11 @@ from framework.e2euiux.pages import (
 )
 
 
-pytestmark = pytest.mark.schedule_management_flow
+pytestmark = [
+    pytest.mark.schedule_management_flow,
+    allure.label("owner", "hongseongwoo"),
+    allure.label("team", "QA4"),
+]
 
 
 @pytest.fixture(scope="module")
@@ -20,6 +25,8 @@ def schedule_title():
     return secrets.token_hex(4)
 
 
+@allure.label("tc_id", "27")
+@allure.label("priority", "P1")
 def test_id_27_login(e2e_page, educator_credentials):
     """ID 27 교육자 로그인"""
     login_page = LoginPage(e2e_page)
@@ -31,6 +38,8 @@ def test_id_27_login(e2e_page, educator_credentials):
     login_page.verify_redirect()
 
 
+@allure.label("tc_id", "28")
+@allure.label("priority", "P1")
 def test_id_28_open_schedule(e2e_page):
     """ID 28 수업 일정 페이지 진입"""
     main_page = MainPage(e2e_page)
@@ -48,6 +57,8 @@ def test_id_28_open_schedule(e2e_page):
     schedule_page.verify_loaded()
 
 
+@allure.label("tc_id", "29")
+@allure.label("priority", "P1")
 def test_id_29_open_create_schedule(e2e_page):
     """ID 29 수업 일정 만들기 모달 확인"""
     schedule_page = SchedulePage(e2e_page)
@@ -55,6 +66,8 @@ def test_id_29_open_create_schedule(e2e_page):
     schedule_page.verify_create_modal()
 
 
+@allure.label("tc_id", "30")
+@allure.label("priority", "P1")
 def test_id_30_save_schedule(e2e_page, schedule_title):
     """ID 30 수업 일정 저장 토스트 확인"""
     schedule_page = SchedulePage(e2e_page)
@@ -63,12 +76,16 @@ def test_id_30_save_schedule(e2e_page, schedule_title):
     schedule_page.verify_saved_toast()
 
 
+@allure.label("tc_id", "31")
+@allure.label("priority", "P1")
 def test_id_31_verify_saved_schedule(e2e_page, schedule_title):
     """ID 31 오늘 날짜 일정 저장 확인"""
     schedule_page = SchedulePage(e2e_page)
     schedule_page.verify_schedule_saved(schedule_title)
 
 
+@allure.label("tc_id", "32")
+@allure.label("priority", "P1")
 def test_id_32_open_schedule_detail(e2e_page, schedule_title):
     """ID 32 저장된 일정 상세 패널 확인"""
     schedule_page = SchedulePage(e2e_page)
@@ -76,6 +93,8 @@ def test_id_32_open_schedule_detail(e2e_page, schedule_title):
     schedule_page.verify_schedule_panel()
 
 
+@allure.label("tc_id", "33")
+@allure.label("priority", "P1")
 def test_id_33_open_delete_modal(e2e_page):
     """ID 33 일정 삭제 모달 확인"""
     schedule_page = SchedulePage(e2e_page)
@@ -83,6 +102,8 @@ def test_id_33_open_delete_modal(e2e_page):
     schedule_page.verify_delete_modal()
 
 
+@allure.label("tc_id", "34")
+@allure.label("priority", "P1")
 def test_id_34_delete_schedule(e2e_page):
     """ID 34 일정 삭제 토스트 확인"""
     schedule_page = SchedulePage(e2e_page)
@@ -90,6 +111,8 @@ def test_id_34_delete_schedule(e2e_page):
     schedule_page.verify_deleted_toast()
 
 
+@allure.label("tc_id", "35")
+@allure.label("priority", "P1")
 def test_id_35_verify_schedule_deleted(e2e_page, schedule_title):
     """ID 35 일정 삭제 결과 확인"""
     schedule_page = SchedulePage(e2e_page)

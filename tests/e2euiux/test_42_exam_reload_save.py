@@ -1,5 +1,6 @@
 import secrets
 
+import allure
 import pytest
 from playwright.sync_api import expect
 
@@ -17,7 +18,11 @@ from framework.e2euiux.pages import (
 )
 
 
-pytestmark = pytest.mark.exam_reload_save
+pytestmark = [
+    pytest.mark.exam_reload_save,
+    allure.label("owner", "hongseongwoo"),
+    allure.label("team", "QA4"),
+]
 
 
 @pytest.fixture(scope="module")
@@ -44,6 +49,8 @@ def _open_exam_page(page):
     exam_page.verify_loaded()
 
 
+@allure.label("tc_id", "42")
+@allure.label("priority", "P2")
 def test_id_42_verify_answer_auto_save(
     e2e_page,
     credentials,

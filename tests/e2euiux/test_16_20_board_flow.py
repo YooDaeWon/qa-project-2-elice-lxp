@@ -1,3 +1,4 @@
+import allure
 import pytest
 
 from framework.e2euiux.pages import (
@@ -11,7 +12,11 @@ from framework.e2euiux.pages import (
 )
 
 
-pytestmark = pytest.mark.board_flow
+pytestmark = [
+    pytest.mark.board_flow,
+    allure.label("owner", "hongseongwoo"),
+    allure.label("team", "QA4"),
+]
 
 
 @pytest.fixture(scope="module")
@@ -35,6 +40,8 @@ def board_e2e_page(e2e_page, credentials):
     return e2e_page
 
 
+@allure.label("tc_id", "16")
+@allure.label("priority", "P1")
 def test_id_16_open_board(board_e2e_page):
     """ID 16 게시판 페이지 진입"""
     classroom_page = ClassroomPage(board_e2e_page)
@@ -44,6 +51,8 @@ def test_id_16_open_board(board_e2e_page):
     board_list_page.verify_loaded()
 
 
+@allure.label("tc_id", "17")
+@allure.label("priority", "P1")
 def test_id_17_open_board_write(board_e2e_page):
     """ID 17 글쓰기 페이지 진입"""
     board_list_page = BoardListPage(board_e2e_page)
@@ -53,6 +62,8 @@ def test_id_17_open_board_write(board_e2e_page):
     board_write_page.verify_loaded()
 
 
+@allure.label("tc_id", "18")
+@allure.label("priority", "P1")
 def test_id_18_create_board_post(board_e2e_page):
     """ID 18 게시물 작성"""
     board_write_page = BoardWritePage(board_e2e_page)
@@ -66,6 +77,8 @@ def test_id_18_create_board_post(board_e2e_page):
     board_post_page.verify_loaded()
 
 
+@allure.label("tc_id", "19")
+@allure.label("priority", "P1")
 def test_id_19_add_comment(board_e2e_page):
     """ID 19 댓글 작성"""
     board_post_page = BoardPostPage(board_e2e_page)
@@ -75,6 +88,8 @@ def test_id_19_add_comment(board_e2e_page):
     board_post_page.verify_comment_added(previous_count, "test comment")
 
 
+@allure.label("tc_id", "20")
+@allure.label("priority", "P2")
 def test_id_20_prevent_duplicate_comment(board_e2e_page):
     """ID 20 댓글 중복 작성 확인"""
     board_post_page = BoardPostPage(board_e2e_page)

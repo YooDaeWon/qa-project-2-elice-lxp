@@ -1,3 +1,4 @@
+import allure
 import pytest
 
 from framework.e2euiux.pages import (
@@ -10,7 +11,11 @@ from framework.e2euiux.pages import (
 )
 
 
-pytestmark = pytest.mark.board_title_limit
+pytestmark = [
+    pytest.mark.board_title_limit,
+    allure.label("owner", "hongseongwoo"),
+    allure.label("team", "QA4"),
+]
 
 TITLE_VALUE = "a" * 128
 
@@ -44,6 +49,8 @@ def board_title_page(e2e_page, credentials):
     return e2e_page
 
 
+@allure.label("tc_id", "46")
+@allure.label("priority", "P2")
 def test_id_46_limit_board_title(board_title_page):
     """ID 46 게시물 제목 최대 길이 확인"""
     board_write_page = BoardWritePage(board_title_page)
