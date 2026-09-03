@@ -33,14 +33,9 @@ pipeline {
                 sh '''
                     . venv/bin/activate
                     mkdir -p allure-results
-                    # 뷰포트 크기를 1920x1080으로 지정하여 UI 렌더링 누락 방지
-                    pytest --alluredir=allure-results --clean-alluredir --viewport-size=1920,1080 -v || true
+                    # 잘못된 --viewport-size 옵션 제거
+                    pytest --alluredir=allure-results --clean-alluredir -v || true
                 '''
-            }
-            post {
-                always {
-                    allure includeProperties: false, jdk: '', results: [[path: 'allure-results']]
-                }
             }
         }
     }
