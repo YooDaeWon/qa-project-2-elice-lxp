@@ -82,7 +82,7 @@ def retake_course_page(e2e_page, credentials):
 @allure.label("tc_id", "24")
 @allure.label("priority", "P1")
 def test_retake_exam(retake_course_page):
-    """ID 24 시험 재응시 버튼 확인"""
+    """시험 재응시 버튼 확인"""
     course_page = CoursePage(retake_course_page)
     course_page.retake_test("e2e-retake")
     course_page.verify_retake_available("e2e-retake")
@@ -91,7 +91,7 @@ def test_retake_exam(retake_course_page):
 @allure.label("tc_id", "25")
 @allure.label("priority", "P1")
 def test_submit_retake_exam(retake_course_page, retake_answer):
-    """ID 25 재응시 답안 제출 후 결과 페이지 확인"""
+    """재응시 답안 제출 후 결과 페이지 확인"""
     course_page = CoursePage(retake_course_page)
     course_page.start_test("e2e-retake")
     _open_exam_page(retake_course_page)
@@ -114,7 +114,7 @@ def test_submit_retake_exam(retake_course_page, retake_answer):
 @allure.label("tc_id", "26")
 @allure.label("priority", "P1")
 def test_verify_retake_answer(retake_course_page, retake_answer):
-    """ID 26 재응시 답안 확인"""
+    """재응시 답안 확인"""
     result_page = ExamResultPage(retake_course_page)
     result_page.verify_loaded()
     result_page.open_answers()

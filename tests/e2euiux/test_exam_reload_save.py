@@ -57,7 +57,7 @@ def test_verify_answer_auto_save(
     reset_e2e01,
     auto_save_answer,
 ):
-    """ID 42 새로고침 후 답안 자동 저장 확인"""
+    """새로고침 후 답안 자동 저장 확인"""
     login_page = LoginPage(e2e_page)
     login_page.open()
     login_page.login(

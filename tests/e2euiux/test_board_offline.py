@@ -64,13 +64,13 @@ def board_write_page(browser, flow_browser_context_args, credentials):
 @allure.label("tc_id", "43")
 @allure.label("priority", "P2")
 def test_board_save_offline_error(board_write_page):
-    """ID 43 네트워크 중단 시 오류 토스트 확인"""
+    """네트워크 중단 시 오류 토스트 확인"""
     board_write_page.verify_error_toast()
 
 
 @allure.label("tc_id", "44")
 @allure.label("priority", "P2")
 def test_board_save_offline_spinner(board_write_page):
-    """ID 44 네트워크 중단 시 저장 버튼 복귀 확인"""
+    """네트워크 중단 시 저장 버튼 복귀 확인"""
     board_write_page.verify_save_spinner()
     board_write_page.verify_save_button_restored()

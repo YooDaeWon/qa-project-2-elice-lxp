@@ -80,7 +80,7 @@ def test_timeout_without_submission(
     credentials,
     reset_timeout,
 ):
-    """ID 48 미제출 상태에서 제한 시간 종료 모달 확인"""
+    """미제출 상태에서 제한 시간 종료 모달 확인"""
     e2e_page.clock.install()
     exam_page = _open_timeout_exam_page(e2e_page, credentials)
     e2e_page.clock.fast_forward("04:58")

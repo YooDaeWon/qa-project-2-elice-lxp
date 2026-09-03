@@ -52,7 +52,7 @@ def board_title_page(e2e_page, credentials):
 @allure.label("tc_id", "46")
 @allure.label("priority", "P2")
 def test_limit_board_title(board_title_page):
-    """ID 46 게시물 제목 최대 길이 확인"""
+    """게시물 제목 최대 길이 확인"""
     board_write_page = BoardWritePage(board_title_page)
     board_write_page.fill_title(TITLE_VALUE)
     board_write_page.append_title("test")

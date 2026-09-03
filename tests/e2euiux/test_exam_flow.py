@@ -31,7 +31,7 @@ def test_login(
     credentials,
     reset_exam,
 ):
-    """ID 1 로그인 후 메인 페이지 진입"""
+    """로그인 후 메인 페이지 진입"""
     login_page = LoginPage(e2e_page)
     login_page.open()
     login_page.login(credentials["user_id"], credentials["password"])
@@ -41,7 +41,7 @@ def test_login(
 @allure.label("tc_id", "02")
 @allure.label("priority", "P1")
 def test_open_my_classes(e2e_page):
-    """ID 2 내 클래스 페이지 진입"""
+    """내 클래스 페이지 진입"""
     main_page = MainPage(e2e_page)
     main_page.open_my_classes()
 
@@ -52,7 +52,7 @@ def test_open_my_classes(e2e_page):
 @allure.label("tc_id", "03")
 @allure.label("priority", "P1")
 def test_open_classroom(e2e_page):
-    """ID 3 클래스 페이지 진입"""
+    """클래스 페이지 진입"""
     my_classes_page = MyClassesPage(e2e_page)
     my_classes_page.open_classroom()
 
@@ -63,7 +63,7 @@ def test_open_classroom(e2e_page):
 @allure.label("tc_id", "04")
 @allure.label("priority", "P1")
 def test_open_course_list(e2e_page):
-    """ID 4 학습 과목 목록 페이지 진입"""
+    """학습 과목 목록 페이지 진입"""
     classroom_page = ClassroomPage(e2e_page)
     classroom_page.open_learning_subjects()
 
@@ -74,7 +74,7 @@ def test_open_course_list(e2e_page):
 @allure.label("tc_id", "05")
 @allure.label("priority", "P1")
 def test_open_sandbox_course(e2e_page):
-    """ID 5 SANDBOX 과목 페이지 진입"""
+    """SANDBOX 과목 페이지 진입"""
     course_list_page = CourseListPage(e2e_page)
 
     if not course_list_page.has_page_title():
@@ -91,7 +91,7 @@ def test_open_sandbox_course(e2e_page):
 @allure.label("tc_id", "06")
 @allure.label("priority", "P1")
 def test_open_exam_prepare(e2e_page):
-    """ID 6 테스트 준비하기 페이지 진입"""
+    """테스트 준비하기 페이지 진입"""
     course_page = CoursePage(e2e_page)
     course_page.start_test("e2e-01")
 
@@ -102,7 +102,7 @@ def test_open_exam_prepare(e2e_page):
 @allure.label("tc_id", "07")
 @allure.label("priority", "P1")
 def test_open_exam_time(e2e_page):
-    """ID 7 PC 시간 설정 페이지 진입"""
+    """PC 시간 설정 페이지 진입"""
     prepare_page = ExamPreparePage(e2e_page)
     prepare_page.agree_and_next()
 
@@ -113,7 +113,7 @@ def test_open_exam_time(e2e_page):
 @allure.label("tc_id", "08")
 @allure.label("priority", "P1")
 def test_open_exam_notice(e2e_page):
-    """ID 8 유의 사항 확인 페이지 진입"""
+    """유의 사항 확인 페이지 진입"""
     time_page = ExamTimePage(e2e_page)
     time_page.go_next()
 
@@ -124,7 +124,7 @@ def test_open_exam_notice(e2e_page):
 @allure.label("tc_id", "09")
 @allure.label("priority", "P1")
 def test_open_exam(e2e_page):
-    """ID 9 테스트 페이지 진입"""
+    """테스트 페이지 진입"""
     notice_page = ExamNoticePage(e2e_page)
     notice_page.start_test()
 
@@ -135,7 +135,7 @@ def test_open_exam(e2e_page):
 @allure.label("tc_id", "10")
 @allure.label("priority", "P1")
 def test_verify_submit_enabled(e2e_page):
-    """ID 10 답안 입력 후 제출 버튼 활성화 확인"""
+    """답안 입력 후 제출 버튼 활성화 확인"""
     exam_page = ExamPage(e2e_page)
     exam_page.enter_answer("t")
     exam_page.verify_submit_enabled()
@@ -144,7 +144,7 @@ def test_verify_submit_enabled(e2e_page):
 @allure.label("tc_id", "11")
 @allure.label("priority", "P1")
 def test_verify_submit_complete(e2e_page):
-    """ID 11 답안 제출 완료 확인"""
+    """답안 제출 완료 확인"""
     exam_page = ExamPage(e2e_page)
     exam_page.submit_answer()
     exam_page.verify_submit_complete()
@@ -153,7 +153,7 @@ def test_verify_submit_complete(e2e_page):
 @allure.label("tc_id", "12")
 @allure.label("priority", "P1")
 def test_open_end_modal(e2e_page):
-    """ID 12 테스트 종료 모달 열기"""
+    """테스트 종료 모달 열기"""
     exam_page = ExamPage(e2e_page)
     exam_page.open_end_modal()
     exam_page.verify_end_modal_open()
@@ -162,7 +162,7 @@ def test_open_end_modal(e2e_page):
 @allure.label("tc_id", "13")
 @allure.label("priority", "P1")
 def test_verify_end_enabled(e2e_page):
-    """ID 13 확인 사항 체크 후 테스트 종료 버튼 활성화"""
+    """확인 사항 체크 후 테스트 종료 버튼 활성화"""
     exam_page = ExamPage(e2e_page)
     exam_page.check_end_confirmation()
     exam_page.verify_end_enabled()
@@ -171,7 +171,7 @@ def test_verify_end_enabled(e2e_page):
 @allure.label("tc_id", "14")
 @allure.label("priority", "P1")
 def test_open_exam_complete(e2e_page):
-    """ID 14 테스트 종료 후 완료 페이지 확인"""
+    """테스트 종료 후 완료 페이지 확인"""
     exam_page = ExamPage(e2e_page)
     exam_page.confirm_end_test()
     complete_page = ExamCompletePage(e2e_page)
@@ -181,7 +181,7 @@ def test_open_exam_complete(e2e_page):
 @allure.label("tc_id", "15")
 @allure.label("priority", "P1")
 def test_open_exam_result(e2e_page):
-    """ID 15 테스트 결과 페이지 진입"""
+    """테스트 결과 페이지 진입"""
     complete_page = ExamCompletePage(e2e_page)
     complete_page.open_result()
     result_page = ExamResultPage(e2e_page)
