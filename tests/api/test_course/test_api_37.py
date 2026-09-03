@@ -1,0 +1,61 @@
+"""API TC37 전용 테스트 파일.
+
+기존 test_course.py의 TC37를 1개 파일로 분리한 테스트입니다.
+"""
+
+import pytest
+
+from uuid import uuid4
+
+from clients.classroom_client import ClassroomClient
+
+from clients.course_client import CourseClient
+
+from config.settings import settings
+
+from utils.assertions import (
+    assert_business_rejected,
+    assert_internal,
+    assert_not_success,
+    assert_permission_denied,
+    assert_success,
+)
+
+from utils.helpers import (
+    clone_payload,
+    contains_value,
+    dicts_with_key,
+    find_dict_by_value,
+    find_first_value,
+    first_list,
+    require_values,
+)
+
+def _lecture_records(data):
+    records = data.get("lectures", []) if isinstance(data, dict) else []
+    return records if isinstance(records, list) else []
+
+def _lecture(client, lecture_id):
+    data = assert_success(client.lecture_list(settings.ORG, settings.COURSE_ID))
+    row = find_dict_by_value(data, "id", lecture_id)
+    assert row is not None, f"lecture_id={lecture_id}를 목록에서 찾지 못했습니다."
+    return row
+
+def _material_page(client, page_id=None, material_id=None):
+    data = assert_success(client.lecture_page_list(settings.ORG, settings.LECTURE_ID, settings.LOCATOR_TYPE))
+    if page_id is not None:
+        return find_dict_by_value(data, "id", page_id), data
+    if material_id is not None:
+        return find_dict_by_value(data, "material_id", material_id), data
+    return None, data
+
+
+@pytest.mark.course
+@pytest.mark.negative
+def test_api_37(student_client):
+    require_values(ORG=settings.ORG)
+    response = CourseClient(student_client).course_get(settings.ORG, -1)
+    data = assert_business_rejected(response, context="TC37 음수 course_id 조회 거부")
+    assert not (isinstance(data, dict) and data.get("course")), (
+        f"음수 course_id인데 정상 course 데이터가 반환되었습니다. BODY={response.text[:2000]}"
+    )

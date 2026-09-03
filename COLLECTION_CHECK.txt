@@ -1,0 +1,65 @@
+pytest --collect-only validation
+returncode=0
+
+STDOUT:
+ssroom/test_api_04.py::test_api_04
+tests/api/test_classroom/test_api_05.py::test_api_05
+tests/api/test_classroom/test_api_06.py::test_api_06
+tests/api/test_classroom/test_api_07.py::test_api_07
+tests/api/test_classroom/test_api_08.py::test_api_08
+tests/api/test_classroom/test_api_09.py::test_api_09
+tests/api/test_classroom/test_api_10.py::test_api_10
+tests/api/test_classroom/test_api_11.py::test_api_11
+tests/api/test_classroom/test_api_12.py::test_api_12
+tests/api/test_classroom/test_api_13.py::test_api_13
+tests/api/test_classroom/test_api_14.py::test_api_14
+tests/api/test_classroom/test_api_15.py::test_api_15
+tests/api/test_course/test_api_16.py::test_api_16
+tests/api/test_course/test_api_17.py::test_api_17
+tests/api/test_course/test_api_18.py::test_api_18
+tests/api/test_course/test_api_19.py::test_api_19
+tests/api/test_course/test_api_20.py::test_api_20
+tests/api/test_course/test_api_21.py::test_api_21
+tests/api/test_course/test_api_22.py::test_api_22
+tests/api/test_course/test_api_23.py::test_api_23
+tests/api/test_course/test_api_24.py::test_api_24
+tests/api/test_course/test_api_25.py::test_api_25
+tests/api/test_course/test_api_26.py::test_api_26
+tests/api/test_course/test_api_27.py::test_api_27
+tests/api/test_course/test_api_28.py::test_api_28
+tests/api/test_course/test_api_29.py::test_api_29
+tests/api/test_course/test_api_30.py::test_api_30
+tests/api/test_course/test_api_31.py::test_api_31
+tests/api/test_course/test_api_32.py::test_api_32
+tests/api/test_course/test_api_33.py::test_api_33
+tests/api/test_course/test_api_34.py::test_api_34
+tests/api/test_course/test_api_35.py::test_api_35
+tests/api/test_course/test_api_36.py::test_api_36
+tests/api/test_course/test_api_37.py::test_api_37
+tests/api/test_course/test_api_38.py::test_api_38
+tests/api/test_schedule/test_api_39.py::test_api_39
+tests/api/test_schedule/test_api_40.py::test_api_40
+tests/api/test_schedule/test_api_41.py::test_api_41
+tests/api/test_schedule/test_api_42.py::test_api_42
+tests/api/test_schedule/test_api_43.py::test_api_43
+tests/api/test_schedule/test_api_44.py::test_api_44
+tests/api/test_schedule/test_api_45.py::test_api_45
+tests/api/test_schedule/test_api_46.py::test_api_46
+tests/api/test_schedule/test_api_47.py::test_api_47
+tests/api/test_schedule/test_api_48.py::test_api_48
+tests/api/test_schedule/test_api_49.py::test_api_49
+tests/api/test_schedule/test_api_50.py::test_api_50
+tests/api/test_schedule/test_api_51.py::test_api_51
+
+[32m[32m68 tests collected[0m[32m in 0.50s[0m[0m
+
+
+STDERR:
+Spreadsheet runtime warmup failed during python startup
+Traceback (most recent call last):
+  File "/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/patches/warm_spreadsheet_runtime_on_startup.py", line 26, in warm_spreadsheet_runtime_on_startup
+  File "/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/spreadsheet_warmup.py", line 772, in warm_spreadsheet_runtime
+  File "/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/rpc/connection.py", line 37, in get_or_create_client
+  File "/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/rpc/daemon.py", line 124, in start_daemon
+TimeoutError: Timed out waiting for artifact tool daemon socket. Set ARTIFACT_TOOL_RPC_DAEMON_STARTUP_TIMEOUT_S=<seconds> to increase the limit.
+

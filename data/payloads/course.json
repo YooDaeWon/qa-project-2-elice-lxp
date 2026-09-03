@@ -1,0 +1,35 @@
+{
+  "course_update": {
+    "title": "pytest 과목 수정 테스트"
+  },
+  "lecture_create": {
+    "lecture_type": 0,
+    "title": "pytest 신규 수업 생성 테스트",
+    "description": "",
+    "is_opened": true,
+    "is_preview": false
+  },
+  "lecture_update": {
+    "lecture_type": 0,
+    "title": "pytest 기존 수업 수정 테스트",
+    "description": "",
+    "is_opened": true,
+    "is_preview": false
+  },
+  "material_note_create": {
+    "title": "pytest 신규 수업 자료",
+    "description": "",
+    "content": "pytest requests 자동화로 생성된 테스트 자료",
+    "is_opened": true,
+    "is_for_stats": false,
+    "locator_types": 0
+  },
+  "material_note_update": {
+    "title": "pytest 수정 수업 자료",
+    "description": "",
+    "content": "pytest requests 자동화로 수정된 테스트 자료",
+    "is_opened": true,
+    "is_for_stats": false,
+    "locator_types": 0
+  }
+}
