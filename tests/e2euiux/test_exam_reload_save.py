@@ -1,5 +1,6 @@
 import secrets
 
+import allure
 import pytest
 from playwright.sync_api import expect
 
@@ -17,7 +18,11 @@ from framework.e2euiux.pages import (
 )
 
 
-pytestmark = pytest.mark.exam_reload_save
+pytestmark = [
+    pytest.mark.exam_reload_save,
+    allure.label("owner", "hongseongwoo"),
+    allure.label("team", "QA4"),
+]
 
 
 @pytest.fixture(scope="module")
@@ -44,13 +49,15 @@ def _open_exam_page(page):
     exam_page.verify_loaded()
 
 
-def test_id_42_verify_answer_auto_save(
+@allure.label("tc_id", "42")
+@allure.label("priority", "P2")
+def test_verify_answer_auto_save(
     e2e_page,
     credentials,
     reset_e2e01,
     auto_save_answer,
 ):
-    """ID 42 새로고침 후 답안 자동 저장 확인"""
+    """새로고침 후 답안 자동 저장 확인"""
     login_page = LoginPage(e2e_page)
     login_page.open()
     login_page.login(
@@ -77,7 +84,7 @@ def test_id_42_verify_answer_auto_save(
     ).first
     expect(course_list_or_course).to_be_visible()
 
-    if course_list_page.has_page_title():
+    if course_list_page.is_course_list_visible():
         course_list_page.open_sandbox()
 
     course_page.verify_loaded()

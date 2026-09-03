@@ -63,9 +63,17 @@ def test_api_26(educator_client, payloads):
         data = assert_success(client.lecture_edit(settings.ORG, payload))
         lecture_id = find_first_value(data, ("lecture_id",))
         assert lecture_id is not None
-        listing = assert_success(client.lecture_list(settings.ORG, settings.COURSE_ID))
-        row = find_dict_by_value(listing, "id", lecture_id)
-        assert row is not None and row.get("title") == payload["title"]
+        response, row = client.lecture_find(
+            settings.ORG,
+            settings.COURSE_ID,
+            lecture_id,
+        )
+        assert response is not None, "lecture/list 응답을 받지 못했습니다."
+        assert_success(response)
+        assert row is not None, (
+            f"lecture_id={lecture_id}를 전체 lecture 목록에서 찾지 못했습니다."
+        )
+        assert row.get("title") == payload["title"]
     finally:
         if lecture_id is not None:
             assert_success(client.lecture_delete(settings.ORG, lecture_id))

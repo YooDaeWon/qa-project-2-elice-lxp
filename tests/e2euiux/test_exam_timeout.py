@@ -1,3 +1,4 @@
+import allure
 import pytest
 
 from framework.e2euiux.pages import (
@@ -14,7 +15,11 @@ from framework.e2euiux.pages import (
 )
 
 
-pytestmark = pytest.mark.exam_timeout
+pytestmark = [
+    pytest.mark.exam_timeout,
+    allure.label("owner", "hongseongwoo"),
+    allure.label("team", "QA4"),
+]
 
 
 def _open_timeout_exam_page(page, credentials):
@@ -45,7 +50,7 @@ def _open_timeout_exam_page(page, credentials):
     ).first
     course_list_or_course.wait_for(state="visible")
 
-    if course_list_page.has_page_title():
+    if course_list_page.is_course_list_visible():
         course_list_page.open_sandbox()
 
     course_page.verify_loaded()
@@ -68,13 +73,15 @@ def _open_timeout_exam_page(page, credentials):
     return exam_page
 
 
-def test_id_48_timeout_without_submission(
+@allure.label("tc_id", "48")
+@allure.label("priority", "P1")
+def test_verify_timeout_modal(
     e2e_page,
     credentials,
     reset_timeout,
 ):
-    """ID 48 미제출 상태에서 제한 시간 종료 모달 확인"""
+    """제한 시간 종료 모달 확인"""
     e2e_page.clock.install()
     exam_page = _open_timeout_exam_page(e2e_page, credentials)
     e2e_page.clock.fast_forward("04:58")
-    exam_page.verify_timeout_modal(timeout=10_000)
+    exam_page.verify_timeout_modal()

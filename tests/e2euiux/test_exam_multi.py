@@ -1,3 +1,4 @@
+import allure
 import pytest
 from playwright.sync_api import expect
 
@@ -14,7 +15,11 @@ from framework.e2euiux.pages import (
 )
 
 
-pytestmark = pytest.mark.exam_multi
+pytestmark = [
+    pytest.mark.exam_multi,
+    allure.label("owner", "hongseongwoo"),
+    allure.label("team", "QA4"),
+]
 
 
 def _open_exam_notice(page):
@@ -59,7 +64,7 @@ def multi_tab_exam_pages(e2e_page, reset_e2e01, credentials):
         course_list_page.page_title.or_(course_page.lesson_list_tab).first
     ).to_be_visible()
 
-    if course_list_page.has_page_title():
+    if course_list_page.is_course_list_visible():
         course_list_page.open_sandbox()
 
     course_page.verify_loaded()
@@ -88,7 +93,7 @@ def multi_tab_exam_pages(e2e_page, reset_e2e01, credentials):
         ).first
     ).to_be_visible()
 
-    if second_course_list_page.has_page_title():
+    if second_course_list_page.is_course_list_visible():
         second_course_list_page.open_sandbox()
 
     second_course_page.verify_loaded()
@@ -103,8 +108,10 @@ def multi_tab_exam_pages(e2e_page, reset_e2e01, credentials):
     second_page.close()
 
 
-def test_id_41_start_exam_in_two_tabs(multi_tab_exam_pages):
-    """ID 41 두 탭에서 테스트 시작 및 오류 확인"""
+@allure.label("tc_id", "41")
+@allure.label("priority", "P2")
+def test_start_exam_in_two_tabs(multi_tab_exam_pages):
+    """두 탭에서 테스트 시작 및 오류 확인"""
     first_page = multi_tab_exam_pages["first_page"]
     second_page = multi_tab_exam_pages["second_page"]
 

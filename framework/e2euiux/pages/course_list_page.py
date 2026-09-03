@@ -28,8 +28,8 @@ class CourseListPage:
         """학습 과목 목록 제목 확인"""
         expect(self.page_title).to_be_visible()
 
-    def has_page_title(self):
-        """학습 과목 목록 제목 표시 여부 확인"""
+    def is_course_list_visible(self):
+        """학습 과목 목록 표시 여부 확인"""
         return self.page_title.is_visible()
 
     def open_sandbox(self):

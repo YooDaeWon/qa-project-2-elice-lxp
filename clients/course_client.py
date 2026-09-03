@@ -77,6 +77,63 @@ class CourseClient:
             },
         )
 
+    def lecture_list_all(self, org, course_id, page_size=40, max_pages=100):
+        """lecture/list의 서버 최대 count=40 제한을 지키며 전체 페이지를 조회한다."""
+        page_size = max(1, min(int(page_size or 40), 40))
+        offset = 0
+        records = []
+        last_response = None
+
+        for _ in range(max_pages):
+            response = self.lecture_list(
+                org,
+                course_id,
+                offset=offset,
+                count=page_size,
+            )
+            last_response = response
+
+            if response.status_code != 200:
+                return response, records
+
+            try:
+                data = response.json()
+            except ValueError:
+                return response, records
+
+            if not isinstance(data, dict):
+                return response, records
+
+            result = data.get("_result")
+            if (
+                isinstance(result, dict)
+                and result.get("status_code") != 200
+            ):
+                return response, records
+
+            page = data.get("lectures", [])
+            if not isinstance(page, list):
+                return response, records
+
+            records.extend(page)
+
+            if len(page) < page_size:
+                break
+
+            offset += page_size
+
+        return last_response, records
+
+    def lecture_find(self, org, course_id, lecture_id):
+        """전체 lecture 페이지를 조회해 특정 lecture_id를 찾는다."""
+        response, records = self.lecture_list_all(org, course_id)
+
+        for lecture in records:
+            if str(lecture.get("id")) == str(lecture_id):
+                return response, lecture
+
+        return response, None
+
     def lecture_page_list(
         self,
         org,

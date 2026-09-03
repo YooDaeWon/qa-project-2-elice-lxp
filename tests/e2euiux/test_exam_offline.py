@@ -1,3 +1,4 @@
+import allure
 import pytest
 
 from framework.e2euiux.pages import (
@@ -14,7 +15,11 @@ from framework.e2euiux.pages import (
 )
 
 
-pytestmark = pytest.mark.exam_offline
+pytestmark = [
+    pytest.mark.exam_offline,
+    allure.label("owner", "hongseongwoo"),
+    allure.label("team", "QA4"),
+]
 
 
 def _open_exam_page(page, credentials):
@@ -45,7 +50,7 @@ def _open_exam_page(page, credentials):
     ).first
     course_list_or_course.wait_for(state="visible")
 
-    if course_list_page.has_page_title():
+    if course_list_page.is_course_list_visible():
         course_list_page.open_sandbox()
         course_page.verify_loaded()
 
@@ -68,12 +73,14 @@ def _open_exam_page(page, credentials):
     return exam_page
 
 
-def test_id_47_submit_exam_offline(
+@allure.label("tc_id", "47")
+@allure.label("priority", "P2")
+def test_submit_exam_offline(
     e2e_page,
     credentials,
     reset_e2e01,
 ):
-    """ID 47 네트워크 차단 후 제출 오류 확인"""
+    """네트워크 차단 후 제출 오류 확인"""
     exam_page = _open_exam_page(e2e_page, credentials)
     exam_page.enter_answer("offline")
     exam_page.verify_submit_enabled()
