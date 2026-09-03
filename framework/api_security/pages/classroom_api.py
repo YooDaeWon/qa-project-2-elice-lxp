@@ -51,3 +51,43 @@ class ClassroomApi:
             headers={"X-HTTP-Method-Override": override_method},
             json=payload,
         )
+
+    def delete_member(self, member_id, classroom_id):
+        """클래스 구성원 강제 퇴장 요청 (권한 없는 사용자의 타인 퇴출 시도)
+
+        명세에 없는 그림자 API로, 관리 UI의 '구성원 제거' 동작을 HAR로 확보했다.
+        삭제 대상은 경로의 member_id, 소속 클래스는 body로 전달한다.
+        """
+        return self.api.delete(
+            f"{self.base}/member/{member_id}",
+            json={"classroom_id": classroom_id},
+        )
+
+    def get_articles(self, classroom_id, skip=0, count=10, filter_title=None):
+        """클래스 게시글 목록 조회 (검색어 반사형 XSS 검증용)
+
+        filter_title은 검색어 파라미터로, 입력값이 응답에 실행 가능한 형태로
+        되돌아오는지(반사형 XSS) 확인하는 데 사용한다.
+        """
+        params = {"skip": skip, "count": count}
+        if filter_title is not None:
+            params["filter_title"] = filter_title
+        return self.api.get(
+            f"{self.base}/classroom/{classroom_id}/article",
+            params=params,
+        )
+
+    def options_preflight(self, classroom_id, origin, request_method="GET"):
+        """CORS 사전확인(preflight) 요청 (허용 출처 화이트리스트 검증용)
+
+        브라우저가 교차 출처 요청 전에 보내는 OPTIONS를 그대로 재현한다.
+        서버가 임의 Origin을 그대로 반사하는지는 응답 헤더로만 판별할 수 있다.
+        """
+        return self.api.request(
+            "OPTIONS",
+            f"{self.base}/classroom/{classroom_id}",
+            headers={
+                "Origin": origin,
+                "Access-Control-Request-Method": request_method,
+            },
+        )
