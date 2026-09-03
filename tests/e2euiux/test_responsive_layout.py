@@ -47,29 +47,29 @@ def tablet_main_page(mobile_main_page):
 
 @allure.label("tc_id", "50")
 @allure.label("priority", "P2")
-def test_id_50_mobile_menu_button(mobile_main_page):
-    """ID 50 모바일 햄버거 버튼 표시 확인"""
+def test_mobile_menu_button(mobile_main_page):
+    """모바일 햄버거 버튼 표시 확인"""
     mobile_main_page.verify_menu_button_visible()
 
 
 @allure.label("tc_id", "51")
 @allure.label("priority", "P2")
-def test_id_51_mobile_open_menu(mobile_main_page):
-    """ID 51 모바일 전체 메뉴 표시 확인"""
+def test_mobile_open_menu(mobile_main_page):
+    """모바일 전체 메뉴 표시 확인"""
     mobile_main_page.open_menu()
     mobile_main_page.verify_menu_visible()
 
 
 @allure.label("tc_id", "52")
 @allure.label("priority", "P2")
-def test_id_52_tablet_menu_button(tablet_main_page):
-    """ID 52 태블릿 햄버거 버튼 표시 확인"""
+def test_tablet_menu_button(tablet_main_page):
+    """태블릿 햄버거 버튼 표시 확인"""
     tablet_main_page.verify_menu_button_visible()
 
 
 @allure.label("tc_id", "53")
 @allure.label("priority", "P2")
-def test_id_53_tablet_open_menu(tablet_main_page):
-    """ID 53 태블릿 전체 메뉴 표시 확인"""
+def test_tablet_open_menu(tablet_main_page):
+    """태블릿 전체 메뉴 표시 확인"""
     tablet_main_page.open_menu()
     tablet_main_page.verify_menu_visible()

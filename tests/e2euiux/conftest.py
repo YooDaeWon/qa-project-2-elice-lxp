@@ -13,6 +13,91 @@ LECTURE_IDS = ("1645", "1741")
 load_dotenv(PROJECT_ROOT / ".env")
 
 
+# E2E flow 실행 순서
+E2E_FLOW_ORDER = (
+    "exam_flow",
+    "board_flow",
+    "schedule_flow",
+    "exam_retake_flow",
+    "schedule_management_flow",
+    "exam_status_flow",
+    "exam_multi",
+    "exam_reload_save",
+    "board_offline",
+    "board_duplicate",
+    "board_title_limit",
+    "exam_offline",
+    "exam_timeout",
+    "invalid_url",
+    "responsive_layout",
+    "mocking500",
+)
+_FLOW_ORDER = {
+    flow_name: order
+    for order, flow_name in enumerate(E2E_FLOW_ORDER)
+}
+
+
+def _is_e2e_test(item):
+    """E2E 테스트 여부 확인"""
+    nodeid = item.nodeid.replace("\\", "/")
+    return nodeid.startswith("tests/e2euiux/") or "/tests/e2euiux/" in nodeid
+
+
+def _get_flow_name(item):
+    """테스트에 지정된 flow marker 확인"""
+    for marker in item.iter_markers():
+        if marker.name in _FLOW_ORDER:
+            return marker.name
+    return None
+
+
+def _get_tc_id(item):
+    """Allure tc_id 확인"""
+    for marker in item.iter_markers(name="allure_label"):
+        if marker.kwargs.get("label_type") != "tc_id":
+            continue
+        if marker.args and str(marker.args[0]).isdigit():
+            return int(marker.args[0])
+    return None
+
+
+def pytest_collection_modifyitems(items):
+    """E2E flow와 TC ID 기준으로 수집 순서 고정"""
+    e2e_items = []
+
+    for original_index, item in enumerate(items):
+        if not _is_e2e_test(item):
+            continue
+
+        flow_name = _get_flow_name(item)
+        tc_id = _get_tc_id(item)
+        if flow_name is None or tc_id is None:
+            raise pytest.UsageError(
+                "E2E 테스트에 flow marker 또는 Allure tc_id가 없습니다: "
+                f"{item.nodeid}"
+            )
+
+        e2e_items.append(
+            (
+                _FLOW_ORDER[flow_name],
+                tc_id,
+                original_index,
+                item,
+            )
+        )
+
+    if not e2e_items:
+        return
+
+    e2e_items.sort(key=lambda row: row[:3])
+    ordered_e2e_items = iter(row[3] for row in e2e_items)
+    items[:] = [
+        next(ordered_e2e_items) if _is_e2e_test(item) else item
+        for item in items
+    ]
+
+
 def _reset_lectures(e2e_page, lecture_ids):
     """지정한 시험 재응시 허용"""
     api_base_url = os.getenv("API_BASE_URL")

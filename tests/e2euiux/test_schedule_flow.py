@@ -41,8 +41,8 @@ def schedule_e2e_page(e2e_page, credentials):
 
 @allure.label("tc_id", "21")
 @allure.label("priority", "P1")
-def test_id_21_open_schedule(schedule_e2e_page):
-    """ID 21 수업 일정 페이지 진입"""
+def test_open_schedule(schedule_e2e_page):
+    """수업 일정 페이지 진입"""
     classroom_page = ClassroomPage(schedule_e2e_page)
     classroom_page.open_schedule()
 
@@ -52,8 +52,8 @@ def test_id_21_open_schedule(schedule_e2e_page):
 
 @allure.label("tc_id", "22")
 @allure.label("priority", "P1")
-def test_id_22_open_test_schedule(schedule_e2e_page):
-    """ID 22 test 일정 사이드 패널 확인"""
+def test_open_test_schedule(schedule_e2e_page):
+    """test 일정 사이드 패널 확인"""
     schedule_page = SchedulePage(schedule_e2e_page)
     schedule_page.open_test_schedule()
     schedule_page.verify_test_panel()
@@ -61,8 +61,8 @@ def test_id_22_open_test_schedule(schedule_e2e_page):
 
 @allure.label("tc_id", "23")
 @allure.label("priority", "P1")
-def test_id_23_click_linked_class_button(schedule_e2e_page):
-    """ID 23 Click linked class button"""
+def test_click_linked_class_button(schedule_e2e_page):
+    """Click linked class button"""
     schedule_page = SchedulePage(schedule_e2e_page)
     schedule_page.click_linked_class_button()
 
