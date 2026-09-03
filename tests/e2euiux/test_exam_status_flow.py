@@ -60,7 +60,7 @@ def test_open_sandbox_course(exam_status_e2e_page):
     """SANDBOX 과목 페이지 진입"""
     course_list_page = CourseListPage(exam_status_e2e_page)
 
-    if not course_list_page.has_page_title():
+    if not course_list_page.is_course_list_visible():
         course_page = CoursePage(exam_status_e2e_page)
         course_page.open_course_list()
 

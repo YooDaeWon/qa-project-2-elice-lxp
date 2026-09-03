@@ -50,7 +50,7 @@ def _open_timeout_exam_page(page, credentials):
     ).first
     course_list_or_course.wait_for(state="visible")
 
-    if course_list_page.has_page_title():
+    if course_list_page.is_course_list_visible():
         course_list_page.open_sandbox()
 
     course_page.verify_loaded()

@@ -84,7 +84,7 @@ def test_verify_answer_auto_save(
     ).first
     expect(course_list_or_course).to_be_visible()
 
-    if course_list_page.has_page_title():
+    if course_list_page.is_course_list_visible():
         course_list_page.open_sandbox()
 
     course_page.verify_loaded()
