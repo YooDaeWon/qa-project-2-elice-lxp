@@ -31,7 +31,6 @@ pipeline {
                 sh '''
                     . venv/bin/activate
                     mkdir -p allure-results
-                    # Allure 결과 외에 JUnit XML 리포트도 함께 생성 (통계 파싱용)
                     pytest --alluredir=allure-results --junitxml=junit-report.xml --clean-alluredir -v || true
                 '''
             }
@@ -40,18 +39,22 @@ pipeline {
     
     post {
         always {
-            // 1. Jenkins 대시보드에 Allure 리포트 렌더링
             allure includeProperties: false, jdk: '', results: [[path: 'allure-results']]
         }
         success {
             script {
                 def total = 0, failures = 0, errors = 0, skipped = 0, passed = 0
                 if (fileExists('junit-report.xml')) {
-                    def junitXml = new groovy.xml.XmlSlurper().parse(readFile('junit-report.xml'))
-                    total = junitXml.@tests.text() ? junitXml.@tests.text().toInteger() : 0
-                    failures = junitXml.@failures.text() ? junitXml.@failures.text().toInteger() : 0
-                    errors = junitXml.@errors.text() ? junitXml.@errors.text().toInteger() : 0
-                    skipped = junitXml.@skipped.text() ? junitXml.@skipped.text().toInteger() : 0
+                    def content = readFile('junit-report.xml')
+                    def testsuitesMatcher = content =~ /tests="(\d+)"/
+                    if (testsuitesMatcher) total = testsuitesMatcher[0][1].toInteger()
+                    def failuresMatcher = content =~ /failures="(\d+)"/
+                    if (failuresMatcher) failures = failuresMatcher[0][1].toInteger()
+                    def errorsMatcher = content =~ /errors="(\d+)"/
+                    if (errorsMatcher) errors = errorsMatcher[0][1].toInteger()
+                    def skippedMatcher = content =~ /skipped="(\d+)"/
+                    if (skippedMatcher) skipped = skippedMatcher[0][1].toInteger()
+                    
                     passed = total - (failures + errors + skipped)
                 }
                 def passRate = total > 0 ? String.format("%.1f", (passed / total) * 100) : "0.0"
@@ -68,11 +71,16 @@ pipeline {
             script {
                 def total = 0, failures = 0, errors = 0, skipped = 0, passed = 0
                 if (fileExists('junit-report.xml')) {
-                    def junitXml = new groovy.xml.XmlSlurper().parse(readFile('junit-report.xml'))
-                    total = junitXml.@tests.text() ? junitXml.@tests.text().toInteger() : 0
-                    failures = junitXml.@failures.text() ? junitXml.@failures.text().toInteger() : 0
-                    errors = junitXml.@errors.text() ? junitXml.@errors.text().toInteger() : 0
-                    skipped = junitXml.@skipped.text() ? junitXml.@skipped.text().toInteger() : 0
+                    def content = readFile('junit-report.xml')
+                    def testsuitesMatcher = content =~ /tests="(\d+)"/
+                    if (testsuitesMatcher) total = testsuitesMatcher[0][1].toInteger()
+                    def failuresMatcher = content =~ /failures="(\d+)"/
+                    if (failuresMatcher) failures = failuresMatcher[0][1].toInteger()
+                    def errorsMatcher = content =~ /errors="(\d+)"/
+                    if (errorsMatcher) errors = errorsMatcher[0][1].toInteger()
+                    def skippedMatcher = content =~ /skipped="(\d+)"/
+                    if (skippedMatcher) skipped = skippedMatcher[0][1].toInteger()
+                    
                     passed = total - (failures + errors + skipped)
                 }
                 def passRate = total > 0 ? String.format("%.1f", (passed / total) * 100) : "0.0"
