@@ -10,8 +10,7 @@ class LoginPage:
         self.page = page
         self.login_id = page.locator('input[name="loginId"]')
         self.password = page.locator('input[name="password"]')
-        # self.login_button = page.get_by_role("button", name="로그인")
-        self.login_button = page.get_by_role("button", name="Login")
+        self.login_button = page.get_by_role("button", name="로그인")
 
     def open(self):
         """로그인 페이지 열기"""
