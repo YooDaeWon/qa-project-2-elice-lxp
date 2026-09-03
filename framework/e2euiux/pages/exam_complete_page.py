@@ -27,4 +27,4 @@ class ExamCompletePage:
     def open_result(self):
         """테스트 결과 페이지 열기"""
         self.next_button.click()
-        expect(self.result_message).to_be_visible(timeout=10_000)
+        expect(self.result_message).to_be_visible()
