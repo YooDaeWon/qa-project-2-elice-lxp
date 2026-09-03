@@ -111,7 +111,6 @@ class SchedulePage:
 
     def delete_schedule(self):
         """일정 삭제"""
-        self.delete_dialog.click()
         self.page.wait_for_timeout(500)
         self.delete_confirm_button.click()
 

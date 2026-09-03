@@ -74,13 +74,13 @@ def _open_timeout_exam_page(page, credentials):
 
 
 @allure.label("tc_id", "48")
-@allure.label("priority", "P2")
-def test_timeout_without_submission(
+@allure.label("priority", "P1")
+def test_verify_timeout_modal(
     e2e_page,
     credentials,
     reset_timeout,
 ):
-    """미제출 상태에서 제한 시간 종료 모달 확인"""
+    """제한 시간 종료 모달 확인"""
     e2e_page.clock.install()
     exam_page = _open_timeout_exam_page(e2e_page, credentials)
     e2e_page.clock.fast_forward("04:58")
