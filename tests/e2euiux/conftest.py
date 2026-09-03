@@ -205,6 +205,7 @@ def pytest_sessionfinish(session, exitstatus):
 def flow_browser_context_args(request, browser_context_args):
     """흐름별 브라우저 영상 설정"""
     context_args = browser_context_args.copy()
+    context_args["locale"] = "ko-KR"
 
     video_option = request.config.getoption("--video")
     if video_option in ("on", "retain-on-failure"):
