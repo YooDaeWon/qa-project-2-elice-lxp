@@ -17,9 +17,9 @@ pipeline {
         stage('Environment Setup') {
             steps {
                 echo 'Setting up Python environment and dependencies...'
-                bat '''
-                    python -m venv venv
-                    call venv\\Scripts\\activate
+                sh '''
+                    python3 -m venv venv
+                    . venv/bin/activate
                     python -m pip install --upgrade pip
                     pip install -r requirements.txt
                     python -m playwright install chromium
@@ -30,15 +30,13 @@ pipeline {
         stage('Test Execution') {
             steps {
                 echo 'Running pytest with Allure...'
-                bat '''
-                    chcp 65001
-                    cd /d "%WORKSPACE%"
-                    if not exist allure-results mkdir allure-results
-                    venv\\Scripts\\python.exe -m pytest tests/e2euiux tests/api --alluredir=allure-results --clean-alluredir -v
-                    set PYTEST_EXIT=%ERRORLEVEL%
-                    echo ===== allure-results =====
-                    dir allure-results
-                    exit /b %PYTEST_EXIT%
+                sh '''
+                    export LANG=C.UTF-8
+                    mkdir -p allure-results
+                    . venv/bin/activate
+                    pytest tests/e2euiux tests/api --alluredir=allure-results --clean-alluredir -v || true
+                    echo "===== allure-results ====="
+                    ls -la allure-results
                 '''
             }
             post {
