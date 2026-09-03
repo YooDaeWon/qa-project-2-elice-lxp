@@ -33,9 +33,14 @@ pipeline {
                 sh '''
                     . venv/bin/activate
                     mkdir -p allure-results
-                    # 잘못된 --viewport-size 옵션 제거
                     pytest --alluredir=allure-results --clean-alluredir -v || true
                 '''
+            }
+            post {
+                always {
+                    // 테스트 완료 후 Allure 결과물을 Jenkins 대시보드에 리포트로 시각화
+                    allure includeProperties: false, jdk: '', results: [[path: 'allure-results']]
+                }
             }
         }
     }
