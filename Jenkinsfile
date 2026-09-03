@@ -11,7 +11,7 @@ pipeline {
 
         stage('Environment Setup') {
             steps {
-                echo 'Setting up isolated Python virtual environment...'
+                echo 'Setting up isolated Python virtual environment and Playwright browsers...'
                 sh '''
                     # 매 빌드마다 깨끗한 격리 환경을 위해 기존 venv 폴더 삭제 후 재생성
                     rm -rf venv
@@ -21,6 +21,8 @@ pipeline {
                     if [ -f requirements.txt ]; then
                         pip install -r requirements.txt
                     fi
+                    # Playwright 브라우저 바이너리 설치 (Chromium)
+                    python -m playwright install chromium
                 '''
             }
         }
