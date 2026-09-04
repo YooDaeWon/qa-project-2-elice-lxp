@@ -35,7 +35,7 @@ pipeline {
                 sh '''
                     . venv/bin/activate
                     mkdir -p allure-results
-                    pytest --alluredir=allure-results --junitxml=junit-report.xml --clean-alluredir -v || true
+                    pytest --video=retain-on-failure --alluredir=allure-results --junitxml=junit-report.xml --clean-alluredir -v || true
                 '''
             }
         }

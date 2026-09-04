@@ -96,4 +96,7 @@ def test_prevent_duplicate_comment(board_e2e_page):
     previous_count = board_post_page.get_comment_count()
     board_post_page.fill_comment("rapid")
     board_post_page.register_comment_twice()
-    board_post_page.verify_comment_added(previous_count, "rapid")
+    board_post_page.verify_single_comment_after_double_click(
+        previous_count,
+        "rapid",
+    )

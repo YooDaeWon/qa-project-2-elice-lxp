@@ -54,3 +54,15 @@ class BoardPostPage:
         """댓글 한 개 추가 및 내용 확인"""
         expect(self.comment_items).to_have_count(previous_count + 1)
         expect(self.comment_items.last).to_contain_text(comment)
+
+    def verify_single_comment_after_double_click(self, previous_count, comment):
+        """빠른 2회 클릭 후 댓글 한 개 추가 확인"""
+        new_comment = self.comment_items.nth(previous_count)
+        new_comment.wait_for(state="visible", timeout=30_000)
+
+        actual_count = self.comment_items.count()
+        assert actual_count == previous_count + 1, (
+            f"댓글 중복 작성됨: 기대 {previous_count + 1}개, "
+            f"실제 {actual_count}개"
+        )
+        expect(new_comment).to_contain_text(comment)

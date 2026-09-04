@@ -1,3 +1,4 @@
+import json
 import os
 import shutil
 import tempfile
@@ -62,6 +63,20 @@ def _get_tc_id(item):
         if marker.args and str(marker.args[0]).isdigit():
             return int(marker.args[0])
     return None
+
+
+def _get_allure_full_name(item):
+    """테스트 항목의 Allure fullName 생성"""
+    nodeid = item.nodeid.replace("\\", "/")
+    test_path, *test_parts = nodeid.split("::")
+    module_name = test_path[:-3].replace("/", ".")
+    test_parts = [part.split("[", 1)[0] for part in test_parts]
+    test_name = test_parts[-1]
+    class_name = ".".join(test_parts[:-1])
+
+    if class_name:
+        return f"{module_name}.{class_name}#{test_name}"
+    return f"{module_name}#{test_name}"
 
 
 def pytest_collection_modifyitems(items):
@@ -176,6 +191,111 @@ def pytest_runtest_makereport(item, call):
 
     failed_flows.add(flow_name)
 
+    failed_tests = getattr(item.config, "_failed_allure_tests", None)
+    if failed_tests is None:
+        failed_tests = {}
+        item.config._failed_allure_tests = failed_tests
+
+    failed_tests.setdefault(flow_name, {"names": set(), "tc_ids": set()})
+    failed_tests[flow_name]["names"].add(_get_allure_full_name(item))
+
+    tc_id = _get_tc_id(item)
+    if tc_id is not None:
+        failed_tests[flow_name]["tc_ids"].add(str(tc_id))
+
+
+def _get_allure_results_directory(config):
+    """Allure 결과 저장 경로 확인"""
+    allure_dir = getattr(config.option, "allure_report_dir", None)
+    if not allure_dir:
+        return None
+    return Path(allure_dir).resolve()
+
+
+def _result_belongs_to_flow(result, flow_name):
+    """Allure 결과와 E2E 흐름 일치 여부 확인"""
+    result_full_name = result.get("fullName", "")
+    result_module = result_full_name.split("#", 1)[0]
+    return (
+        result_module == flow_name
+        or result_module.endswith(f".{flow_name}")
+    )
+
+
+def _result_has_tc_id(result, tc_ids):
+    """Allure 결과의 tc_id 일치 여부 확인"""
+    for label in result.get("labels", []):
+        if label.get("name") == "tc_id" and str(label.get("value")) in tc_ids:
+            return True
+    return False
+
+
+def _attach_flow_videos_to_allure(config, preserved_videos):
+    """실패한 E2E 흐름 영상을 Allure 결과에 첨부"""
+    allure_dir = _get_allure_results_directory(config)
+    failed_tests = getattr(config, "_failed_allure_tests", {})
+
+    if not allure_dir or not allure_dir.is_dir() or not failed_tests:
+        return
+
+    for result_path in allure_dir.glob("*-result.json"):
+        try:
+            result = json.loads(result_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+
+        if result.get("status") not in ("failed", "broken"):
+            continue
+
+        for flow_name, video_paths in preserved_videos.items():
+            failed_test_info = failed_tests.get(flow_name)
+            if not failed_test_info:
+                continue
+
+            full_name_matches = (
+                result.get("fullName") in failed_test_info["names"]
+            )
+            tc_id_matches = (
+                _result_has_tc_id(result, failed_test_info["tc_ids"])
+                and _result_belongs_to_flow(result, flow_name)
+            )
+            if not (full_name_matches or tc_id_matches):
+                continue
+
+            attachments = result.get("attachments") or []
+            result["attachments"] = attachments
+            for video_path in video_paths:
+                source_name = f"{flow_name}-{video_path.name}"
+                allure_video_path = allure_dir / source_name
+
+                if not allure_video_path.exists():
+                    try:
+                        shutil.copy2(video_path, allure_video_path)
+                    except OSError:
+                        continue
+
+                if any(
+                    attachment.get("source") == source_name
+                    for attachment in attachments
+                ):
+                    continue
+
+                attachments.append(
+                    {
+                        "name": f"Playwright video - {flow_name}",
+                        "source": source_name,
+                        "type": "video/webm",
+                    }
+                )
+
+            try:
+                result_path.write_text(
+                    json.dumps(result, ensure_ascii=False, indent=2),
+                    encoding="utf-8",
+                )
+            except OSError:
+                continue
+
 
 def pytest_sessionfinish(session, exitstatus):
     """흐름별 영상을 사용자 폴더로 이동"""
@@ -183,6 +303,8 @@ def pytest_sessionfinish(session, exitstatus):
     video_option = config.getoption("--video")
     video_dirs = getattr(config, "_flow_video_dirs", {})
     failed_flows = getattr(config, "_failed_flow_names", set())
+
+    preserved_videos = {}
 
     for flow_name, temp_dir in video_dirs.items():
         preserve_video = video_option == "on" or (
@@ -194,13 +316,19 @@ def pytest_sessionfinish(session, exitstatus):
             target_dir = VIDEO_ROOT / flow_name
             target_dir.mkdir(parents=True, exist_ok=True)
 
+            preserved_videos[flow_name] = []
+
             for video_path in temp_dir.glob("*.webm"):
+                target_path = target_dir / video_path.name
                 shutil.move(
                     str(video_path),
-                    str(target_dir / video_path.name),
+                    str(target_path),
                 )
+                preserved_videos[flow_name].append(target_path)
 
         shutil.rmtree(temp_dir, ignore_errors=True)
+
+    _attach_flow_videos_to_allure(config, preserved_videos)
 
 
 @pytest.fixture(scope="module")
