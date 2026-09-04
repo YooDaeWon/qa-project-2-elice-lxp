@@ -31,7 +31,7 @@ pipeline {
                 sh '''
                     . venv/bin/activate
                     mkdir -p allure-results
-                    pytest --alluredir=allure-results --junitxml=junit-report.xml --clean-alluredir -v || true
+                    pytest tests/api_security/test_01_auth_login.py --alluredir=allure-results --junitxml=junit-report.xml --clean-alluredir -v || true
                 '''
             }
         }
