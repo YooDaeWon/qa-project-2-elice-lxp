@@ -90,7 +90,7 @@ def test_retake_exam(retake_course_page):
 
 @allure.label("tc_id", "25")
 @allure.label("priority", "P1")
-def test_submit_retake_exam(retake_course_page, retake_answer):
+def test_submit_retake_exam_shows_result_page(retake_course_page, retake_answer):
     """재응시 답안 제출 후 결과 페이지 확인"""
     course_page = CoursePage(retake_course_page)
     course_page.start_test("e2e-retake")

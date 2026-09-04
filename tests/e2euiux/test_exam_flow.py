@@ -163,7 +163,7 @@ def test_open_end_modal(e2e_page):
 
 @allure.label("tc_id", "13")
 @allure.label("priority", "P1")
-def test_verify_end_enabled(e2e_page):
+def test_end_test_button_enabled_after_confirmation(e2e_page):
     """확인 사항 체크 후 테스트 종료 버튼 활성화"""
     exam_page = ExamPage(e2e_page)
     exam_page.check_end_confirmation()
@@ -172,7 +172,7 @@ def test_verify_end_enabled(e2e_page):
 
 @allure.label("tc_id", "14")
 @allure.label("priority", "P1")
-def test_open_exam_complete(e2e_page):
+def test_end_exam_shows_completion_page(e2e_page):
     """테스트 종료 후 완료 페이지 확인"""
     exam_page = ExamPage(e2e_page)
     exam_page.confirm_end_test()
