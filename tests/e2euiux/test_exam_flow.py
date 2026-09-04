@@ -1,5 +1,6 @@
 import allure
 import pytest
+from playwright.sync_api import expect
 
 from framework.e2euiux.pages import (
     ClassroomPage,
@@ -63,7 +64,9 @@ def test_open_classroom(e2e_page):
 @allure.label("tc_id", "04")
 @allure.label("priority", "P1")
 def test_open_course_list(e2e_page):
-    """학습 과목 목록 페이지 진입"""
+    """학습 과목 목록 페이지 진입
+    *** FAIL 케이스입니다. [학습 과목] 버튼 클릭 시,
+    학습 과목 목록 페이지와 SANDBOX 과목 페이지로 랜덤하게 전환됨"""
     classroom_page = ClassroomPage(e2e_page)
     classroom_page.open_learning_subjects()
 
@@ -76,15 +79,19 @@ def test_open_course_list(e2e_page):
 def test_open_sandbox_course(e2e_page):
     """SANDBOX 과목 페이지 진입"""
     course_list_page = CourseListPage(e2e_page)
+    course_page = CoursePage(e2e_page)
 
-    if not course_list_page.is_course_list_visible():
-        course_page = CoursePage(e2e_page)
+    course_state = course_list_page.page_title.or_(
+        course_page.lesson_list_tab
+    ).first
+    expect(course_state).to_be_visible()
+
+    if not course_list_page.URL.search(e2e_page.url):
         course_page.open_course_list()
 
     course_list_page.verify_loaded()
     course_list_page.open_sandbox()
 
-    course_page = CoursePage(e2e_page)
     course_page.verify_loaded()
 
 
@@ -161,7 +168,7 @@ def test_open_end_modal(e2e_page):
 
 @allure.label("tc_id", "13")
 @allure.label("priority", "P1")
-def test_verify_end_enabled(e2e_page):
+def test_end_test_button_enabled_after_confirmation(e2e_page):
     """확인 사항 체크 후 테스트 종료 버튼 활성화"""
     exam_page = ExamPage(e2e_page)
     exam_page.check_end_confirmation()
@@ -170,7 +177,7 @@ def test_verify_end_enabled(e2e_page):
 
 @allure.label("tc_id", "14")
 @allure.label("priority", "P1")
-def test_open_exam_complete(e2e_page):
+def test_end_exam_shows_completion_page(e2e_page):
     """테스트 종료 후 완료 페이지 확인"""
     exam_page = ExamPage(e2e_page)
     exam_page.confirm_end_test()

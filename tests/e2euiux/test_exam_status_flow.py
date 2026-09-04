@@ -1,5 +1,6 @@
 import allure
 import pytest
+from playwright.sync_api import expect
 
 from framework.e2euiux.pages import (
     ClassroomPage,
@@ -46,7 +47,9 @@ def exam_status_e2e_page(e2e_page, educator_credentials):
 @allure.label("tc_id", "36")
 @allure.label("priority", "P1")
 def test_open_course_list(exam_status_e2e_page):
-    """학습 과목 목록 페이지 진입"""
+    """학습 과목 목록 페이지 진입
+    *** FAIL 케이스입니다. [학습 과목] 버튼 클릭 시,
+    학습 과목 목록 페이지와 SANDBOX 과목 페이지로 랜덤하게 전환됨"""
     classroom_page = ClassroomPage(exam_status_e2e_page)
     classroom_page.open_learning_subjects()
 
@@ -59,15 +62,19 @@ def test_open_course_list(exam_status_e2e_page):
 def test_open_sandbox_course(exam_status_e2e_page):
     """SANDBOX 과목 페이지 진입"""
     course_list_page = CourseListPage(exam_status_e2e_page)
+    course_page = CoursePage(exam_status_e2e_page)
 
-    if not course_list_page.is_course_list_visible():
-        course_page = CoursePage(exam_status_e2e_page)
+    course_state = course_list_page.page_title.or_(
+        course_page.lesson_list_tab
+    ).first
+    expect(course_state).to_be_visible()
+
+    if not course_list_page.URL.search(exam_status_e2e_page.url):
         course_page.open_course_list()
 
     course_list_page.verify_loaded()
     course_list_page.open_sandbox()
 
-    course_page = CoursePage(exam_status_e2e_page)
     course_page.verify_loaded()
 
 
