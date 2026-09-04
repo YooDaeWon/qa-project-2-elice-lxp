@@ -103,15 +103,15 @@ def pytest_collection_modifyitems(items):
 def _reset_lectures(e2e_page, lecture_ids):
     """지정한 시험 재응시 허용"""
     api_base_url = os.getenv("API_BASE_URL")
-    org_name = os.getenv("ORG_NAME")
+    org = os.getenv("ORG")
     session_key = os.getenv("TCSESSION_KEY")
 
-    if not all((api_base_url, org_name, session_key)):
+    if not all((api_base_url, org, session_key)):
         pytest.fail(".env에 API 설정값을 입력하세요")
 
     for lecture_id in lecture_ids:
         response = e2e_page.request.post(
-            f"{api_base_url.rstrip('/')}/org/{org_name}/lecture/test/reset/",
+            f"{api_base_url.rstrip('/')}/org/{org}/lecture/test/reset/",
             headers={"Authorization": f"Bearer {session_key}"},
             multipart={"lecture_id": lecture_id},
         )
