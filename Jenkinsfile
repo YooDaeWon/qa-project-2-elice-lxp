@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    environment {
+        ACCOUNT_API_BASE_URL = 'https://dev-qatrack-account-api.dev.elicer.io'
+    }
+
     stages {
         stage('Checkout') {
             steps {
