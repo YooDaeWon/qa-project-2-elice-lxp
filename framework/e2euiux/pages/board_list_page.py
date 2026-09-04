@@ -26,25 +26,24 @@ class BoardListPage:
         """글쓰기 페이지 열기"""
         self.write_button.click()
 
+    def _post_items(self, title):
+        """표시 중인 게시물 목록 찾기"""
+        return self.page.locator(
+            'main ul > div[role="button"]:visible'
+        ).filter(has_text=title)
+
     def get_post_count(self, title):
         """제목과 일치하는 게시글 개수 확인"""
-        post_items = self.page.locator(
-            'main ul > div[role="button"]'
-        ).filter(has_text=title)
-        return post_items.count()
+        return self._post_items(title).count()
 
     def verify_post_count(self, title, expected_count):
         """제목과 일치하는 게시글 개수 확인"""
-        post_items = self.page.locator(
-            'main ul > div[role="button"]'
-        ).filter(has_text=title)
+        post_items = self._post_items(title)
         expect(post_items).to_have_count(expected_count)
 
     def verify_single_post_created(self, title, previous_count):
         """중복 요청 후 게시글 한 개 생성 확인"""
-        post_items = self.page.locator(
-            'main ul > div[role="button"]'
-        ).filter(has_text=title)
+        post_items = self._post_items(title)
         new_post = post_items.nth(previous_count)
         new_post.wait_for(state="visible", timeout=30_000)
 
