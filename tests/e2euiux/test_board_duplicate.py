@@ -58,7 +58,8 @@ def board_duplicate_flow(e2e_page, credentials):
 @allure.label("tc_id", "45")
 @allure.label("priority", "P2")
 def test_prevent_duplicate_post(board_duplicate_flow):
-    """게시물 중복 생성 확인"""
+    """게시물 중복 생성 확인
+    *** FAIL 케이스입니다 ***"""
     page = board_duplicate_flow["page"]
     board_write_page = BoardWritePage(page)
     board_write_page.save_twice()
@@ -69,7 +70,7 @@ def test_prevent_duplicate_post(board_duplicate_flow):
 
     board_list_page = BoardListPage(page)
     board_list_page.verify_loaded()
-    board_list_page.verify_post_count(
+    board_list_page.verify_single_post_created(
         "rapid",
-        board_duplicate_flow["initial_count"] + 1,
+        board_duplicate_flow["initial_count"],
     )

@@ -46,7 +46,9 @@ def exam_status_e2e_page(e2e_page, educator_credentials):
 @allure.label("tc_id", "36")
 @allure.label("priority", "P1")
 def test_open_course_list(exam_status_e2e_page):
-    """학습 과목 목록 페이지 진입"""
+    """학습 과목 목록 페이지 진입
+    *** FAIL 케이스입니다. [학습 과목] 버튼 클릭 시,
+    학습 과목 목록 페이지와 SANDBOX 과목 페이지로 랜덤하게 전환됨"""
     classroom_page = ClassroomPage(exam_status_e2e_page)
     classroom_page.open_learning_subjects()
 
