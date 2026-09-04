@@ -10,17 +10,28 @@
 """
 
 import os
+import time
 
 import allure
 import pytest
 
+from clients.api_client import APIClient
 from config.settings import settings
+from framework.api_security import token_utils
 from framework.api_security.pages.classroom_api import ClassroomApi
 from framework.api_security.pages.lxp_api import LxpApi
-from utils.assertions import assert_business_rejected, is_business_rejected, json_body
+from utils.assertions import (
+    assert_business_rejected,
+    assert_http,
+    is_business_rejected,
+    json_body,
+)
 
 
 CLASSROOM_ID = settings.CLASSROOM_ID
+
+# ID-30 전용 계정 (권한 부여/회수를 반복해도 소모되지 않음 - 다른 테스트와 공유 금지)
+WITHDRAW_LOGIN_ID = os.getenv("SEC_WITHDRAW_ID")
 
 # 타 수강생 member_id (HAR로 확보한 구성원 관리 API 경로 파라미터)
 OTHER_MEMBER_ID = os.getenv(
@@ -28,7 +39,9 @@ OTHER_MEMBER_ID = os.getenv(
 )
 
 # 재응시 초기화 대상 시험 lecture_id (팀 LECTURE_ID와 용도가 달라 별도 관리)
-RESET_LECTURE_ID = os.getenv("SEC_RESET_LECTURE_ID", "1645")
+# 1645는 e2e 팀의 exam_flow 전용 강의(e2e-01)와 공유되어 충돌 위험이 있어
+# course_id=732의 미사용 시험 강의 1586("TEST")으로 교체함
+RESET_LECTURE_ID = os.getenv("SEC_RESET_LECTURE_ID", "1586")
 
 # 시간 종료된 시험의 문항 id (제출 차단 검증용)
 TIMEOUT_QUIZ_ID = os.getenv("SEC_TIMEOUT_QUIZ_ID", "1356")
@@ -45,21 +58,44 @@ class TestBusinessLogic:
 
     # -- ID 30 ---------------------------------------------------------------
     @allure.title("ID-30 권한 회수 후 이전 토큰 재접근 차단")
-    @pytest.mark.skip(
-        reason="사전조건 미충족: 클래스 탈퇴·권한회수 처리가 선행되어야 함. "
-        "실제 계정의 소속을 해제해야 하므로 반복 실행 가능한 자동화 대상이 아님(수동 검증 완료: Pass)"
-    )
-    def test_id30_권한회수_후_이전토큰_차단(self, student_client):
-        """권한 회수 전 발급된 토큰으로 클래스 접근 시 즉시 차단되어야 함
+    def test_id30_권한회수_후_이전토큰_차단(self, educator_client, withdraw_token):
+        """전용 계정에 권한을 부여했다가 회수한 뒤, 회수 전 발급된 토큰으로
+        재접근 시 즉시 차단되어야 함
 
         [기대] 403/404 또는 200+insufficient_permission
-        [실제] 수동 검증 결과 차단 확인(Pass)
         200 + 정상 데이터면 권한 회수가 지연 반영되는 결함이다.
-        """
-        classroom = ClassroomApi(student_client)
-        response = classroom.get_classroom(CLASSROOM_ID)
 
-        assert_business_rejected(response, context="권한 회수 후 접근")
+        [흐름] 등록(POST /member/bulk) → 재접근 가능 확인용 토큰 확보(이미 보유) →
+        회수(DELETE /member/{id}) → 그 토큰으로 재접근 시도.
+        SEC_WITHDRAW_ID 계정은 등록·회수를 반복해도 소모되지 않아 재실행 가능하다.
+        """
+        classroom = ClassroomApi(educator_client)
+        account_id = token_utils.decode_payload(withdraw_token)["_id"]
+
+        grant_response = classroom.add_members(CLASSROOM_ID, [account_id])
+        assert_http(grant_response, 200)
+
+        member_id = None
+        for _ in range(5):
+            members = json_body(classroom.list_members(CLASSROOM_ID))
+            match = next((m for m in members if m.get("account_id") == account_id), None)
+            if match:
+                member_id = match["id"]
+                break
+            time.sleep(0.5)
+
+        assert member_id, (
+            f"{WITHDRAW_LOGIN_ID} 등록 후 구성원 목록에서 찾지 못함 - "
+            "POST /member/bulk 응답은 200이었으나 반영 지연 가능성 있음"
+        )
+
+        revoke_response = classroom.delete_member(member_id, CLASSROOM_ID)
+        assert_http(revoke_response, (200, 204))
+
+        withdrawn_client = APIClient(token=withdraw_token, role="withdrawn-student")
+        access_after = ClassroomApi(withdrawn_client).get_classroom(CLASSROOM_ID)
+
+        assert_business_rejected(access_after, context="권한 회수 후 접근")
 
     # -- ID 31 ---------------------------------------------------------------
     @allure.title("ID-31 수강생의 역할변경(교육자 승격) 차단")

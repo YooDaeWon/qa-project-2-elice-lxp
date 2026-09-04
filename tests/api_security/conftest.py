@@ -30,6 +30,10 @@ STUDENT_ID = STUDENT_LOGIN_ID
 DUMMY_ID = os.getenv("DUMMY_ID")
 DUMMY_PW = os.getenv("DUMMY_PW")
 
+# ID-30 전용 계정 (권한 부여/회수 반복 검증용 - 다른 테스트와 공유하지 않음)
+WITHDRAW_LOGIN_ID = os.getenv("SEC_WITHDRAW_ID")
+WITHDRAW_PW = os.getenv("SEC_WITHDRAW_PW")
+
 # 숫자 계정 ID (성적/BOLA 등 리소스 경로에 쓰는 account_id) - 팀 settings 재사용
 MY_ACCOUNT_ID = settings.STUDENT_ID          # 본인 숫자 id (예: 150)
 OTHER_STUDENT_ID = settings.OTHER_STUDENT_ID  # 타인 숫자 id (예: 177)
@@ -67,3 +71,14 @@ def student_client(student_token):
 def educator_client(educator_token):
     """교육자 토큰이 주입된 공통 APIClient"""
     return APIClient(token=educator_token, role="educator")
+
+
+@pytest.fixture
+def withdraw_token(account_client):
+    """ID-30 전용 계정의 access_token 발급 (권한 부여 전/후 재사용되는 신원 토큰)"""
+    assert WITHDRAW_LOGIN_ID and WITHDRAW_PW, (
+        "ID-30용 계정 미설정 - .env에 SEC_WITHDRAW_ID/SEC_WITHDRAW_PW를 설정하세요"
+    )
+    token = account_client.get_access_token(WITHDRAW_LOGIN_ID, WITHDRAW_PW)
+    assert token, "ID-30용 계정 토큰 발급 실패 - .env의 SEC_WITHDRAW_ID/SEC_WITHDRAW_PW를 확인하세요"
+    return token

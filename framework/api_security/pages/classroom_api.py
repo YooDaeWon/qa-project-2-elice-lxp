@@ -63,6 +63,32 @@ class ClassroomApi:
             json={"classroom_id": classroom_id},
         )
 
+    def add_members(self, classroom_id, account_ids, role="student"):
+        """구성원 일괄 등록 요청 (delete_member의 반대 동작)
+
+        명세에 없는 그림자 API로, 관리 UI의 '구성원 등록' 동작을 HAR로 확보했다.
+        응답은 task_id만 내려주지만 실제로는 즉시(약 0.2초 내) 반영된다.
+        """
+        return self.api.post(
+            f"{self.base}/member/bulk",
+            json={
+                "classroom_id": classroom_id,
+                "account_ids": list(account_ids),
+                "role": role,
+            },
+        )
+
+    def list_members(self, classroom_id, skip=0, count=100):
+        """구성원 전체 목록 조회
+
+        filter_search는 이메일 전체 문자열과 매칭되지 않아(부분/이름 검색 추정),
+        특정 account_id를 찾을 때는 전체 목록을 가져와 클라이언트에서 대조한다.
+        """
+        return self.api.get(
+            f"{self.base}/member",
+            params={"classroom_id": classroom_id, "skip": skip, "count": count},
+        )
+
     def get_articles(self, classroom_id, skip=0, count=10, filter_title=None):
         """클래스 게시글 목록 조회 (검색어 반사형 XSS 검증용)
 
