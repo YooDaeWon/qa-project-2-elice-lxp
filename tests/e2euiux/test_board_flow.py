@@ -91,7 +91,8 @@ def test_add_comment(board_e2e_page):
 @allure.label("tc_id", "20")
 @allure.label("priority", "P2")
 def test_prevent_duplicate_comment(board_e2e_page):
-    """댓글 중복 작성 확인"""
+    """댓글 중복 작성 확인
+    *** FAIL 케이스입니다 ***"""
     board_post_page = BoardPostPage(board_e2e_page)
     previous_count = board_post_page.get_comment_count()
     board_post_page.fill_comment("rapid")
