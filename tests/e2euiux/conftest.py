@@ -104,7 +104,7 @@ def _reset_lectures(e2e_page, lecture_ids):
     """지정한 시험 재응시 허용"""
     api_base_url = os.getenv("API_BASE_URL")
     org = os.getenv("ORG")
-    session_key = os.getenv("TCSESSION_KEY")
+    session_key = os.getenv("E2E_TCSESSION_KEY")
 
     if not all((api_base_url, org, session_key)):
         pytest.fail(".env에 API 설정값을 입력하세요")
@@ -126,8 +126,8 @@ def _reset_lectures(e2e_page, lecture_ids):
 def credentials():
     """환경변수에서 학습자 로그인 정보 읽기"""
     return {
-        "user_id": os.environ["ST_ID"],
-        "password": os.environ["ST_PW"],
+        "user_id": os.environ["E2E_ST_ID"],
+        "password": os.environ["E2E_ST_PW"],
     }
 
 
@@ -135,8 +135,8 @@ def credentials():
 def educator_credentials():
     """환경변수에서 교육자 로그인 정보 읽기"""
     return {
-        "user_id": os.environ["TC_ID"],
-        "password": os.environ["TC_PW"],
+        "user_id": os.environ["E2E_TC_ID"],
+        "password": os.environ["E2E_TC_PW"],
     }
 
 
