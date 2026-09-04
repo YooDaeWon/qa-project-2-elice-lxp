@@ -22,8 +22,13 @@ class AccountClient:
     def __init__(self, api_client: APIClient = None):
         # 로그인은 토큰 없이 호출한다. 별도 클라이언트를 주입받지 않으면 새로 생성한다.
         self.api = api_client or APIClient(role="anonymous")
-        self.base = settings.ACCOUNT_API_BASE_URL.rstrip("/")
-        self.lxp_base = settings.API_BASE_URL.rstrip("/")
+        self.base = (settings.ACCOUNT_API_BASE_URL or "").rstrip("/")
+        self.lxp_base = (settings.API_BASE_URL or "").rstrip("/")
+        if not self.base.startswith("http"):
+            raise RuntimeError(
+                f"ACCOUNT_API_BASE_URL이 유효하지 않습니다: {self.base!r}. "
+                "https://dev-qatrack-account-api.dev.elicer.io 형태여야 합니다."
+            )
 
     def login(self, login_id, password):
         """비밀번호 로그인 요청

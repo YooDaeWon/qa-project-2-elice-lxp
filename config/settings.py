@@ -29,7 +29,12 @@ class Settings:
     API_BASE_URL = _env("API_BASE_URL")
     CLASSROOM_API_BASE_URL = _env("CLASSROOM_API_BASE_URL")
     DASHBOARD_API_BASE_URL = _env("DASHBOARD_API_BASE_URL")
-    ACCOUNT_API_BASE_URL = _env("ACCOUNT_API_BASE_URL")
+    # Jenkins 워크스페이스 .env에는 이 키가 없는 경우가 많다.
+    # 빈 문자열이면 dotenv 기본값이 적용되지 않으므로, 비어 있으면 QA account-api를 쓴다.
+    ACCOUNT_API_BASE_URL = (
+        _env("ACCOUNT_API_BASE_URL")
+        or "https://dev-qatrack-account-api.dev.elicer.io"
+    )
 
     AUTH_HEADER = _env("AUTH_HEADER", "Authorization")
     # 따옴표로 "Bearer "를 넣어 trailing space 유지
