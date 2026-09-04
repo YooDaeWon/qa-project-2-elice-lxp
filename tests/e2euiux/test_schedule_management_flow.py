@@ -27,7 +27,7 @@ def schedule_title():
 
 @allure.label("tc_id", "27")
 @allure.label("priority", "P1")
-def test_login(e2e_page, educator_credentials):
+def test_login_as_educator(e2e_page, educator_credentials):
     """교육자 로그인"""
     login_page = LoginPage(e2e_page)
     login_page.open()
@@ -104,7 +104,7 @@ def test_open_delete_modal(e2e_page):
 
 @allure.label("tc_id", "34")
 @allure.label("priority", "P1")
-def test_delete_schedule(e2e_page):
+def test_delete_schedule_shows_success_toast(e2e_page):
     """일정 삭제 토스트 확인"""
     schedule_page = SchedulePage(e2e_page)
     schedule_page.delete_schedule()

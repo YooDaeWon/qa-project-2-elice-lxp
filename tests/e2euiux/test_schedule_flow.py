@@ -52,7 +52,7 @@ def test_open_schedule(schedule_e2e_page):
 
 @allure.label("tc_id", "22")
 @allure.label("priority", "P1")
-def test_open_test_schedule(schedule_e2e_page):
+def test_open_test_schedule_shows_side_panel(schedule_e2e_page):
     """test 일정 사이드 패널 확인"""
     schedule_page = SchedulePage(schedule_e2e_page)
     schedule_page.open_test_schedule()
@@ -62,7 +62,7 @@ def test_open_test_schedule(schedule_e2e_page):
 @allure.label("tc_id", "23")
 @allure.label("priority", "P1")
 def test_click_linked_class_button(schedule_e2e_page):
-    """Click linked class button"""
+    """연결된 클래스 버튼 클릭 후 학습 과목 페이지 확인"""
     schedule_page = SchedulePage(schedule_e2e_page)
     schedule_page.click_linked_class_button()
 

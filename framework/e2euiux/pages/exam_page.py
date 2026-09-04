@@ -43,7 +43,11 @@ class ExamPage:
 
     def verify_answer_saved(self, answer):
         """새로고침 후 답안 유지 확인"""
-        expect(self.answer_input).to_have_value(answer)
+        expect(self.answer_input).to_be_visible()
+        actual_answer = self.answer_input.input_value()
+        assert actual_answer == answer, (
+            f"답안 자동 저장 실패: 기대 {answer}, 실제 {actual_answer}"
+        )
 
     def verify_question_load_error(self):
         """테스트 문제 불러오기 오류 확인"""

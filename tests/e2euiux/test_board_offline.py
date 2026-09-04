@@ -63,7 +63,7 @@ def board_write_page(browser, flow_browser_context_args, credentials):
 
 @allure.label("tc_id", "43")
 @allure.label("priority", "P2")
-def test_board_save_offline_error(board_write_page):
+def test_offline_save_shows_error_toast(board_write_page):
     """네트워크 중단 시 오류 토스트 확인
     *** FAIL 케이스입니다 ***"""
     board_write_page.verify_error_toast()
@@ -71,7 +71,7 @@ def test_board_save_offline_error(board_write_page):
 
 @allure.label("tc_id", "44")
 @allure.label("priority", "P2")
-def test_board_save_offline_spinner(board_write_page):
+def test_offline_save_hides_spinner(board_write_page):
     """네트워크 중단 시 저장 버튼 복귀 확인
     *** FAIL 케이스입니다 ***"""
     board_write_page.verify_save_spinner()
