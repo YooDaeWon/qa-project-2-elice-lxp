@@ -67,6 +67,32 @@ pipeline {
             }
             echo 'Build Successful!'
         }
+        unstable {
+            script {
+                def total = 0, failures = 0, errors = 0, skipped = 0, passed = 0
+                if (fileExists('junit-report.xml')) {
+                    def content = readFile('junit-report.xml')
+                    def testsuitesMatcher = content =~ /tests="(\d+)"/
+                    if (testsuitesMatcher) total = testsuitesMatcher[0][1].toInteger()
+                    def failuresMatcher = content =~ /failures="(\d+)"/
+                    if (failuresMatcher) failures = failuresMatcher[0][1].toInteger()
+                    def errorsMatcher = content =~ /errors="(\d+)"/
+                    if (errorsMatcher) errors = errorsMatcher[0][1].toInteger()
+                    def skippedMatcher = content =~ /skipped="(\d+)"/
+                    if (skippedMatcher) skipped = skippedMatcher[0][1].toInteger()
+                    
+                    passed = total - (failures + errors + skipped)
+                }
+                def passRate = total > 0 ? String.format("%.1f", (passed / total) * 100) : "0.0"
+                def message = "• 프로젝트: seethrough-pipeline (qa6_team4)\n• 테스트 결과 요약: Total [${total}] / Pass [${passed}] / Fail [${failures + errors}]\n• 최종 성공률: ${passRate}%\n\n[상세 로그 및 Allure 시각화 대시보드 확인하기](${env.BUILD_URL})"
+                
+                discordSend webhookURL: "https://discord.com/api/webhooks/1544267640154103849/3_Lr6kUahhWLpqslIk0WBvZ6KtDUhMggMpatqzWUY6SoWCw7OUoT8yBmY_urSu5X-iht",
+                            result: 'UNSTABLE',
+                            title: "Jenkins Build #${env.BUILD_NUMBER} - UNSTABLE",
+                            description: message
+            }
+            echo 'Build Unstable!'
+        }
         failure {
             script {
                 def total = 0, failures = 0, errors = 0, skipped = 0, passed = 0
