@@ -43,7 +43,7 @@ pipeline {
     
     post {
         always {
-            allure includeProperties: false, jdk: '', results: [[path: 'allure-results']]
+            allure allureVersion: '3', includeProperties: false, jdk: '', results: [[path: 'allure-results']]
         }
         success {
             script {
