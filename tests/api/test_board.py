@@ -8,7 +8,7 @@ from uuid import uuid4
 
 import pytest
 
-from clients.board_client import BoardClient
+from framework.api.board_client import BoardClient
 
 from config.settings import settings
 
