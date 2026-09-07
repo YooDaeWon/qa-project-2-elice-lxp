@@ -56,8 +56,6 @@ def verify_course_list_entry(page):
         return
 
     course_page.open_course_list()
-    if not course_list_page.is_course_list_visible():
-        course_list_page.open()
     course_list_page.verify_loaded()
 
     raise AssertionError(

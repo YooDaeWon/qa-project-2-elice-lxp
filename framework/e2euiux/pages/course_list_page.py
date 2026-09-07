@@ -29,18 +29,6 @@ class CourseListPage:
         expect(self.page).to_have_url(self.URL)
         expect(self.page_title).to_be_visible()
 
-    def open(self):
-        """현재 클래스의 학습 과목 목록 페이지 직접 열기"""
-        course_list_url = re.sub(
-            r"/courses(?:/.*)?$",
-            "/courses",
-            self.page.url,
-        )
-        assert course_list_url != self.page.url, (
-            f"학습 과목 목록 URL 생성 실패: {self.page.url}"
-        )
-        self.page.goto(course_list_url)
-
     def verify_page_title(self):
         """학습 과목 목록 제목 확인"""
         self.wait_for_list_or_course()
