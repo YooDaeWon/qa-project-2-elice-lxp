@@ -30,7 +30,7 @@
 
 | 구분 | URL |
 | --- | --- |
-| Elece LXP(Dev)| [https://dev-qatrack-web.dev.elicer.io/lxp](https://dev-qatrack-web.dev.elicer.io/lxp) |
+| Elice LXP(Dev)| [https://dev-qatrack-web.dev.elicer.io/lxp](https://dev-qatrack-web.dev.elicer.io/lxp) |
 
 ### 테스트 범위
 ```
