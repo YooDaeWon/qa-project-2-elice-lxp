@@ -4,10 +4,10 @@ import time
 from datetime import datetime, timedelta, timezone
 from uuid import uuid4
 
-from clients.board_client import BoardClient
-from clients.classroom_client import ClassroomClient
-from clients.course_client import CourseClient
-from clients.schedule_client import ScheduleClient
+from framework.api.board_client import BoardClient
+from framework.api.classroom_client import ClassroomClient
+from framework.api.course_client import CourseClient
+from framework.api.schedule_client import ScheduleClient
 from config.settings import settings
 
 

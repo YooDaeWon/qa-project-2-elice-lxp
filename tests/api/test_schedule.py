@@ -10,7 +10,7 @@ from uuid import uuid4
 
 import pytest
 
-from clients.schedule_client import ScheduleClient
+from framework.api.schedule_client import ScheduleClient
 
 from config.settings import settings
 
