@@ -22,14 +22,20 @@
 ## 1. 프로젝트 소개
 
 ### 프로젝트 목적
+```
+-
+```
 
 ### 테스트 대상 서비스
 
 | 구분 | URL |
 | --- | --- |
-| QA Track LXP Dev | [https://dev-qatrack-web.dev.elicer.io/lxp](https://dev-qatrack-web.dev.elicer.io/lxp) |
+| Elece LXP(Dev)| [https://dev-qatrack-web.dev.elicer.io/lxp](https://dev-qatrack-web.dev.elicer.io/lxp) |
 
 ### 테스트 범위
+```
+-
+```
 
 ---
 
@@ -111,6 +117,9 @@
 ---
 
 ## 5. 테스트 설계
+```
+-
+```
 
 ---
 
@@ -124,7 +133,6 @@
 | 동작 | `framework/e2euiux/pages/` | 클릭, 입력 등 한 페이지 안의 동작 관리 |
 | 검증 | `framework/e2euiux/pages/` | Playwright `expect`를 이용한 화면 상태 검증 |
 | Flow | `framework/e2euiux/flows.py` | 여러 페이지에서 반복되는 이동 절차 관리 |
-| TC | `tests/e2euiux/` | POM의 동작과 검증을 조합해 테스트 흐름 구성 |
 
 ### fixture 사용 기준
 
@@ -145,7 +153,6 @@
 | 3 | 고유한 화면 문구 | `get_by_text("페이지를 찾을 수 없습니다.")` |
 | 4 | 안정적인 CSS 속성 | `locator('[data-lexical-editor="true"]')` |
 
-`.first`, `.last`, `.nth`는 같은 요소가 여러 개 존재하고 해당 위치를 선택할 근거가 있을 때만 사용합니다.
 
 ### marker 및 Allure 메타데이터
 
@@ -183,6 +190,9 @@ E2E flow는 이전 TC의 화면 상태를 이어받을 수 있으므로 개별 I
 | CI | Linux | Docker 기반 Jenkins | Playwright Chromium |
 
 ### 가상환경
+```
+-
+```
 
 ### 패키지 설치
 
@@ -204,7 +214,7 @@ python -m playwright install chromium
 Copy-Item .env.sample .env
 ```
 
-CI의 민감정보는 Jenkins Credentials를 통해 주입하는 방식으로 전환할 예정입니다.
+CI의 민감정보는 Jenkins Credentials를 통해 주입하는 방식입니다.
 
 ---
 
@@ -342,12 +352,24 @@ except SafetyKillSwitchError as error:
 ## 10. CI/CD 파이프라인
 
 ### 전체 실행 순서
+```
+-
+```
 
 ### GitLab 자동 빌드 조건
+```
+-
+```
 
 ### Jenkins Credentials
+```
+-
+```
 
 ### Allure 및 Discord 연동
+```
+-
+```
 
 ---
 
@@ -366,7 +388,7 @@ except SafetyKillSwitchError as error:
 
 | 안전 항목 | 적용 기준 |
 | --- | --- |
-| 테스트 대상 환경 제한 | `dev-qatrack` Dev 환경만 사용하며 운영 서비스와 타 과목은 테스트하지 않음 |
+| 테스트 대상 환경 제한 | Dev 환경만 사용하며 운영 서비스와 타 과목은 테스트하지 않음 |
 | 동시성 및 호출 빈도 제한 | 기능 테스트는 단일 워커로 순차 실행하고, 부하 테스트는 5 → 10 → 20 → 30명 순서로 단계적 증가 |
 | 부하 테스트 분리 | 기본 `pytest`에서 `tests/loadtest`를 제외하고 별도 명령과 담당자를 통해 실행 |
 | 재시도 및 Kill Switch | API 5xx를 무조건 재시도하지 않으며, 부하 테스트에서 HTTP 500 또는 5초 초과 지연 감지 시 즉시 중단 |
@@ -378,7 +400,14 @@ E2E/UI/UX 테스트는 테스트 간 상태 충돌을 방지하기 위해 `pytes
 ---
 
 ## 13. 트러블슈팅 및 알려진 이슈
+13-1. 
+```
+-
+```
 
 ---
 
 ## 14. 참고 자료
+```
+-
+```
