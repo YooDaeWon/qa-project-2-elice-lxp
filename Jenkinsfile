@@ -80,7 +80,13 @@ pipeline {
                     command -v allure || true
                     allure --version || true
                 '''
-                allure allureVersion: '3', includeProperties: false, jdk: '', results: [[path: 'allure-results']]
+                allure(
+                    allureVersion: '3',
+                    configPath: 'allurerc.yml',
+                    includeProperties: false,
+                    report: 'allure-report',
+                    results: [[path: 'allure-results']]
+                )
             }
         }
         success {
