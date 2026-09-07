@@ -61,7 +61,7 @@ pipeline {
                         export SEETHROUGH_USE_CREDENTIALS=1
                         set -x
                         mkdir -p allure-results
-                        pytest --video=retain-on-failure --alluredir=allure-results --junitxml=junit-report.xml --clean-alluredir -v || true
+                        pytest -m exam_status_flow --video=retain-on-failure --alluredir=allure-results --junitxml=junit-report.xml --clean-alluredir -v || true
                     '''
                 }
             }
@@ -82,7 +82,7 @@ pipeline {
                 '''
                 allure(
                     allureVersion: '3',
-                    configPath: 'allurerc.yml',
+                    configPath: 'allurerc.json',
                     includeProperties: false,
                     report: 'allure-report',
                     results: [[path: 'allure-results']]
