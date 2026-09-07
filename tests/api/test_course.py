@@ -8,9 +8,9 @@ import pytest
 
 from uuid import uuid4
 
-from clients.classroom_client import ClassroomClient
+from framework.api.classroom_client import ClassroomClient
 
-from clients.course_client import CourseClient
+from framework.api.course_client import CourseClient
 
 from config.settings import settings
 
