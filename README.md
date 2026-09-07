@@ -121,9 +121,9 @@ python -m playwright install chromium
 ```
 
 ### 3. .env 환경변수
-```powershell
-작성 중
-```
+로컬에서는 프로젝트 루트 `.env`를 pytest가 읽습니다. (`.env.sample` 참고)
+
+Jenkins Pipeline은 Secret file Credentials(`seethrough-env`)를 환경 변수로 주입한 뒤 `SEETHROUGH_USE_CREDENTIALS=1`로 `.env` 파일 로드를 건너뜁니다.
 
 ## LOAD TEST pytest 실행 방법
 

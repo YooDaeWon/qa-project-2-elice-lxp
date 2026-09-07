@@ -31,12 +31,18 @@ pipeline {
 
         stage('Test Execution') {
             steps {
-                echo 'Running pytest in clean environment...'
-                sh '''
-                    . venv/bin/activate
-                    mkdir -p allure-results
-                    pytest --video=retain-on-failure --alluredir=allure-results --junitxml=junit-report.xml --clean-alluredir -v || true
-                '''
+                echo 'Running pytest with Jenkins Credentials (no workspace .env read)...'
+                withCredentials([file(credentialsId: 'seethrough-env', variable: 'DOTENV_FILE')]) {
+                    sh '''
+                        . venv/bin/activate
+                        set -a
+                        . "$DOTENV_FILE"
+                        set +a
+                        export SEETHROUGH_USE_CREDENTIALS=1
+                        mkdir -p allure-results
+                        pytest --video=retain-on-failure --alluredir=allure-results --junitxml=junit-report.xml --clean-alluredir -v || true
+                    '''
+                }
             }
         }
     }
