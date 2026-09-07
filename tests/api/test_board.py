@@ -107,6 +107,168 @@ def _article_ids(data):
     return {str(row.get("id")) for row in rows if isinstance(row, dict) and row.get("id") is not None}
 
 
+
+def _diag_response(response):
+    """TC60/TC61 진단용 응답 요약. 인증값/세션키 원문은 출력하지 않는다."""
+    summary = {
+        "http": getattr(response, "status_code", None),
+        "internal_status": None,
+        "internal_status_code": None,
+        "reason": None,
+        "fail_code": None,
+        "fail_message": None,
+    }
+
+    try:
+        data = response.json()
+    except ValueError:
+        data = None
+
+    if isinstance(data, dict):
+        result = data.get("_result")
+        if isinstance(result, dict):
+            summary["internal_status"] = result.get("status")
+            summary["internal_status_code"] = result.get("status_code")
+            summary["reason"] = result.get("reason")
+        summary["fail_code"] = data.get("fail_code")
+        summary["fail_message"] = data.get("fail_message")
+
+    return summary, data
+
+
+def _token_state(value):
+    """토큰 원문 노출 없이 설정 여부와 길이만 표시한다."""
+    if not value:
+        return "EMPTY"
+    return f"SET(len={len(str(value))})"
+
+
+def _require_student_b_board_access(tc_id, student_b_client):
+    """TC60/TC61 본 테스트 전에 수강생 B의 인증/게시판 접근 사전조건을 확인한다."""
+    prefix = f"[{tc_id} DIAG]"
+    response = BoardClient(student_b_client).article_list(
+        settings.ORG,
+        settings.BOARD_ID,
+        0,
+        1,
+    )
+    summary, _ = _diag_response(response)
+    print(f"{prefix} student_b precheck GET /board/article/list/ | {summary}")
+
+    success = (
+        summary["http"] == 200
+        and summary["internal_status_code"] in (None, 200)
+        and summary["internal_status"] in (None, "ok")
+    )
+    if not success:
+        pytest.skip(
+            f"{tc_id} 사전조건 미충족: 수강생 B API 인증/게시판 접근 실패 | "
+            f"http={summary['http']}, "
+            f"internal_status_code={summary['internal_status_code']}, "
+            f"reason={summary['reason']}, "
+            f"fail_code={summary['fail_code']}, "
+            f"fail_message={summary['fail_message']}"
+        )
+
+
+def _tc60_61_precondition_log(
+    tc_id,
+    student_a_client,
+    student_b_client,
+    target_article_id=None,
+):
+    """TC60/TC61 역할/인증/대상 게시글 상태를 읽기 전용으로 상세 출력한다."""
+    prefix = f"[{tc_id} DIAG]"
+    print(f"{prefix} ===== 사전조건 상세 점검 시작 =====")
+    print(f"{prefix} roles | student_a=게시글 작성자(owner), student_b=수정/삭제 시도자(attacker)")
+    print(
+        f"{prefix} runtime values | "
+        f"ORG={settings.ORG or '<EMPTY>'}, "
+        f"COURSE_ID={settings.COURSE_ID or '<EMPTY>'}, "
+        f"BOARD_ID={settings.BOARD_ID or '<EMPTY>'}, "
+        f"TARGET_ARTICLE_ID={target_article_id or '<EMPTY>'}"
+    )
+    print(
+        f"{prefix} token states | "
+        f"STSESSION_KEY={_token_state(settings.STSESSION_KEY)}, "
+        f"STSESSION_A_KEY={_token_state(settings.STSESSION_A_KEY)}, "
+        f"STSESSION_B_KEY={_token_state(settings.STSESSION_B_KEY)}"
+    )
+
+    if not settings.ORG or not settings.COURSE_ID:
+        print(f"{prefix} ORG/COURSE_ID가 없어 계정별 board/list 진단을 건너뜁니다.")
+    else:
+        for label, api_client in (("student_a(owner)", student_a_client), ("student_b(attacker)", student_b_client)):
+            client = BoardClient(api_client)
+            try:
+                response = client.board_list(settings.ORG, settings.COURSE_ID)
+                summary, data = _diag_response(response)
+                print(f"{prefix} {label} GET /board/list/ | {summary}")
+
+                if isinstance(data, dict) and settings.BOARD_ID:
+                    board = find_dict_by_value(data, "id", settings.BOARD_ID)
+                    if isinstance(board, dict):
+                        policy = {
+                            key: board.get(key)
+                            for key in (
+                                "id",
+                                "name",
+                                "is_viewable",
+                                "is_postable",
+                                "viewable_course_role",
+                                "postable_course_role",
+                                "commentable_course_role",
+                            )
+                            if key in board
+                        }
+                        print(f"{prefix} {label} BOARD_ID={settings.BOARD_ID} board info | {policy}")
+                    else:
+                        print(
+                            f"{prefix} {label} BOARD_ID={settings.BOARD_ID}를 "
+                            "board/list 응답에서 찾지 못했습니다."
+                        )
+
+                if summary["http"] != 200 or summary["internal_status_code"] not in (None, 200):
+                    body = getattr(response, "text", "")[:1000].replace("\n", " ")
+                    print(f"{prefix} {label} board/list failure body | {body}")
+            except Exception as exc:
+                print(f"{prefix} {label} board/list 진단 중 예외 | {type(exc).__name__}: {exc}")
+
+    if settings.ORG and settings.BOARD_ID:
+        for label, api_client in (("student_a(owner)", student_a_client), ("student_b(attacker)", student_b_client)):
+            client = BoardClient(api_client)
+            try:
+                response = client.article_list(settings.ORG, settings.BOARD_ID, 0, 5)
+                summary, data = _diag_response(response)
+                print(f"{prefix} {label} GET /board/article/list/ | {summary}")
+                if summary["http"] == 200 and isinstance(data, dict):
+                    ids = sorted(_article_ids(data))[:5]
+                    print(f"{prefix} {label} 최근 article id sample | {ids}")
+                elif summary["http"] != 200 or summary["internal_status_code"] not in (None, 200):
+                    body = getattr(response, "text", "")[:1000].replace("\n", " ")
+                    print(f"{prefix} {label} article/list failure body | {body}")
+            except Exception as exc:
+                print(f"{prefix} {label} article/list 진단 중 예외 | {type(exc).__name__}: {exc}")
+
+    if target_article_id:
+        for label, api_client in (("student_a(owner)", student_a_client), ("student_b(attacker)", student_b_client)):
+            client = BoardClient(api_client)
+            try:
+                response = client.article_get(settings.ORG, target_article_id)
+                summary, _ = _diag_response(response)
+                print(
+                    f"{prefix} {label} GET /board/article/get/ "
+                    f"TARGET_ARTICLE_ID={target_article_id} | {summary}"
+                )
+                if summary["http"] != 200 or summary["internal_status_code"] not in (None, 200):
+                    body = getattr(response, "text", "")[:1000].replace("\n", " ")
+                    print(f"{prefix} {label} article/get failure body | {body}")
+            except Exception as exc:
+                print(f"{prefix} {label} article/get 진단 중 예외 | {type(exc).__name__}: {exc}")
+
+    print(f"{prefix} ===== 사전조건 상세 점검 종료 =====")
+
+
 # ---------------------------------------------------------------------------
 # TC52 | 게시글 목록 조회 (수강생)
 # ---------------------------------------------------------------------------
@@ -240,39 +402,121 @@ def test_api_59(student_client):
 
 
 # ---------------------------------------------------------------------------
-# TC60 | 타인 게시글 수정 차단 (수강생)
+# TC60 | 타인 게시글 수정 차단 (수강생 B → 수강생 A 게시글)
 # ---------------------------------------------------------------------------
 @pytest.mark.board
 @pytest.mark.negative
 @pytest.mark.destructive
 def test_api_60(student_a_client, student_b_client, payloads):
-    require_values(ORG=settings.ORG, OTHER_ARTICLE_ID=settings.OTHER_ARTICLE_ID, BOARD_ID=settings.BOARD_ID)
-    attacker = BoardClient(student_a_client)
-    owner = BoardClient(student_b_client)
-    before = _article(owner, settings.OTHER_ARTICLE_ID)
-    original = {k: before.get(k) for k in ("title", "content", "is_secret")}
-    payload = dict(payloads["board"]["other_article_update"])
-    payload.update(board_article_id=settings.OTHER_ARTICLE_ID, board_id=settings.BOARD_ID)
-    response = attacker.article_edit(settings.ORG, payload)
-    assert_business_rejected(response, context="TC60 수강생 A의 수강생 B 게시글 수정 차단")
-    attacker_after = _article(attacker, settings.OTHER_ARTICLE_ID)
-    assert {k: attacker_after.get(k) for k in original} == original
-    owner_after = _article(owner, settings.OTHER_ARTICLE_ID)
-    assert {k: owner_after.get(k) for k in original} == original
+    require_values(ORG=settings.ORG, BOARD_ID=settings.BOARD_ID)
+
+    owner = BoardClient(student_a_client)
+    attacker = BoardClient(student_b_client)
+
+    # B 계정 인증 실패(예: no_account_api_session)를 권한 차단 성공으로 오판하지 않도록
+    # 본 테스트 전에 B가 게시판 API에 정상 접근 가능한지 먼저 확인한다.
+    _require_student_b_board_access("TC60", student_b_client)
+
+    create_payload = dict(payloads["board"]["article_create"])
+    create_payload.update(
+        board_id=settings.BOARD_ID,
+        is_secret=False,
+        title=f"pytest-tc60-owner-a-{uuid4().hex[:10]}",
+        content=f"tc60-owner-a-{uuid4().hex}",
+    )
+
+    article_id = None
+    try:
+        create = assert_success(owner.article_edit(settings.ORG, create_payload))
+        article_id = find_first_value(create, ("board_article_id",))
+        assert article_id is not None, "TC60 수강생 A 테스트 게시글 ID 생성에 실패했습니다."
+
+        before = _article(owner, article_id)
+        original = {k: before.get(k) for k in ("title", "content", "is_secret")}
+
+        _tc60_61_precondition_log(
+            "TC60",
+            student_a_client,
+            student_b_client,
+            target_article_id=article_id,
+        )
+
+        attack_payload = dict(payloads["board"]["other_article_update"])
+        attack_payload.update(
+            board_article_id=article_id,
+            board_id=settings.BOARD_ID,
+        )
+
+        response = attacker.article_edit(settings.ORG, attack_payload)
+        assert_business_rejected(
+            response,
+            context="TC60 수강생 B의 수강생 A 게시글 수정 차단",
+        )
+
+        owner_after = _article(owner, article_id)
+        assert {k: owner_after.get(k) for k in original} == original
+
+        attacker_after = _article(attacker, article_id)
+        assert {k: attacker_after.get(k) for k in original} == original
+
+    finally:
+        if article_id:
+            try:
+                owner.article_delete(settings.ORG, article_id)
+            except Exception:
+                pass
 
 
 # ---------------------------------------------------------------------------
-# TC61 | 타인 게시글 삭제 차단 (수강생)
+# TC61 | 타인 게시글 삭제 차단 (수강생 B → 수강생 A 게시글)
 # ---------------------------------------------------------------------------
 @pytest.mark.board
 @pytest.mark.negative
 @pytest.mark.destructive
-def test_api_61(student_a_client, student_b_client):
-    require_values(ORG=settings.ORG, OTHER_ARTICLE_ID=settings.OTHER_ARTICLE_ID)
-    attacker = BoardClient(student_a_client); owner = BoardClient(student_b_client)
-    assert_permission_denied(attacker.article_delete(settings.ORG, settings.OTHER_ARTICLE_ID))
-    article = _article(owner, settings.OTHER_ARTICLE_ID)
-    assert str(article.get("id")) == str(settings.OTHER_ARTICLE_ID)
+def test_api_61(student_a_client, student_b_client, payloads):
+    require_values(ORG=settings.ORG, BOARD_ID=settings.BOARD_ID)
+
+    owner = BoardClient(student_a_client)
+    attacker = BoardClient(student_b_client)
+
+    # B 계정 자체 인증 실패를 "타인 게시글 삭제 차단 성공"으로 오판하지 않도록 사전 확인한다.
+    _require_student_b_board_access("TC61", student_b_client)
+
+    create_payload = dict(payloads["board"]["article_create"])
+    create_payload.update(
+        board_id=settings.BOARD_ID,
+        is_secret=False,
+        title=f"pytest-tc61-owner-a-{uuid4().hex[:10]}",
+        content=f"tc61-owner-a-{uuid4().hex}",
+    )
+
+    article_id = None
+    try:
+        create = assert_success(owner.article_edit(settings.ORG, create_payload))
+        article_id = find_first_value(create, ("board_article_id",))
+        assert article_id is not None, "TC61 수강생 A 테스트 게시글 ID 생성에 실패했습니다."
+
+        _tc60_61_precondition_log(
+            "TC61",
+            student_a_client,
+            student_b_client,
+            target_article_id=article_id,
+        )
+
+        assert_permission_denied(
+            attacker.article_delete(settings.ORG, article_id)
+        )
+
+        # 작성자 A로 재조회하여 삭제 시도가 실제 데이터에 영향을 주지 않았는지 확인한다.
+        article = _article(owner, article_id)
+        assert str(article.get("id")) == str(article_id)
+
+    finally:
+        if article_id:
+            try:
+                owner.article_delete(settings.ORG, article_id)
+            except Exception:
+                pass
 
 
 # ---------------------------------------------------------------------------
