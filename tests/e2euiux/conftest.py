@@ -265,7 +265,7 @@ def _attach_flow_videos_to_allure(config, preserved_videos):
             attachments = result.get("attachments") or []
             result["attachments"] = attachments
             for video_path in video_paths:
-                source_name = f"{flow_name}-{video_path.name}"
+                source_name = f"{result_path.stem}-{video_path.name}"
                 allure_video_path = allure_dir / source_name
 
                 if not allure_video_path.exists():

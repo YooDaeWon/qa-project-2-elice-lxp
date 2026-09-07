@@ -1,13 +1,13 @@
 import allure
 import pytest
 
+from framework.e2euiux.flows import (
+    login_to_main,
+    open_classroom_from_main,
+)
 from framework.e2euiux.pages import (
     BoardListPage,
     BoardWritePage,
-    ClassroomPage,
-    LoginPage,
-    MainPage,
-    MyClassesPage,
 )
 
 
@@ -25,22 +25,9 @@ def board_write_page(browser, flow_browser_context_args, credentials):
     page = context.new_page()
 
     try:
-        login_page = LoginPage(page)
-        login_page.open()
-        login_page.login(
-            credentials["user_id"],
-            credentials["password"],
-        )
-        login_page.verify_redirect()
+        login_to_main(page, credentials)
 
-        main_page = MainPage(page)
-        main_page.open_my_classes()
-
-        my_classes_page = MyClassesPage(page)
-        my_classes_page.verify_loaded()
-        my_classes_page.open_classroom()
-
-        classroom_page = ClassroomPage(page)
+        classroom_page = open_classroom_from_main(page)
         classroom_page.verify_loaded()
         classroom_page.open_board()
 

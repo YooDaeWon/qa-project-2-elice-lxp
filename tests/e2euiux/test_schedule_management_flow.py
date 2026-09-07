@@ -3,13 +3,11 @@ import secrets
 import allure
 import pytest
 
-from framework.e2euiux.pages import (
-    ClassroomPage,
-    LoginPage,
-    MainPage,
-    MyClassesPage,
-    SchedulePage,
+from framework.e2euiux.flows import (
+    login_to_main,
+    open_classroom_from_main,
 )
+from framework.e2euiux.pages import SchedulePage
 
 
 pytestmark = [
@@ -29,27 +27,14 @@ def schedule_title():
 @allure.label("priority", "P1")
 def test_login_as_educator(e2e_page, educator_credentials):
     """교육자 로그인"""
-    login_page = LoginPage(e2e_page)
-    login_page.open()
-    login_page.login(
-        educator_credentials["user_id"],
-        educator_credentials["password"],
-    )
-    login_page.verify_redirect()
+    login_to_main(e2e_page, educator_credentials)
 
 
 @allure.label("tc_id", "28")
 @allure.label("priority", "P1")
 def test_open_schedule(e2e_page):
     """수업 일정 페이지 진입"""
-    main_page = MainPage(e2e_page)
-    main_page.open_my_classes()
-
-    my_classes_page = MyClassesPage(e2e_page)
-    my_classes_page.verify_loaded()
-    my_classes_page.open_classroom()
-
-    classroom_page = ClassroomPage(e2e_page)
+    classroom_page = open_classroom_from_main(e2e_page)
     classroom_page.verify_educator_loaded()
     classroom_page.open_schedule()
 

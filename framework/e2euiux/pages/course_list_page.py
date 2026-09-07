@@ -31,12 +31,16 @@ class CourseListPage:
 
     def verify_page_title(self):
         """학습 과목 목록 제목 확인"""
-        page_state = self.page_title.or_(self.course_page_marker).first
-        expect(page_state).to_be_visible()
+        self.wait_for_list_or_course()
 
         assert not self.course_page_marker.is_visible(), (
             "학습 과목 버튼이 학습 과목 목록이 아닌 SANDBOX 페이지로 이동함"
         )
+
+    def wait_for_list_or_course(self):
+        """목록 제목 또는 과목의 수업 목록 탭 표시까지 대기"""
+        page_state = self.page_title.or_(self.course_page_marker).first
+        expect(page_state).to_be_visible()
 
     def is_course_list_visible(self):
         """학습 과목 목록 표시 여부 확인"""
