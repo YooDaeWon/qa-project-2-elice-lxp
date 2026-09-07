@@ -28,6 +28,18 @@ pipeline {
                         pip install -r requirements.txt
                     fi
                     python -m playwright install chromium
+
+                    # Jenkins Allure 플러그인(Allure 3)은 에이전트 PATH의 allure CLI를 사용한다.
+                    # Docker 에이전트에 전역 설치가 없어도 빌드마다 3.15.0을 워크스페이스에 둔다.
+                    rm -rf .allure3
+                    mkdir -p .allure3
+                    if command -v npm >/dev/null 2>&1; then
+                        npm install --prefix .allure3 allure@3.15.0
+                        .allure3/node_modules/.bin/allure --version
+                    else
+                        echo "ERROR: npm이 없어 Allure 3.15.0을 설치할 수 없습니다."
+                        exit 1
+                    fi
                 '''
             }
         }
@@ -55,8 +67,16 @@ pipeline {
     
     post {
         always {
-            sh 'rm -f .env || true'
-            allure allureVersion: '3', includeProperties: false, jdk: '', results: [[path: 'allure-results']]
+            // Allure 3 플러그인은 PATH의 allure를 쓴다. 워크스페이스에 설치한 3.15.0을 우선한다.
+            withEnv(["PATH+ALLURE=${env.WORKSPACE}/.allure3/node_modules/.bin"]) {
+                sh '''
+                    rm -f .env || true
+                    echo "Allure CLI on PATH:"
+                    command -v allure || true
+                    allure --version || true
+                '''
+                allure allureVersion: '3', includeProperties: false, jdk: '', results: [[path: 'allure-results']]
+            }
         }
         success {
             script {
