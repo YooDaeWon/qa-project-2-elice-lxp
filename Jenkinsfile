@@ -30,16 +30,19 @@ pipeline {
                     python -m playwright install chromium
 
                     # Jenkins Allure 플러그인(Allure 3)은 에이전트 PATH의 allure CLI를 사용한다.
-                    # Docker 에이전트에 전역 설치가 없어도 빌드마다 3.15.0을 워크스페이스에 둔다.
-                    rm -rf .allure3
-                    mkdir -p .allure3
-                    if command -v npm >/dev/null 2>&1; then
-                        npm install --prefix .allure3 allure@3.15.0
-                        .allure3/node_modules/.bin/allure --version
-                    else
-                        echo "ERROR: npm이 없어 Allure 3.15.0을 설치할 수 없습니다."
-                        exit 1
+                    # Docker Jenkins에 npm이 없어도 portable Node로 Allure 3.15.0을 워크스페이스에 설치한다.
+                    rm -rf .allure3 .node
+                    mkdir -p .allure3 .node
+                    NODE_VERSION=v20.18.1
+                    NODE_DIST="node-${NODE_VERSION}-linux-x64"
+                    if ! command -v npm >/dev/null 2>&1; then
+                        echo "npm 없음 → portable Node.js ${NODE_VERSION} 다운로드"
+                        curl -fsSL "https://nodejs.org/dist/${NODE_VERSION}/${NODE_DIST}.tar.xz" -o .node/node.tar.xz
+                        tar -xJf .node/node.tar.xz -C .node
+                        export PATH="$PWD/.node/${NODE_DIST}/bin:$PATH"
                     fi
+                    npm install --prefix .allure3 allure@3.15.0
+                    .allure3/node_modules/.bin/allure --version
                 '''
             }
         }
@@ -67,8 +70,10 @@ pipeline {
     
     post {
         always {
-            // Allure 3 플러그인은 PATH의 allure를 쓴다. 워크스페이스에 설치한 3.15.0을 우선한다.
-            withEnv(["PATH+ALLURE=${env.WORKSPACE}/.allure3/node_modules/.bin"]) {
+            // Allure 3 플러그인은 PATH의 allure를 쓴다. portable Node + 워크스페이스 3.15.0을 우선한다.
+            withEnv([
+                "PATH+ALLURE=${env.WORKSPACE}/.allure3/node_modules/.bin:${env.WORKSPACE}/.node/node-v20.18.1-linux-x64/bin"
+            ]) {
                 sh '''
                     rm -f .env || true
                     echo "Allure CLI on PATH:"
