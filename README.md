@@ -318,20 +318,17 @@ def test_id01_정상_로그인_토큰_발급(self, account_client):
 
 ### E2E/UI/UX
 
-Allure TC 메타데이터와 POM을 이용해 게시물 작성 흐름을 검증합니다.
+Allure Label과 POM을 이용해 게시물 작성 흐름을 검증합니다.
 
 ```python
-@allure.label("tc_id", "18")
-@allure.label("priority", "P1")
-def test_create_board_post(board_e2e_page):
-    board_write_page = BoardWritePage(board_e2e_page)
-    board_write_page.fill_title("test title")
-    board_write_page.fill_content("test")
-    board_write_page.append_content(" body")
-    board_write_page.verify_save_enabled()
-    board_write_page.save()
-
-    BoardPostPage(board_e2e_page).verify_loaded()
+@allure.label("tc_id", "46")
+@allure.label("priority", "P2")
+def test_limit_board_title(board_title_page):
+    """게시물 제목 최대 길이 확인"""
+    board_write_page = BoardWritePage(board_title_page)
+    board_write_page.fill_title(TITLE_VALUE)
+    board_write_page.append_title("test")
+    board_write_page.verify_title_limit(TITLE_VALUE)
 ```
 
 ### Load
