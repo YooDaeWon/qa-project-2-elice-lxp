@@ -110,12 +110,15 @@ def _count_items(data):
 
 @allure.epic("API 호출 보안성 테스트")
 @allure.feature("정보노출(웹 취약점)")
+@allure.label("owner", "yoodaewon")
+@allure.label("team", "QA4")
 @pytest.mark.sec_info_disclosure
 class TestInfoDisclosure:
     """정보노출 카테고리 보안 검증 (ID 43~47)"""
 
     # -- ID 43 ---------------------------------------------------------------
     @allure.title("ID-43 응답 내 민감정보 과다노출 차단")
+    @allure.label("tc_id", "43")
     def test_id43_민감정보_과다노출_차단(self, student_client):
         """본인 프로필 응답에 기능상 불필요한 민감 필드가 실리는지 확인
 
@@ -143,6 +146,7 @@ class TestInfoDisclosure:
 
     # -- ID 44 ---------------------------------------------------------------
     @allure.title("ID-44 과도한 조회량 요청 제한")
+    @allure.label("tc_id", "44")
     def test_id44_과도한_조회량_제한(self, student_client):
         """목록 API에 비정상적으로 큰 count를 요청해 서버가 제한하는지 확인
 
@@ -176,6 +180,7 @@ class TestInfoDisclosure:
 
     # -- ID 45 ---------------------------------------------------------------
     @allure.title("ID-45 오류 응답 내부정보 노출 차단")
+    @allure.label("tc_id", "45")
     def test_id45_오류응답_내부정보_노출_차단(self, student_client):
         """형식이 잘못된 UUID로 조회해 오류 응답에 내부 정보가 담기는지 확인
 
@@ -207,6 +212,7 @@ class TestInfoDisclosure:
 
     # -- ID 46 ---------------------------------------------------------------
     @allure.title("ID-46 민감정보 응답의 캐시 제어 헤더 설정")
+    @allure.label("tc_id", "46")
     def test_id46_민감응답_캐시방지_헤더(self, student_client):
         """개인 성적·학습정보 응답에 캐시 방지 헤더가 설정됐는지 확인
 
@@ -240,6 +246,7 @@ class TestInfoDisclosure:
 
     # -- ID 47 ---------------------------------------------------------------
     @allure.title("ID-47 명세 미등록 API의 접근 통제")
+    @allure.label("tc_id", "47")
     def test_id47_그림자API_접근통제(self, student_client):
         """명세에 없는 그림자 API가 타인 데이터를 차단하는지 확인
 

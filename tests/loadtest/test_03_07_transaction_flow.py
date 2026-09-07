@@ -1,3 +1,4 @@
+import allure
 import concurrent.futures
 import time
 
@@ -8,7 +9,11 @@ from framework.loadtest.client import LoadClient
 from framework.loadtest.report import attach_load_summary
 
 
-pytestmark = pytest.mark.load_transaction
+pytestmark = [
+    pytest.mark.load_transaction,
+    allure.label("owner", "leehyomin"),
+    allure.label("team", "QA4"),
+]
 
 
 def execute_sequential_flow(account, user_index):
@@ -70,6 +75,7 @@ def execute_sequential_flow(account, user_index):
 
 
 @pytest.mark.parametrize("user_count", [5, 10, 20, 30])
+@allure.label("tc_id", "03")
 def test_id_03_07_transaction_flow(accounts, user_count):
     """ID 3~7 1~4단계 연쇄 트랜잭션 부하"""
     if len(accounts) < user_count:

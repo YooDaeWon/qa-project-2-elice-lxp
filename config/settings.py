@@ -5,7 +5,27 @@ from dotenv import load_dotenv
 
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
-load_dotenv(ROOT_DIR / ".env")
+
+
+def _use_injected_credentials() -> bool:
+    """Jenkins Credentials로 환경 변수를 주입한 뒤에만 파일 로드를 건너뛴다."""
+    return os.getenv("SEETHROUGH_USE_CREDENTIALS", "").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+    }
+
+
+def load_local_dotenv() -> None:
+    """로컬·기존 Jenkins 워크스페이스는 .env를 읽고, Credentials 주입 빌드는 파일을 열지 않는다."""
+    if _use_injected_credentials():
+        return
+    env_path = ROOT_DIR / ".env"
+    if env_path.exists():
+        load_dotenv(env_path)
+
+
+load_local_dotenv()
 
 
 def _env(name: str, default: str = "") -> str:

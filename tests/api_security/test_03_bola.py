@@ -34,12 +34,15 @@ OTHER_CLASSROOM_IDS = [
 
 @allure.epic("API 호출 보안성 테스트")
 @allure.feature("객체권한 BOLA")
+@allure.label("owner", "yoodaewon")
+@allure.label("team", "QA4")
 @pytest.mark.sec_bola
 class TestBola:
     """객체권한 BOLA 카테고리 보안 검증 (ID 16~21)"""
 
     # -- ID 16 ---------------------------------------------------------------
     @allure.title("ID-16 본인 성적 정상 조회 (기준선)")
+    @allure.label("tc_id", "16")
     def test_id16_본인_성적_정상조회(self, student_client):
         """본인({{my_id}}) 성적은 정상 조회되어야 함 (200) - 타인 차단 판정의 기준선"""
         dashboard = DashboardApi(student_client)
@@ -51,6 +54,7 @@ class TestBola:
 
     # -- ID 17 ---------------------------------------------------------------
     @allure.title("ID-17 타인 성적 직접 조회 차단(수강생)")
+    @allure.label("tc_id", "17")
     def test_id17_타인_성적_조회_차단(self, student_client):
         """학생 토큰으로 URL의 id만 타인으로 바꿔 접근 시 차단되어야 함 (403/404)
 
@@ -66,6 +70,7 @@ class TestBola:
 
     # -- ID 18 ---------------------------------------------------------------
     @allure.title("ID-18 ID 순차스캔으로 타인정보 수집 방지")
+    @allure.label("tc_id", "18")
     def test_id18_id_순차스캔_차단(self, student_client):
         """본인 id ±5 범위를 순차 조회 시 본인 외에는 전부 차단되어야 함
 
@@ -90,6 +95,7 @@ class TestBola:
 
     # -- ID 19 ---------------------------------------------------------------
     @allure.title("ID-19 수강생이 전체 성적분포 무단 조회 차단")
+    @allure.label("tc_id", "19")
     def test_id19_전체_성적분포_무단조회_차단(self, student_client):
         """학생 토큰으로 histogram(test_score) 조회 시 차단되어야 함 (403)
 
@@ -105,6 +111,7 @@ class TestBola:
 
     # -- ID 20 ---------------------------------------------------------------
     @allure.title("ID-20 통계유형 변경 우회 호출 차단")
+    @allure.label("tc_id", "20")
     def test_id20_통계유형_변경_우회_차단(self, student_client):
         """stats_type을 practice_score로 바꿔도 차단되어야 함 (403)
 
@@ -121,6 +128,7 @@ class TestBola:
 
     # -- ID 21 ---------------------------------------------------------------
     @allure.title("ID-21 교육자의 비담당 클래스 통계 조회 차단")
+    @allure.label("tc_id", "21")
     def test_id21_교육자_비담당클래스_통계_차단(self, educator_client):
         """교육자 토큰으로 담당하지 않는 타 클래스 histogram 조회 시 차단되어야 함
 

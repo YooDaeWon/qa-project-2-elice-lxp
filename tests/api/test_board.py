@@ -22,6 +22,14 @@ from utils.assertions import (
 
 from utils.helpers import contains_value, find_dict_by_value, find_first_value, first_list, require_values
 
+import allure
+
+
+pytestmark = [
+    allure.label("owner", "parksungbin"),
+    allure.label("team", "QA4"),
+]
+
 
 # ---------------------------------------------------------------------------
 # Category helpers

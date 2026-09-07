@@ -315,6 +315,10 @@ def test_id01_정상_로그인_토큰_발급(self, account_client):
     assert response.status_code == 200
     assert body.get("access_token")
 ```
+### 3. .env 환경변수
+로컬에서는 프로젝트 루트 `.env`를 pytest가 읽습니다. (`.env.sample` 참고)
+
+Jenkins Pipeline은 Secret file Credentials(`seethrough-env`)를 환경 변수로 주입한 뒤 `SEETHROUGH_USE_CREDENTIALS=1`로 `.env` 파일 로드를 건너뜁니다.
 
 ### E2E/UI/UX
 

@@ -22,6 +22,14 @@ from utils.helpers import (
     require_values,
 )
 
+import allure
+
+
+pytestmark = [
+    allure.label("owner", "parksungbin"),
+    allure.label("team", "QA4"),
+]
+
 
 # ---------------------------------------------------------------------------
 # Category helpers

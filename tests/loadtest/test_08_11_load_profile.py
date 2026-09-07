@@ -1,3 +1,4 @@
+import allure
 import concurrent.futures
 import time
 
@@ -7,7 +8,11 @@ from framework.loadtest.client import LoadClient
 from framework.loadtest.report import attach_load_summary
 
 
-pytestmark = pytest.mark.load_profile
+pytestmark = [
+    pytest.mark.load_profile,
+    allure.label("owner", "leehyomin"),
+    allure.label("team", "QA4"),
+]
 
 
 def execute_single_user_flow(account):
@@ -36,6 +41,7 @@ def execute_single_user_flow(account):
 
 
 @pytest.mark.parametrize("target_users", [5, 10, 20, 30])
+@allure.label("tc_id", "08")
 def test_id_08_11_load_profile(accounts, target_users):
     """ID 8~11 동시 접속 부하 프로필"""
     if len(accounts) < target_users:

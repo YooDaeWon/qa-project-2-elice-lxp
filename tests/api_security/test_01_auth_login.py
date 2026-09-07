@@ -32,11 +32,14 @@ def _fail_code(response):
 
 @allure.epic("API 호출 보안성 테스트")
 @allure.feature("인증·로그인")
+@allure.label("owner", "yoodaewon")
+@allure.label("team", "QA4")
 @pytest.mark.sec_auth_login
 class TestAuthLogin:
     """인증·로그인 / 인증강도 카테고리 보안 검증"""
 
     @allure.title("ID-1 정상 로그인 시 토큰 정상 발급")
+    @allure.label("tc_id", "01")
     def test_id01_정상_로그인_토큰_발급(self, account_client):
         """정상 자격증명 로그인 시 200 + access_token(JWT) 발급"""
         response = account_client.login(STUDENT_ID, STUDENT_PW)
@@ -46,6 +49,7 @@ class TestAuthLogin:
         assert body.get("access_token"), "정상 로그인인데 access_token이 발급되지 않음"
 
     @allure.title("ID-2 비밀번호 불일치 시 로그인 차단")
+    @allure.label("tc_id", "02")
     def test_id02_비밀번호_불일치_차단(self, account_client):
         """비밀번호 틀리면 토큰 미발급 (인증 실패 4xx 또는 200+fail_code)"""
         response = account_client.login(STUDENT_ID, "wrong_password_xyz")
@@ -55,6 +59,7 @@ class TestAuthLogin:
         assert response.status_code >= 400 or _fail_code(response), "실패 신호 없음"
 
     @allure.title("ID-3 미가입 계정 로그인 시 계정존재 노출 차단")
+    @allure.label("tc_id", "03")
     def test_id03_미가입_계정_존재노출_차단(self, account_client):
         """미가입 계정 로그인 시 토큰 미발급 (ID-2와 동일 응답이어야 함)"""
         response = account_client.login("nonexistent_account@example.com", "random_xyz")
@@ -64,6 +69,7 @@ class TestAuthLogin:
         assert response.status_code >= 400 or _fail_code(response), "실패 신호 없음"
 
     @allure.title("ID-4 공백값 로그인 차단")
+    @allure.label("tc_id", "04")
     def test_id04_공백값_로그인_차단(self, account_client):
         """공백 ID/PW는 서버측 검증으로 차단 (주로 422)"""
         response = account_client.login("", "")
@@ -74,6 +80,7 @@ class TestAuthLogin:
 
     @allure.title("ID-5 반복 로그인 실패 시 Brute Force 차단")
     @pytest.mark.slow
+    @allure.label("tc_id", "05")
     def test_id05_반복실패_bruteforce_차단(self):
         """로그인 반복 실패 임계치 초과 시 차단 (409 + login_failure_limit_exceed)
 
@@ -99,6 +106,7 @@ class TestAuthLogin:
         )
 
     @allure.title("ID-6 가입·미가입 계정 응답 차이 노출 검증")
+    @allure.label("tc_id", "06")
     def test_id06_가입미가입_응답차이_노출(self, account_client):
         """가입계정+오답(A)과 미가입계정(B)의 실패 응답이 동일해야 함
 

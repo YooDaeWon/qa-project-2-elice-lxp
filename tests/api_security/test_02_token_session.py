@@ -40,12 +40,15 @@ def _access_classroom(token):
 
 @allure.epic("API 호출 보안성 테스트")
 @allure.feature("토큰·세션")
+@allure.label("owner", "yoodaewon")
+@allure.label("team", "QA4")
 @pytest.mark.sec_token_session
 class TestTokenSession:
     """토큰·세션 카테고리 보안 검증 (ID 7~15)"""
 
     # -- ID 7 ----------------------------------------------------------------
     @allure.title("ID-7 로그아웃으로 만료된 토큰 재사용 차단")
+    @allure.label("tc_id", "07")
     def test_id07_만료_토큰_재사용_차단(self):
         """로그인→로그아웃한 토큰으로 접근 시 차단되어야 함 (409)
 
@@ -62,6 +65,7 @@ class TestTokenSession:
 
     # -- ID 8 ----------------------------------------------------------------
     @allure.title("ID-8 로그아웃 후 토큰 무효화")
+    @allure.label("tc_id", "08")
     def test_id08_로그아웃_후_토큰_무효화(self):
         """로그아웃 직후 그 토큰으로 접근 시 즉시 무효화되어 차단되어야 함 (409)"""
         account = AccountClient()
@@ -76,6 +80,7 @@ class TestTokenSession:
 
     # -- ID 9 ----------------------------------------------------------------
     @allure.title("ID-9 재로그인 시 이전 토큰 처리(다중세션 정책)")
+    @allure.label("tc_id", "09")
     def test_id09_재로그인_이전토큰_다중세션(self):
         """로그아웃 없이 재로그인 시 이전 토큰이 살아있는지 확인 (현재: 다중세션 200)
 
@@ -95,6 +100,7 @@ class TestTokenSession:
 
     # -- ID 10 ---------------------------------------------------------------
     @allure.title("ID-10 토큰(JWT) 만료시각(exp) 정보 부재")
+    @allure.label("tc_id", "10")
     def test_id10_jwt_exp_부재(self, account_client):
         """토큰 payload에 exp(만료) 클레임이 있어야 정상
 
@@ -113,6 +119,7 @@ class TestTokenSession:
 
     # -- ID 11 ---------------------------------------------------------------
     @allure.title("ID-11 인증 헤더 없이 접근 차단")
+    @allure.label("tc_id", "11")
     def test_id11_인증헤더_없이_접근_차단(self):
         """Authorization 헤더 없는 요청은 거부되어야 함 (403 + no_access_token)"""
         # 토큰 없이(익명) classroom 접근
@@ -123,6 +130,7 @@ class TestTokenSession:
 
     # -- ID 12 ---------------------------------------------------------------
     @allure.title("ID-12 무효 토큰 인증오류 코드 분류")
+    @allure.label("tc_id", "12")
     def test_id12_무효토큰_인증오류코드(self):
         """형식이 잘못된 토큰(INVALID123)은 인증 오류(403)로 거부되어야 함
 
@@ -141,6 +149,7 @@ class TestTokenSession:
 
     # -- ID 13 ---------------------------------------------------------------
     @allure.title("ID-13 토큰 서명 변조 시 인증 차단")
+    @allure.label("tc_id", "13")
     def test_id13_서명_변조_차단(self, account_client):
         """서명(뒤 4글자)만 변조한 토큰은 거부되어야 함 (409, 데이터 미반환)"""
         token = account_client.get_access_token(STUDENT_ID, STUDENT_PW)
@@ -153,6 +162,7 @@ class TestTokenSession:
 
     # -- ID 14 ---------------------------------------------------------------
     @allure.title("ID-14 토큰 ID 변조로 타인 데이터 접근 차단")
+    @allure.label("tc_id", "14")
     def test_id14_payload_id_변조_차단(self, account_client):
         """payload의 _id를 타인 값으로 변조한 토큰은 거부되어야 함 (403)
 
@@ -175,6 +185,7 @@ class TestTokenSession:
 
     # -- ID 15 ---------------------------------------------------------------
     @allure.title("ID-15 토큰 서명검증 무력화(alg:none) 차단")
+    @allure.label("tc_id", "15")
     def test_id15_alg_none_차단(self, account_client):
         """alg를 none으로 낮추고 서명을 제거한 토큰은 거부되어야 함 (403/409)"""
         token = account_client.get_access_token(STUDENT_ID, STUDENT_PW)

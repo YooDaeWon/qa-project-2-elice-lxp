@@ -2,14 +2,14 @@ import shutil
 from pathlib import Path
 
 import pytest
-from dotenv import load_dotenv
 
+from config.settings import load_local_dotenv
 from framework.loadtest.accounts import load_accounts
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 ACCOUNT_CSV = Path(__file__).resolve().parent / "data" / "QA6test_account_list_(30).csv"
-load_dotenv(PROJECT_ROOT / ".env")
+load_local_dotenv()
 
 
 def pytest_configure(config):

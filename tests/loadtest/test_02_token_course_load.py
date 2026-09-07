@@ -1,3 +1,4 @@
+import allure
 import concurrent.futures
 import time
 
@@ -7,7 +8,11 @@ from framework.loadtest.client import LoadClient
 from framework.loadtest.report import attach_load_summary
 
 
-pytestmark = pytest.mark.load_token
+pytestmark = [
+    pytest.mark.load_token,
+    allure.label("owner", "leehyomin"),
+    allure.label("team", "QA4"),
+]
 
 
 def user_flow_with_token(account, user_index):
@@ -49,6 +54,7 @@ def user_flow_with_token(account, user_index):
 
 
 @pytest.mark.parametrize("user_count", [5, 10, 20, 30])
+@allure.label("tc_id", "02")
 def test_id_02_token_course_load(accounts, user_count):
     """ID 2 토큰 추출 및 과목 조회 부하"""
     if len(accounts) < user_count:

@@ -5,14 +5,15 @@ import tempfile
 from pathlib import Path
 
 import pytest
-from dotenv import load_dotenv
 from playwright.sync_api import expect
+
+from config.settings import load_local_dotenv
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 VIDEO_ROOT = PROJECT_ROOT / "videos"
 LECTURE_IDS = ("1645", "1741")
-load_dotenv(PROJECT_ROOT / ".env")
+load_local_dotenv()
 expect.set_options(timeout=30_000)
 
 

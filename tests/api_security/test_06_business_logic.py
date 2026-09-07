@@ -52,12 +52,15 @@ RESET_ATTEMPT_COUNT = 20
 
 @allure.epic("API 호출 보안성 테스트")
 @allure.feature("비즈니스로직")
+@allure.label("owner", "yoodaewon")
+@allure.label("team", "QA4")
 @pytest.mark.sec_business
 class TestBusinessLogic:
     """비즈니스로직 카테고리 보안 검증 (ID 30~36)"""
 
     # -- ID 30 ---------------------------------------------------------------
     @allure.title("ID-30 권한 회수 후 이전 토큰 재접근 차단")
+    @allure.label("tc_id", "30")
     def test_id30_권한회수_후_이전토큰_차단(self, educator_client, withdraw_token):
         """전용 계정에 권한을 부여했다가 회수한 뒤, 회수 전 발급된 토큰으로
         재접근 시 즉시 차단되어야 함
@@ -103,11 +106,13 @@ class TestBusinessLogic:
         reason="Not Available: 구성원 관리 화면에 역할 변경 UI가 없고, "
         "HAR 분석 결과 역할변경 PATCH API 자체가 존재하지 않아 검증 대상 부재"
     )
+    @allure.label("tc_id", "31")
     def test_id31_수강생_역할변경_차단(self):
         """수강생이 스스로를 교육자로 승격할 수 없어야 함 (대상 API 부재로 검증 불가)"""
 
     # -- ID 32 ---------------------------------------------------------------
     @allure.title("ID-32 수강생의 타인 강제퇴장 차단")
+    @allure.label("tc_id", "32")
     def test_id32_수강생_타인_강제퇴장_차단(self, student_client):
         """학생 토큰으로 타 구성원 삭제(DELETE) 시도 시 차단되어야 함
 
@@ -126,6 +131,7 @@ class TestBusinessLogic:
         reason="Not Available: 클래스 내 과제(material_assignment) 콘텐츠가 없고 "
         "과목 생성 기능도 동작하지 않아 검증 대상 제출물(submission_id) 확보 불가"
     )
+    @allure.label("tc_id", "33")
     def test_id33_타인_제출물_접근_차단(self):
         """본인 제출물만 조회되어야 함 (검증 대상 리소스 부재로 검증 불가)"""
 
@@ -135,12 +141,14 @@ class TestBusinessLogic:
         reason="Not Available: 교육자 화면에도 점수 수동 수정 UI가 없고 "
         "score/grade 관련 수정 API 호출이 확인되지 않아 대상 API 부재"
     )
+    @allure.label("tc_id", "34")
     def test_id34_수강생_성적_직접수정_차단(self):
         """수강생이 성적을 수정할 수 없어야 함 (대상 API 부재로 검증 불가)"""
 
     # -- ID 35 ---------------------------------------------------------------
     @allure.title("ID-35 시험 재응시 횟수제한 우회 차단")
     @pytest.mark.slow
+    @allure.label("tc_id", "35")
     def test_id35_시험_재응시_횟수제한(self, student_client):
         """시험 초기화 API를 반복 호출해 재응시 제한이 서버에서 강제되는지 검증
 
@@ -181,6 +189,7 @@ class TestBusinessLogic:
 
     # -- ID 36 ---------------------------------------------------------------
     @allure.title("ID-36 시험 시간종료 후 제출 차단")
+    @allure.label("tc_id", "36")
     def test_id36_시험_시간종료후_제출_차단(self, student_client):
         """제한 시간이 종료된 시험에 답안 제출 시 서버가 거부해야 함
 
