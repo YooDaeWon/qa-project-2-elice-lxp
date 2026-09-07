@@ -10,6 +10,8 @@ pipeline {
             steps {
                 echo 'Checking out source code from GitLab...'
                 checkout scm
+                // Credentials만 사용. 워크스페이스에 남은 .env는 UI 노출 위험이 있어 제거한다.
+                sh 'rm -f .env && echo "workspace .env removed (if present)"'
             }
         }
 
@@ -18,6 +20,7 @@ pipeline {
                 echo 'Setting up isolated Python virtual environment and Playwright browsers...'
                 sh '''
                     rm -rf venv
+                    rm -f .env
                     python3 -m venv venv
                     . venv/bin/activate
                     python -m pip install --upgrade pip
@@ -35,10 +38,13 @@ pipeline {
                 withCredentials([file(credentialsId: 'seethrough-env', variable: 'DOTENV_FILE')]) {
                     sh '''
                         . venv/bin/activate
+                        rm -f .env
+                        set +x
                         set -a
                         . "$DOTENV_FILE"
                         set +a
                         export SEETHROUGH_USE_CREDENTIALS=1
+                        set -x
                         mkdir -p allure-results
                         pytest --video=retain-on-failure --alluredir=allure-results --junitxml=junit-report.xml --clean-alluredir -v || true
                     '''
@@ -49,6 +55,7 @@ pipeline {
     
     post {
         always {
+            sh 'rm -f .env || true'
             allure allureVersion: '3', includeProperties: false, jdk: '', results: [[path: 'allure-results']]
         }
         success {
