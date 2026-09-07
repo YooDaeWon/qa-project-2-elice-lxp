@@ -1,7 +1,8 @@
 import allure
 import pytest
 
-from framework.e2euiux.pages import LoginPage, NotFoundPage
+from framework.e2euiux.flows import login_to_main
+from framework.e2euiux.pages import NotFoundPage
 
 
 pytestmark = [
@@ -14,13 +15,7 @@ pytestmark = [
 @pytest.fixture(scope="module")
 def lxp_page(e2e_page, credentials):
     """LXP 메인 페이지 상태 준비"""
-    login_page = LoginPage(e2e_page)
-    login_page.open()
-    login_page.login(
-        credentials["user_id"],
-        credentials["password"],
-    )
-    login_page.verify_redirect()
+    login_to_main(e2e_page, credentials)
     return e2e_page
 
 

@@ -1,17 +1,15 @@
 import allure
 import pytest
-from playwright.sync_api import expect
 
+from framework.e2euiux.flows import (
+    login_to_main,
+    open_classroom_from_main,
+    open_exam_notice,
+    open_sandbox_for_setup,
+)
 from framework.e2euiux.pages import (
-    ClassroomPage,
-    CourseListPage,
-    CoursePage,
     ExamNoticePage,
-    ExamPreparePage,
-    ExamTimePage,
     LoginPage,
-    MainPage,
-    MyClassesPage,
 )
 
 
@@ -22,83 +20,29 @@ pytestmark = [
 ]
 
 
-def _open_exam_notice(page):
-    """시험 사전조건 페이지 열기"""
-    prepare_page = ExamPreparePage(page)
-    prepare_page.verify_loaded()
-    prepare_page.agree_and_next()
-
-    time_page = ExamTimePage(page)
-    time_page.verify_loaded()
-    time_page.go_next()
-
-    notice_page = ExamNoticePage(page)
-    notice_page.verify_loaded()
-
-
 @pytest.fixture(scope="module")
 def multi_tab_exam_pages(e2e_page, reset_e2e01, credentials):
     """두 탭의 e2e-01 시험 사전조건 상태 준비"""
-    login_page = LoginPage(e2e_page)
-    login_page.open()
-    login_page.login(
-        credentials["user_id"],
-        credentials["password"],
-    )
-    login_page.verify_redirect()
+    login_to_main(e2e_page, credentials)
 
-    main_page = MainPage(e2e_page)
-    main_page.open_my_classes()
-
-    my_classes_page = MyClassesPage(e2e_page)
-    my_classes_page.verify_loaded()
-    my_classes_page.open_classroom()
-
-    classroom_page = ClassroomPage(e2e_page)
+    classroom_page = open_classroom_from_main(e2e_page)
     classroom_page.verify_loaded()
     classroom_page.open_learning_subjects()
 
-    course_page = CoursePage(e2e_page)
-    course_list_page = CourseListPage(e2e_page)
-    expect(
-        course_list_page.page_title.or_(course_page.lesson_list_tab).first
-    ).to_be_visible()
-
-    if course_list_page.is_course_list_visible():
-        course_list_page.open_sandbox()
-
-    course_page.verify_loaded()
+    course_page = open_sandbox_for_setup(e2e_page)
     course_page.start_test("e2e-01")
-    _open_exam_notice(e2e_page)
+    open_exam_notice(e2e_page)
 
     second_page = e2e_page.context.new_page()
     second_page.goto(LoginPage.URL)
 
-    second_main_page = MainPage(second_page)
-    second_main_page.open_my_classes()
-
-    second_my_classes_page = MyClassesPage(second_page)
-    second_my_classes_page.verify_loaded()
-    second_my_classes_page.open_classroom()
-
-    second_classroom_page = ClassroomPage(second_page)
+    second_classroom_page = open_classroom_from_main(second_page)
     second_classroom_page.verify_loaded()
     second_classroom_page.open_learning_subjects()
 
-    second_course_page = CoursePage(second_page)
-    second_course_list_page = CourseListPage(second_page)
-    expect(
-        second_course_list_page.page_title.or_(
-            second_course_page.lesson_list_tab
-        ).first
-    ).to_be_visible()
-
-    if second_course_list_page.is_course_list_visible():
-        second_course_list_page.open_sandbox()
-
-    second_course_page.verify_loaded()
+    second_course_page = open_sandbox_for_setup(second_page)
     second_course_page.resume_test("e2e-01")
-    _open_exam_notice(second_page)
+    open_exam_notice(second_page)
 
     yield {
         "first_page": e2e_page,

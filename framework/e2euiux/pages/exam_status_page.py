@@ -18,7 +18,7 @@ class ExamStatusPage:
         """SANDBOX 시험 응시 현황 모달 확인"""
         expect(self.status_dialog).to_be_visible()
 
-    def verify_student_completed(self, student_id):
+    def verify_student_status(self, student_id):
         """학습자의 응시 상태 확인"""
         student_row = self.status_dialog.get_by_role(
             "row",
