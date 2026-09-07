@@ -42,9 +42,8 @@ def _is_api_test(item):
 
 
 def _api_tc_number(item):
-    """test_api_01 ~ test_api_68의 TC 번호를 반환한다."""
-    nodeid = item.nodeid.replace("\\", "/")
-    match = re.search(r"test_api_(\d{2})\.py::test_api_\d{2}$", nodeid)
+    """통합된 카테고리 파일에서도 test_api_01 ~ test_api_68의 TC 번호를 반환한다."""
+    match = re.fullmatch(r"test_api_(\d{2})", item.name, re.IGNORECASE)
     if match:
         return int(match.group(1))
     return None
