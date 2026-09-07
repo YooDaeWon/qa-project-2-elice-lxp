@@ -16,11 +16,6 @@ class BoardPostPage:
             name="등록",
             exact=True,
         )
-        self.board_list_button = page.get_by_role(
-            "button",
-            name="글 목록",
-            exact=True,
-        ).first
         self.comment_items = page.locator(
             'main ul > li:has(div[id="comment"])'
         )
@@ -45,10 +40,6 @@ class BoardPostPage:
     def register_comment_twice(self):
         """등록 버튼 빠르게 2회 클릭"""
         self.register_button.click(click_count=2)
-
-    def click_board_list(self):
-        """글 목록 페이지 열기"""
-        self.board_list_button.click()
 
     def verify_comment_added(self, previous_count, comment):
         """댓글 한 개 추가 및 내용 확인"""

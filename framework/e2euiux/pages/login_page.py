@@ -110,21 +110,27 @@ class LoginPage:
 
     def verify_login_id_required(self):
         """아이디 필수 입력 메시지 확인"""
-        validation_message = self.login_id.evaluate(
-            "element => element.validationMessage"
+        validation = self.login_id.evaluate(
+            """element => ({
+                message: element.validationMessage,
+                valueMissing: element.validity.valueMissing,
+            })"""
         )
-        assert validation_message == "이 입력란을 작성하세요.", (
-            f"아이디 필수 입력 메시지 불일치: {validation_message!r}"
-        )
+        assert validation["valueMissing"], "아이디 빈 칸 검증이 적용되지 않음"
+        assert validation["message"], "아이디 필수 입력 메시지가 표시되지 않음"
+        expect(self.login_id).to_be_focused()
 
     def verify_password_required(self):
         """비밀번호 필수 입력 메시지 확인"""
-        validation_message = self.password.evaluate(
-            "element => element.validationMessage"
+        validation = self.password.evaluate(
+            """element => ({
+                message: element.validationMessage,
+                valueMissing: element.validity.valueMissing,
+            })"""
         )
-        assert validation_message == "이 입력란을 작성하세요.", (
-            f"비밀번호 필수 입력 메시지 불일치: {validation_message!r}"
-        )
+        assert validation["valueMissing"], "비밀번호 빈 칸 검증이 적용되지 않음"
+        assert validation["message"], "비밀번호 필수 입력 메시지가 표시되지 않음"
+        expect(self.password).to_be_focused()
 
     def get_auth_response_summary(self):
         """인증 도메인 응답 요약 반환"""

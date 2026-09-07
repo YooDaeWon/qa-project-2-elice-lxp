@@ -38,11 +38,6 @@ class BoardListPage:
         """제목과 일치하는 게시글 개수 확인"""
         return self._post_items(title).count()
 
-    def verify_post_count(self, title, expected_count):
-        """제목과 일치하는 게시글 개수 확인"""
-        post_items = self._post_items(title)
-        expect(post_items).to_have_count(expected_count)
-
     def verify_single_post_created(self, title, previous_count):
         """중복 요청 후 게시글 한 개 생성 확인"""
         post_items = self._post_items(title)

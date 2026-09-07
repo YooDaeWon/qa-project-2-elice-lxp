@@ -46,11 +46,11 @@ def login_exception_page(browser, flow_browser_context_args):
 
 @allure.label("tc_id", "55")
 @allure.label("priority", "P2")
-def test_reject_invalid_email(
+def test_invalid_email(
     login_exception_page,
     login_exception_credentials,
 ):
-    """유효하지 않은 아이디 로그인 차단"""
+    """유효하지 않은 아이디 로그인"""
     login_exception_page.fill_login_id(
         login_exception_credentials["invalid_email"]
     )
@@ -63,11 +63,11 @@ def test_reject_invalid_email(
 
 @allure.label("tc_id", "56")
 @allure.label("priority", "P2")
-def test_reject_invalid_password(
+def test_invalid_password(
     login_exception_page,
     login_exception_credentials,
 ):
-    """유효하지 않은 비밀번호 로그인 차단"""
+    """유효하지 않은 비밀번호 로그인"""
     login_exception_page.fill_login_id(
         login_exception_credentials["valid_email"]
     )
@@ -80,7 +80,7 @@ def test_reject_invalid_password(
 
 @allure.label("tc_id", "57")
 @allure.label("priority", "P2")
-def test_require_email(
+def test_empty_email(
     login_exception_page,
     login_exception_credentials,
 ):
@@ -94,7 +94,7 @@ def test_require_email(
 
 @allure.label("tc_id", "58")
 @allure.label("priority", "P2")
-def test_require_password(
+def test_empty_password(
     login_exception_page,
     login_exception_credentials,
 ):
@@ -108,7 +108,7 @@ def test_require_password(
 
 @allure.label("tc_id", "59")
 @allure.label("priority", "P2")
-def test_login_with_email_surrounded_by_spaces(
+def test_login_with_spaces(
     login_exception_page,
     login_exception_credentials,
 ):
@@ -126,11 +126,11 @@ def test_login_with_email_surrounded_by_spaces(
 
 @allure.label("tc_id", "60")
 @allure.label("priority", "P2")
-def test_reject_password_with_trailing_space(
+def test_password_add_space(
     login_exception_page,
     login_exception_credentials,
 ):
-    """비밀번호 뒤 공백이 있는 로그인 차단"""
+    """비밀번호 뒤 공백이 있는 로그인"""
     login_exception_page.fill_login_id(
         login_exception_credentials["valid_email"]
     )
