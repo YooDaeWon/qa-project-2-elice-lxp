@@ -34,6 +34,7 @@ E2E_FLOW_ORDER = (
     "invalid_url",
     "responsive_layout",
     "mocking500",
+    "login_flow",
 )
 _FLOW_ORDER = {
     flow_name: order
