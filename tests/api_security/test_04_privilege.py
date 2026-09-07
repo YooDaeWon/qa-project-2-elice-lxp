@@ -26,12 +26,15 @@ CLASSROOM_ID = settings.CLASSROOM_ID
 
 @allure.epic("API 호출 보안성 테스트")
 @allure.feature("권한상승")
+@allure.label("owner", "yoodaewon")
+@allure.label("team", "QA4")
 @pytest.mark.sec_privilege
 class TestPrivilegeEscalation:
     """권한상승 카테고리 보안 검증 (ID 22~24)"""
 
     # -- ID 22 ---------------------------------------------------------------
     @allure.title("ID-22 권한 밖 필드 주입(Mass Assignment) 차단")
+    @allure.label("tc_id", "22")
     def test_id22_권한밖_필드주입_차단(self, student_client):
         """학생 토큰으로 owner_id/organization_id를 주입해도 무시되어야 함
 
@@ -67,6 +70,7 @@ class TestPrivilegeEscalation:
     @pytest.mark.skip(
         reason="구성원 역할 변경 기능 미구현 - 대상 API 부재로 검증 불가(N/A)"
     )
+    @allure.label("tc_id", "23")
     def test_id23_구성원_역할변경_주입_차단(self):
         """구성원 역할 변경 API가 존재하지 않아 검증 대상이 없음 (N/A)
 
@@ -76,6 +80,7 @@ class TestPrivilegeEscalation:
 
     # -- ID 24 ---------------------------------------------------------------
     @allure.title("ID-24 요청방식(Method) 변조 우회 호출 차단")
+    @allure.label("tc_id", "24")
     def test_id24_method_override_우회_차단(self, student_client):
         """POST에 X-HTTP-Method-Override:PATCH를 실어도 무시되어야 함 (403/405)
 

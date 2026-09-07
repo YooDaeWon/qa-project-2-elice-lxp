@@ -1,3 +1,4 @@
+import allure
 import concurrent.futures
 import time
 
@@ -8,7 +9,11 @@ from framework.loadtest.client import LoadClient
 from framework.loadtest.report import attach_load_summary
 
 
-pytestmark = pytest.mark.load_login
+pytestmark = [
+    pytest.mark.load_login,
+    allure.label("owner", "leehyomin"),
+    allure.label("team", "QA4"),
+]
 
 
 def login_with_dummy_account(account, user_index):
@@ -41,6 +46,7 @@ def login_with_dummy_account(account, user_index):
 
 
 @pytest.mark.parametrize("user_count", [5, 10, 20, 30])
+@allure.label("tc_id", "01")
 def test_id_01_login_load(accounts, user_count):
     """ID 1 단계적 동시 접속 로그인 부하"""
     print(f"\n🔍 [디버깅] CSV 파일에서 읽어온 총 계정 수: {len(accounts)}개")

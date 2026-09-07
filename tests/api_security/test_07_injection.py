@@ -89,6 +89,8 @@ def _extract_article_id(response):
 
 @allure.epic("API 호출 보안성 테스트")
 @allure.feature("인젝션(웹 취약점)")
+@allure.label("owner", "yoodaewon")
+@allure.label("team", "QA4")
 @pytest.mark.sec_injection
 class TestInjection:
     """인젝션 카테고리 보안 검증 (ID 37~42)"""
@@ -96,6 +98,7 @@ class TestInjection:
     # -- ID 37 ---------------------------------------------------------------
     @allure.title("ID-37 악성 스크립트 저장 시 무해화(XSS)")
     @pytest.mark.destructive
+    @allure.label("tc_id", "37")
     def test_id37_악성스크립트_저장_무해화(self, student_client):
         """게시글에 스크립트 태그를 저장한 뒤 재조회하여 이스케이프 여부 확인
 
@@ -132,6 +135,7 @@ class TestInjection:
     # -- ID 38 ---------------------------------------------------------------
     @allure.title("ID-38 저장된 스크립트 실행(Stored XSS) 차단")
     @pytest.mark.sec_browser
+    @allure.label("tc_id", "38")
     def test_id38_저장된_스크립트_실행_차단(self, student_client, page):
         """저장된 XSS 페이로드가 브라우저에서 실행되는지 확인
 
@@ -229,6 +233,7 @@ class TestInjection:
 
     # -- ID 39 ---------------------------------------------------------------
     @allure.title("ID-39 반사형 XSS를 통한 악성 스크립트 실행 차단")
+    @allure.label("tc_id", "39")
     def test_id39_반사형_XSS_차단(self, student_client):
         """검색어에 스크립트를 넣어 응답에 실행형으로 반사되는지 확인
 
@@ -253,6 +258,7 @@ class TestInjection:
 
     # -- ID 40 ---------------------------------------------------------------
     @allure.title("ID-40 GET 요청값을 통한 악성 SQL 구문 삽입 차단")
+    @allure.label("tc_id", "40")
     def test_id40_GET_SQL_인젝션_차단(self, student_client):
         """정수 파라미터(course_id)에 SQL 구문을 넣어 타입 검증으로 차단되는지 확인
 
@@ -277,6 +283,7 @@ class TestInjection:
     # -- ID 41 ---------------------------------------------------------------
     @allure.title("ID-41 POST 요청값을 통한 악성 SQL 구문 삽입 차단")
     @pytest.mark.destructive
+    @allure.label("tc_id", "41")
     def test_id41_POST_SQL_인젝션_차단(self, student_client):
         """게시글 제목에 SQL 페이로드를 저장한 뒤 재조회하여 실행 여부 확인
 
@@ -317,6 +324,7 @@ class TestInjection:
 
     # -- ID 42 ---------------------------------------------------------------
     @allure.title("ID-42 외부 출처(CORS) 무제한 허용 차단")
+    @allure.label("tc_id", "42")
     def test_id42_CORS_임의출처_반사_차단(self, student_client):
         """임의 Origin으로 preflight 요청 시 허용 헤더에 그대로 반사되는지 확인
 

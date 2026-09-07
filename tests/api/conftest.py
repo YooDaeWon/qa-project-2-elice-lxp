@@ -258,6 +258,12 @@ def allure_tc_metadata(request):
 
     name = request.node.name
     tc_id = None
+    tc_number = _api_tc_number(request.node)
+
+    allure.dynamic.label("owner", "parksungbin")
+    allure.dynamic.label("team", "QA4")
+    if tc_number is not None:
+        allure.dynamic.label("tc_id", f"{tc_number:02d}")
 
     # 분리 전 함수명: test_tc01_...
     match_old = re.search(r"test_tc(\\d{2})", name, re.IGNORECASE)

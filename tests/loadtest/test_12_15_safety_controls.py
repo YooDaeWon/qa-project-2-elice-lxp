@@ -1,3 +1,4 @@
+import allure
 import concurrent.futures
 import random
 import time
@@ -10,7 +11,11 @@ from framework.loadtest.report import attach_load_summary
 from framework.loadtest.safety import SafetyKillSwitchError, SafetySession
 
 
-pytestmark = pytest.mark.load_safety
+pytestmark = [
+    pytest.mark.load_safety,
+    allure.label("owner", "leehyomin"),
+    allure.label("team", "QA4"),
+]
 
 
 def execute_safety_controlled_flow(account, user_index):
@@ -62,6 +67,7 @@ def execute_safety_controlled_flow(account, user_index):
 
 
 @pytest.mark.parametrize("target_users", [5, 10, 20, 30])
+@allure.label("tc_id", "12")
 def test_id_12_15_safety_controls(accounts, target_users):
     """ID 12~15 안전성 통제 검증"""
     if len(accounts) < target_users:
