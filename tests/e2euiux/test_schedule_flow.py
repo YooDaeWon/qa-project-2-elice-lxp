@@ -1,12 +1,13 @@
 import allure
 import pytest
 
+from framework.e2euiux.flows import (
+    login_to_main,
+    open_classroom_from_main,
+)
 from framework.e2euiux.pages import (
     ClassroomPage,
     CoursePage,
-    LoginPage,
-    MainPage,
-    MyClassesPage,
     SchedulePage,
 )
 
@@ -21,19 +22,9 @@ pytestmark = [
 @pytest.fixture(scope="module")
 def schedule_e2e_page(e2e_page, credentials):
     """수업 일정 E2E 시작 상태 준비"""
-    login_page = LoginPage(e2e_page)
-    login_page.open()
-    login_page.login(credentials["user_id"], credentials["password"])
-    login_page.verify_redirect()
+    login_to_main(e2e_page, credentials)
 
-    main_page = MainPage(e2e_page)
-    main_page.open_my_classes()
-
-    my_classes_page = MyClassesPage(e2e_page)
-    my_classes_page.verify_loaded()
-    my_classes_page.open_classroom()
-
-    classroom_page = ClassroomPage(e2e_page)
+    classroom_page = open_classroom_from_main(e2e_page)
     classroom_page.verify_loaded()
 
     return e2e_page

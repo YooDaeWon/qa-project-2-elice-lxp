@@ -60,32 +60,23 @@ class CoursePage:
 
         return card_button.or_(region_button).first
 
+    def _click_test_action(self, test_name, button_name):
+        """지정한 시험의 동작 버튼 표시를 확인한 뒤 클릭"""
+        button = self._test_action_button(test_name, button_name)
+        expect(button).to_be_visible()
+        button.click()
+
     def start_test(self, test_name):
         """지정한 테스트 시작하기"""
-        start_button = self._test_action_button(
-            test_name,
-            "테스트 시작하기",
-        )
-        expect(start_button).to_be_visible()
-        start_button.click()
+        self._click_test_action(test_name, "테스트 시작하기")
 
     def resume_test(self, test_name):
         """진행 중인 테스트 이어하기"""
-        resume_button = self._test_action_button(
-            test_name,
-            "테스트 이어하기",
-        )
-        expect(resume_button).to_be_visible()
-        resume_button.click()
+        self._click_test_action(test_name, "테스트 이어하기")
 
     def retake_test(self, test_name):
         """지정한 테스트 재응시하기"""
-        retake_button = self._test_action_button(
-            test_name,
-            "테스트 재응시",
-        )
-        expect(retake_button).to_be_visible()
-        retake_button.click()
+        self._click_test_action(test_name, "테스트 재응시")
 
     def verify_retake_available(self, test_name):
         """재응시 후 테스트 시작 버튼 확인"""

@@ -2,20 +2,19 @@ import secrets
 
 import allure
 import pytest
-from playwright.sync_api import expect
 
+from framework.e2euiux.flows import (
+    login_to_main,
+    open_classroom_from_main,
+    open_sandbox_for_setup,
+)
 from framework.e2euiux.pages import (
-    ClassroomPage,
-    CourseListPage,
     CoursePage,
     ExamCompletePage,
     ExamNoticePage,
     ExamPage,
     ExamPreparePage,
     ExamResultPage,
-    LoginPage,
-    MainPage,
-    MyClassesPage,
 )
 
 
@@ -49,32 +48,13 @@ def _open_exam_page(page):
 @pytest.fixture(scope="module")
 def retake_course_page(e2e_page, credentials):
     """재응시 시험 과목 페이지 상태 준비"""
-    login_page = LoginPage(e2e_page)
-    login_page.open()
-    login_page.login(credentials["user_id"], credentials["password"])
-    login_page.verify_redirect()
+    login_to_main(e2e_page, credentials)
 
-    main_page = MainPage(e2e_page)
-    main_page.open_my_classes()
-
-    my_classes_page = MyClassesPage(e2e_page)
-    my_classes_page.verify_loaded()
-    my_classes_page.open_classroom()
-
-    classroom_page = ClassroomPage(e2e_page)
+    classroom_page = open_classroom_from_main(e2e_page)
     classroom_page.verify_loaded()
     classroom_page.open_learning_subjects()
 
-    course_list_page = CourseListPage(e2e_page)
-    course_page = CoursePage(e2e_page)
-    expect(
-        course_list_page.page_title.or_(course_page.lesson_list_tab).first
-    ).to_be_visible()
-
-    if course_list_page.is_course_list_visible():
-        course_list_page.open_sandbox()
-
-    course_page.verify_loaded()
+    open_sandbox_for_setup(e2e_page)
 
     return e2e_page
 

@@ -1,7 +1,10 @@
 import allure
 import pytest
-from playwright.sync_api import expect
 
+from framework.e2euiux.flows import (
+    login_to_main,
+    open_sandbox_from_course_list,
+)
 from framework.e2euiux.pages import (
     ClassroomPage,
     CourseListPage,
@@ -12,7 +15,6 @@ from framework.e2euiux.pages import (
     ExamPreparePage,
     ExamResultPage,
     ExamTimePage,
-    LoginPage,
     MainPage,
     MyClassesPage,
 )
@@ -33,10 +35,7 @@ def test_login(
     reset_exam,
 ):
     """로그인 후 메인 페이지 진입"""
-    login_page = LoginPage(e2e_page)
-    login_page.open()
-    login_page.login(credentials["user_id"], credentials["password"])
-    login_page.verify_redirect()
+    login_to_main(e2e_page, credentials)
 
 
 @allure.label("tc_id", "02")
@@ -78,21 +77,7 @@ def test_open_course_list(e2e_page):
 @allure.label("priority", "P1")
 def test_open_sandbox_course(e2e_page):
     """SANDBOX 과목 페이지 진입"""
-    course_list_page = CourseListPage(e2e_page)
-    course_page = CoursePage(e2e_page)
-
-    course_state = course_list_page.page_title.or_(
-        course_page.lesson_list_tab
-    ).first
-    expect(course_state).to_be_visible()
-
-    if not course_list_page.URL.search(e2e_page.url):
-        course_page.open_course_list()
-
-    course_list_page.verify_loaded()
-    course_list_page.open_sandbox()
-
-    course_page.verify_loaded()
+    open_sandbox_from_course_list(e2e_page)
 
 
 @allure.label("tc_id", "06")

@@ -1,7 +1,8 @@
 import allure
 import pytest
 
-from framework.e2euiux.pages import LoginPage, MainPage
+from framework.e2euiux.flows import login_to_main
+from framework.e2euiux.pages import MainPage
 
 
 pytestmark = [
@@ -11,21 +12,10 @@ pytestmark = [
 ]
 
 
-def _login(page, credentials):
-    """LXP 메인 페이지 로그인"""
-    login_page = LoginPage(page)
-    login_page.open()
-    login_page.login(
-        credentials["user_id"],
-        credentials["password"],
-    )
-    login_page.verify_redirect()
-
-
 @pytest.fixture(scope="module")
 def logged_in_page(e2e_page, credentials):
     """로그인된 LXP 메인 페이지 상태 준비"""
-    _login(e2e_page, credentials)
+    login_to_main(e2e_page, credentials)
     return e2e_page
 
 

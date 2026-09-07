@@ -18,6 +18,15 @@ class LoginPage:
             "Default Organization 기관 교육",
             exact=True,
         ).first
+        self.history_message = page.get_by_text(
+            "다시 만나 반갑습니다",
+            exact=True,
+        )
+        self.clear_history_button = page.get_by_role(
+            "button",
+            name="기록 삭제",
+            exact=True,
+        )
         self.auth_responses = []
         self.page.on("response", self._record_auth_response)
 
@@ -39,18 +48,37 @@ class LoginPage:
         """로그인 기록 화면 여부 확인"""
         return urlparse(self.page.url).path.rstrip("/") == self.HISTORY_PATH
 
+    def _submit_credentials(self, user_id, password):
+        """아이디와 비밀번호 제출"""
+        self.login_id.fill(user_id)
+        self.password.fill(password)
+        expect(self.login_button).to_be_enabled()
+        self.login_button.click()
+
+    def _restart_login_from_history(self, user_id, password):
+        """로그인 기록 삭제 후 처음부터 로그인"""
+        self.clear_history_button.click()
+        self._submit_credentials(user_id, password)
+
+    def _register_history_relogin(self, user_id, password):
+        """로그인 기록 화면 자동 복구 등록"""
+        self.page.add_locator_handler(
+            self.history_message,
+            lambda: self._restart_login_from_history(user_id, password),
+        )
+
     def open(self):
         """로그인 페이지 열기"""
         self.page.goto(self.URL)
 
     def login(self, user_id, password):
         """아이디와 비밀번호로 로그인"""
-        if not self._is_history_page():
-            self.login_id.fill(user_id)
+        if self._is_history_page():
+            self._restart_login_from_history(user_id, password)
+        else:
+            self._submit_credentials(user_id, password)
 
-        self.password.fill(password)
-        expect(self.login_button).to_be_enabled()
-        self.login_button.click()
+        self._register_history_relogin(user_id, password)
 
     def verify_redirect(self):
         """로그인 후 대상 페이지 전환 확인"""
