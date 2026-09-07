@@ -7,7 +7,7 @@ from framework.e2euiux.pages import LoginPage
 
 
 pytestmark = [
-    pytest.mark.login_exception_flow,
+    pytest.mark.login_flow,
     allure.label("owner", "hongseongwoo"),
     allure.label("team", "QA4"),
 ]
