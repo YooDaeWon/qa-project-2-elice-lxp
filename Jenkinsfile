@@ -54,7 +54,7 @@ pipeline {
         stage('Test Execution') {
             steps {
                 echo 'Running pytest with Jenkins Credentials (no workspace .env read)...'
-                withCredentials([file(credentialsId: 'seethrough-env', variable: 'DOTENV_FILE')]) {
+                withCredentials([file(credentialsId: 'env', variable: 'DOTENV_FILE')]) {
                     sh '''
                         . venv/bin/activate
                         rm -f .env
