@@ -25,6 +25,7 @@ from config.settings import settings
 from framework.api_security.pages.classroom_api import ClassroomApi
 from framework.api_security.pages.dashboard_api import DashboardApi
 from framework.api_security.pages.lxp_api import LxpApi
+from framework.api_security.pages.web_login import login_via_ui
 from utils.assertions import is_business_rejected, json_body
 
 
@@ -177,11 +178,7 @@ class TestInjection:
             dialogs.append(dialog.message), dialog.dismiss()
         ))
 
-        page.goto(f"{WEB_BASE_URL}/lxp")
-        page.locator('input[name="loginId"]').fill(os.environ["ST_ID"])
-        page.locator('input[name="password"]').fill(os.environ["ST_PW"])
-        page.get_by_role("button", name="로그인").click()
-        page.wait_for_url(f"{WEB_BASE_URL}/lxp", timeout=60_000)
+        login_via_ui(page, os.environ["ST_ID"], os.environ["ST_PW"], WEB_BASE_URL)
 
         # 3단계: 게시글을 열고 렌더링 결과 확인
         page.goto(target_url)
