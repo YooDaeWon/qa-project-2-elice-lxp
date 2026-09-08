@@ -35,6 +35,7 @@ class TestMsaArchitecture:
     # -- ID 25 ---------------------------------------------------------------
     @allure.title("ID-25 타 기관·타 클래스 리소스 접근 차단")
     @allure.label("tc_id", "25")
+    @allure.label("priority", "P0")
     def test_id25_타클래스_리소스_접근_차단(self, student_client):
         """학생 토큰으로 비소속 클래스 접근 시 차단되어야 함 (403/404 또는 fail_code)"""
         classroom = ClassroomApi(student_client)
@@ -45,6 +46,7 @@ class TestMsaArchitecture:
     # -- ID 26 ---------------------------------------------------------------
     @allure.title("ID-26 org 헤더 없이 타기관 접근")
     @allure.label("tc_id", "26")
+    @allure.label("priority", "P0")
     def test_id26_org헤더_없이_접근_차단(self, student_client):
         """org 헤더를 제거하면 요청이 거부되어야 함 (400/401/403)
 
@@ -60,6 +62,7 @@ class TestMsaArchitecture:
     # -- ID 27 ---------------------------------------------------------------
     @allure.title("ID-27 org 헤더 변조로 타기관 접근 차단")
     @allure.label("tc_id", "27")
+    @allure.label("priority", "P0")
     def test_id27_org헤더_변조_접근_차단(self, student_client):
         """존재하지 않는/타 기관 org 값으로 요청 시 차단되어야 함 (403/404/409)
 
@@ -78,6 +81,7 @@ class TestMsaArchitecture:
     # -- ID 28 ---------------------------------------------------------------
     @allure.title("ID-28 서비스 별 권한검사 불일치")
     @allure.label("tc_id", "28")
+    @allure.label("priority", "P0")
     def test_id28_서비스간_권한검사_불일치(self, student_client):
         """같은 비소속 클래스를 classroom-api와 dashboard-api에 각각 요청
 
@@ -105,6 +109,7 @@ class TestMsaArchitecture:
     # -- ID 29 ---------------------------------------------------------------
     @allure.title("ID-29 존재하지 않는 리소스 상태코드 분류")
     @allure.label("tc_id", "29")
+    @allure.label("priority", "P1")
     def test_id29_없는리소스_상태코드_정합성(self, educator_client):
         """존재하지 않는 student id(99999) 조회 시 404로 응답해야 함
 
