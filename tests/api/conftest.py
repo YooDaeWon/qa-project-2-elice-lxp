@@ -20,7 +20,7 @@ ROOT_DIR = Path(__file__).resolve().parents[2]
 
 
 # ---------------------------------------------------------------------------
-# V19 result policy: Negative TC = actual pytest FAILED
+# API result policy: Negative TC = actual pytest FAILED
 # ---------------------------------------------------------------------------
 # 프로젝트 표시 요구:
 #
@@ -139,7 +139,7 @@ def pytest_terminal_summary(terminalreporter, exitstatus, config):
         else:
             unexpected_negative.append(report)
 
-    terminalreporter.write_sep("-", "V19 Negative TC Result")
+    terminalreporter.write_sep("-", "API Negative TC Result")
     terminalreporter.write_line(
         f"FAILED (EXPECTED NEGATIVE)   : {len(expected_negative)}"
     )
@@ -147,7 +147,7 @@ def pytest_terminal_summary(terminalreporter, exitstatus, config):
         f"FAILED (UNEXPECTED NEGATIVE) : {len(unexpected_negative)}"
     )
     terminalreporter.write_line(
-        "※ V19에서는 Negative TC를 실제 pytest FAILED로 집계하며 "
+        "※ API Negative TC는 실제 pytest FAILED로 집계하며 "
         "Allure/Jenkins에도 Failed로 전달합니다."
     )
 
@@ -258,13 +258,6 @@ def allure_tc_metadata(request):
 
     name = request.node.name
     tc_id = None
-    tc_number = _api_tc_number(request.node)
-
-    allure.dynamic.label("owner", "parksungbin")
-    allure.dynamic.label("team", "QA4")
-    if tc_number is not None:
-        allure.dynamic.label("tc_id", f"{tc_number:02d}")
-
     # 분리 전 함수명: test_tc01_...
     match_old = re.search(r"test_tc(\\d{2})", name, re.IGNORECASE)
     if match_old:

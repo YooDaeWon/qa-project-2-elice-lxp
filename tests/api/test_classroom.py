@@ -25,12 +25,6 @@ from utils.helpers import (
 import allure
 
 
-pytestmark = [
-    allure.label("owner", "parksungbin"),
-    allure.label("team", "QA4"),
-]
-
-
 # ---------------------------------------------------------------------------
 # Category helpers
 # ---------------------------------------------------------------------------
@@ -168,6 +162,10 @@ def _assert_article_preview(data, expected_count):
 # ---------------------------------------------------------------------------
 @pytest.mark.classroom
 @pytest.mark.positive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "01")
+@allure.label("priority", "P1")
 def test_api_01(student_client):
     require_values(CLASSROOM_ID=settings.CLASSROOM_ID)
     data = assert_success(ClassroomClient(student_client).get_classroom(settings.CLASSROOM_ID))
@@ -181,6 +179,10 @@ def test_api_01(student_client):
 # ---------------------------------------------------------------------------
 @pytest.mark.classroom
 @pytest.mark.positive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "02")
+@allure.label("priority", "P1")
 def test_api_02(educator_client):
     require_values(CLASSROOM_ID=settings.CLASSROOM_ID)
     data = assert_success(ClassroomClient(educator_client).get_classroom(settings.CLASSROOM_ID))
@@ -194,6 +196,10 @@ def test_api_02(educator_client):
 # ---------------------------------------------------------------------------
 @pytest.mark.classroom
 @pytest.mark.destructive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "03")
+@allure.label("priority", "P1")
 def test_api_03(educator_client):
     require_values(CLASSROOM_ID=settings.CLASSROOM_ID)
     client = ClassroomClient(educator_client)
@@ -216,6 +222,10 @@ def test_api_03(educator_client):
 @pytest.mark.classroom
 @pytest.mark.negative
 @pytest.mark.destructive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "04")
+@allure.label("priority", "P0")
 def test_api_04(student_client):
     require_values(CLASSROOM_ID=settings.CLASSROOM_ID)
     client = ClassroomClient(student_client)
@@ -232,6 +242,10 @@ def test_api_04(student_client):
 # ---------------------------------------------------------------------------
 @pytest.mark.classroom
 @pytest.mark.positive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "05")
+@allure.label("priority", "P2")
 def test_api_05(student_client):
     require_values(CLASSROOM_ID=settings.CLASSROOM_ID, STUDENT_ID=settings.STUDENT_ID)
     data = assert_success(ClassroomClient(student_client).get_student_courses(
@@ -248,6 +262,10 @@ def test_api_05(student_client):
 # ---------------------------------------------------------------------------
 @pytest.mark.classroom
 @pytest.mark.positive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "06")
+@allure.label("priority", "P2")
 def test_api_06(educator_client):
     require_values(CLASSROOM_ID=settings.CLASSROOM_ID)
     data = assert_success(ClassroomClient(educator_client).get_dashboard_courses(settings.CLASSROOM_ID, 0, 3))
@@ -262,6 +280,10 @@ def test_api_06(educator_client):
 # ---------------------------------------------------------------------------
 @pytest.mark.classroom
 @pytest.mark.positive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "07")
+@allure.label("priority", "P2")
 def test_api_07(student_client):
     require_values(CLASSROOM_ID=settings.CLASSROOM_ID, DATE_START=settings.DATE_START, DATE_END=settings.DATE_END)
     _assert_schedule_preview(ClassroomClient(student_client))
@@ -272,6 +294,10 @@ def test_api_07(student_client):
 # ---------------------------------------------------------------------------
 @pytest.mark.classroom
 @pytest.mark.positive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "08")
+@allure.label("priority", "P2")
 def test_api_08(educator_client):
     require_values(CLASSROOM_ID=settings.CLASSROOM_ID, DATE_START=settings.DATE_START, DATE_END=settings.DATE_END)
     _assert_schedule_preview(ClassroomClient(educator_client))
@@ -282,6 +308,10 @@ def test_api_08(educator_client):
 # ---------------------------------------------------------------------------
 @pytest.mark.classroom
 @pytest.mark.positive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "09")
+@allure.label("priority", "P2")
 def test_api_09(student_client):
     require_values(CLASSROOM_ID=settings.CLASSROOM_ID)
     data = assert_success(ClassroomClient(student_client).get_articles(settings.CLASSROOM_ID, "created_desc", 0, 3))
@@ -293,6 +323,10 @@ def test_api_09(student_client):
 # ---------------------------------------------------------------------------
 @pytest.mark.classroom
 @pytest.mark.positive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "10")
+@allure.label("priority", "P2")
 def test_api_10(educator_client):
     require_values(CLASSROOM_ID=settings.CLASSROOM_ID)
     data = assert_success(ClassroomClient(educator_client).get_articles(settings.CLASSROOM_ID, "created_desc", 0, 3))
@@ -304,6 +338,10 @@ def test_api_10(educator_client):
 # ---------------------------------------------------------------------------
 @pytest.mark.classroom
 @pytest.mark.positive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "11")
+@allure.label("priority", "P1")
 def test_api_11(student_client, educator_client):
     require_values(CLASSROOM_ID=settings.CLASSROOM_ID, STUDENT_ID=settings.STUDENT_ID)
     data = assert_success(ClassroomClient(student_client).get_student_courses(settings.STUDENT_ID, settings.CLASSROOM_ID, 0, 10))
@@ -325,6 +363,10 @@ def test_api_11(student_client, educator_client):
 # ---------------------------------------------------------------------------
 @pytest.mark.classroom
 @pytest.mark.positive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "12")
+@allure.label("priority", "P1")
 def test_api_12(educator_client):
     require_values(CLASSROOM_ID=settings.CLASSROOM_ID)
     data = assert_success(ClassroomClient(educator_client).get_students(settings.CLASSROOM_ID, 0, 10))
@@ -343,6 +385,10 @@ def test_api_12(educator_client):
 # ---------------------------------------------------------------------------
 @pytest.mark.classroom
 @pytest.mark.negative
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "13")
+@allure.label("priority", "P0")
 def test_api_13(student_client, educator_client):
     require_values(CLASSROOM_ID=settings.CLASSROOM_ID, STUDENT_ID=settings.STUDENT_ID)
     response = ClassroomClient(student_client).get_students(settings.CLASSROOM_ID, 0, 10)
@@ -363,6 +409,10 @@ def test_api_13(student_client, educator_client):
 # ---------------------------------------------------------------------------
 @pytest.mark.classroom
 @pytest.mark.positive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "14")
+@allure.label("priority", "P1")
 def test_api_14(educator_client):
     """
     TC14 - 클래스 학습현황 요약 데이터 조회 (교육자)
@@ -444,6 +494,10 @@ def test_api_14(educator_client):
 # ---------------------------------------------------------------------------
 @pytest.mark.classroom
 @pytest.mark.positive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "15")
+@allure.label("priority", "P0")
 def test_api_15(student_client, educator_client):
     require_values(CLASSROOM_ID=settings.CLASSROOM_ID, STUDENT_ID=settings.STUDENT_ID)
     student_api = ClassroomClient(student_client)

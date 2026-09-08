@@ -33,12 +33,6 @@ from utils.helpers import (
 import allure
 
 
-pytestmark = [
-    allure.label("owner", "parksungbin"),
-    allure.label("team", "QA4"),
-]
-
-
 # ---------------------------------------------------------------------------
 # Category helpers
 # ---------------------------------------------------------------------------
@@ -75,6 +69,10 @@ def _material_page(client, page_id=None, material_id=None):
 # ---------------------------------------------------------------------------
 @pytest.mark.course
 @pytest.mark.positive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "16")
+@allure.label("priority", "P1")
 def test_api_16(student_client):
     require_values(CLASSROOM_ID=settings.CLASSROOM_ID, STUDENT_ID=settings.STUDENT_ID)
     data = assert_success(ClassroomClient(student_client).get_student_courses(settings.STUDENT_ID, settings.CLASSROOM_ID, 0, 10))
@@ -92,6 +90,10 @@ def test_api_16(student_client):
 # ---------------------------------------------------------------------------
 @pytest.mark.course
 @pytest.mark.positive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "17")
+@allure.label("priority", "P1")
 def test_api_17(educator_client):
     require_values(CLASSROOM_ID=settings.CLASSROOM_ID)
     data = assert_success(CourseClient(educator_client).classroom_course_list(settings.CLASSROOM_ID, 0, 10))
@@ -107,6 +109,10 @@ def test_api_17(educator_client):
 # ---------------------------------------------------------------------------
 @pytest.mark.course
 @pytest.mark.positive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "18")
+@allure.label("priority", "P1")
 def test_api_18(student_client):
     require_values(ORG=settings.ORG, COURSE_ID=settings.COURSE_ID)
     data = assert_success(CourseClient(student_client).course_get(settings.ORG, settings.COURSE_ID))
@@ -122,6 +128,10 @@ def test_api_18(student_client):
 # ---------------------------------------------------------------------------
 @pytest.mark.course
 @pytest.mark.positive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "19")
+@allure.label("priority", "P1")
 def test_api_19(educator_client):
     require_values(ORG=settings.ORG, COURSE_ID=settings.COURSE_ID)
     data = assert_success(CourseClient(educator_client).course_get(settings.ORG, settings.COURSE_ID))
@@ -137,6 +147,10 @@ def test_api_19(educator_client):
 # ---------------------------------------------------------------------------
 @pytest.mark.course
 @pytest.mark.positive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "20")
+@allure.label("priority", "P1")
 def test_api_20(student_client):
     require_values(ORG=settings.ORG, COURSE_ID=settings.COURSE_ID)
     data = assert_success(CourseClient(student_client).lecture_list(settings.ORG, settings.COURSE_ID))
@@ -151,6 +165,10 @@ def test_api_20(student_client):
 # ---------------------------------------------------------------------------
 @pytest.mark.course
 @pytest.mark.positive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "21")
+@allure.label("priority", "P1")
 def test_api_21(educator_client):
     require_values(ORG=settings.ORG, COURSE_ID=settings.COURSE_ID)
     data = assert_success(CourseClient(educator_client).lecture_list(settings.ORG, settings.COURSE_ID))
@@ -165,6 +183,10 @@ def test_api_21(educator_client):
 # ---------------------------------------------------------------------------
 @pytest.mark.course
 @pytest.mark.positive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "22")
+@allure.label("priority", "P1")
 def test_api_22(student_client):
     require_values(ORG=settings.ORG, LECTURE_ID=settings.LECTURE_ID, LOCATOR_TYPE=settings.LOCATOR_TYPE)
     data = assert_success(CourseClient(student_client).lecture_page_list(settings.ORG, settings.LECTURE_ID, settings.LOCATOR_TYPE))
@@ -177,6 +199,10 @@ def test_api_22(student_client):
 # ---------------------------------------------------------------------------
 @pytest.mark.course
 @pytest.mark.positive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "23")
+@allure.label("priority", "P1")
 def test_api_23(educator_client):
     require_values(ORG=settings.ORG, LECTURE_ID=settings.LECTURE_ID, LOCATOR_TYPE=settings.LOCATOR_TYPE)
     data = assert_success(CourseClient(educator_client).lecture_page_list(settings.ORG, settings.LECTURE_ID, settings.LOCATOR_TYPE))
@@ -189,6 +215,10 @@ def test_api_23(educator_client):
 # ---------------------------------------------------------------------------
 @pytest.mark.course
 @pytest.mark.destructive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "24")
+@allure.label("priority", "P1")
 def test_api_24(educator_client, payloads):
     require_values(ORG=settings.ORG, COURSE_ID=settings.COURSE_ID)
     client = CourseClient(educator_client)
@@ -223,6 +253,10 @@ def test_api_24(educator_client, payloads):
 @pytest.mark.course
 @pytest.mark.negative
 @pytest.mark.destructive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "25")
+@allure.label("priority", "P0")
 def test_api_25(student_client, educator_client):
     require_values(ORG=settings.ORG, COURSE_ID=settings.COURSE_ID)
     owner = CourseClient(educator_client)
@@ -241,6 +275,10 @@ def test_api_25(student_client, educator_client):
 # ---------------------------------------------------------------------------
 @pytest.mark.course
 @pytest.mark.destructive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "26")
+@allure.label("priority", "P1")
 def test_api_26(educator_client, payloads):
     require_values(ORG=settings.ORG, COURSE_ID=settings.COURSE_ID)
     client = CourseClient(educator_client)
@@ -274,6 +312,10 @@ def test_api_26(educator_client, payloads):
 @pytest.mark.course
 @pytest.mark.negative
 @pytest.mark.destructive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "27")
+@allure.label("priority", "P0")
 def test_api_27(student_client, payloads):
     require_values(ORG=settings.ORG, COURSE_ID=settings.COURSE_ID)
     client = CourseClient(student_client)
@@ -291,6 +333,10 @@ def test_api_27(student_client, payloads):
 # ---------------------------------------------------------------------------
 @pytest.mark.course
 @pytest.mark.destructive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "28")
+@allure.label("priority", "P1")
 def test_api_28(educator_client, payloads):
     require_values(ORG=settings.ORG, COURSE_ID=settings.COURSE_ID, EDIT_LECTURE_ID=settings.EDIT_LECTURE_ID)
     client = CourseClient(educator_client)
@@ -308,6 +354,10 @@ def test_api_28(educator_client, payloads):
 @pytest.mark.course
 @pytest.mark.negative
 @pytest.mark.destructive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "29")
+@allure.label("priority", "P0")
 def test_api_29(student_client, educator_client, payloads):
     require_values(ORG=settings.ORG, COURSE_ID=settings.COURSE_ID, BLOCK_EDIT_LECTURE_ID=settings.BLOCK_EDIT_LECTURE_ID)
     owner = CourseClient(educator_client)
@@ -327,6 +377,10 @@ def test_api_29(student_client, educator_client, payloads):
 # ---------------------------------------------------------------------------
 @pytest.mark.course
 @pytest.mark.destructive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "30")
+@allure.label("priority", "P1")
 def test_api_30(educator_client):
     require_values(ORG=settings.ORG, COURSE_ID=settings.COURSE_ID, DELETE_LECTURE_ID=settings.DELETE_LECTURE_ID)
     client = CourseClient(educator_client)
@@ -341,6 +395,10 @@ def test_api_30(educator_client):
 @pytest.mark.course
 @pytest.mark.negative
 @pytest.mark.destructive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "31")
+@allure.label("priority", "P0")
 def test_api_31(student_client, educator_client):
     require_values(ORG=settings.ORG, COURSE_ID=settings.COURSE_ID, BLOCK_DELETE_LECTURE_ID=settings.BLOCK_DELETE_LECTURE_ID)
     attacker = CourseClient(student_client)
@@ -354,6 +412,10 @@ def test_api_31(student_client, educator_client):
 # ---------------------------------------------------------------------------
 @pytest.mark.course
 @pytest.mark.destructive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "32")
+@allure.label("priority", "P1")
 def test_api_32(educator_client, payloads):
     require_values(ORG=settings.ORG, LECTURE_ID=settings.LECTURE_ID, LOCATOR_TYPE=settings.LOCATOR_TYPE)
     client = CourseClient(educator_client)
@@ -379,6 +441,10 @@ def test_api_32(educator_client, payloads):
 # ---------------------------------------------------------------------------
 @pytest.mark.course
 @pytest.mark.destructive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "33")
+@allure.label("priority", "P1")
 def test_api_33(educator_client, payloads):
     require_values(ORG=settings.ORG, LECTURE_ID=settings.LECTURE_ID, MATERIAL_NOTE_ID=settings.MATERIAL_NOTE_ID)
     client = CourseClient(educator_client)
@@ -397,6 +463,10 @@ def test_api_33(educator_client, payloads):
 # ---------------------------------------------------------------------------
 @pytest.mark.course
 @pytest.mark.destructive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "34")
+@allure.label("priority", "P1")
 def test_api_34(educator_client):
     require_values(ORG=settings.ORG, LECTURE_ID=settings.LECTURE_ID, DELETE_LECTURE_PAGE_ID=settings.DELETE_LECTURE_PAGE_ID)
     client = CourseClient(educator_client)
@@ -411,6 +481,10 @@ def test_api_34(educator_client):
 @pytest.mark.course
 @pytest.mark.negative
 @pytest.mark.destructive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "35")
+@allure.label("priority", "P0")
 def test_api_35(student_client, educator_client, payloads):
     require_values(
         ORG=settings.ORG, LECTURE_ID=settings.LECTURE_ID,
@@ -450,6 +524,10 @@ def test_api_35(student_client, educator_client, payloads):
 # ---------------------------------------------------------------------------
 @pytest.mark.course
 @pytest.mark.negative
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "36")
+@allure.label("priority", "P2")
 def test_api_36(student_client):
     require_values(ORG=settings.ORG)
     response = CourseClient(student_client).course_get(settings.ORG, 99999)
@@ -464,6 +542,10 @@ def test_api_36(student_client):
 # ---------------------------------------------------------------------------
 @pytest.mark.course
 @pytest.mark.negative
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "37")
+@allure.label("priority", "P2")
 def test_api_37(student_client):
     require_values(ORG=settings.ORG)
     response = CourseClient(student_client).course_get(settings.ORG, -1)
@@ -479,6 +561,10 @@ def test_api_37(student_client):
 @pytest.mark.course
 @pytest.mark.negative
 @pytest.mark.destructive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "38")
+@allure.label("priority", "P2")
 def test_api_38(educator_client, payloads):
     require_values(ORG=settings.ORG, COURSE_ID=settings.COURSE_ID)
     client = CourseClient(educator_client)
