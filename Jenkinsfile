@@ -86,7 +86,7 @@ pipeline {
                 '''
                 allure(
                     allureVersion: '3',
-                    configPath: 'allurerc.json',
+                    configPath: 'allurerc.mjs',
                     includeProperties: false,
                     report: 'allure-report',
                     results: [[path: 'allure-results']]
