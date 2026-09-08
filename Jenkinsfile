@@ -65,7 +65,7 @@ pipeline {
                         export SEETHROUGH_USE_CREDENTIALS=1
                         set -x
                         mkdir -p allure-results
-                        pytest tests/api_security --video=retain-on-failure --alluredir=allure-results --junitxml=junit-report.xml --clean-alluredir -v || true
+                        pytest --video=retain-on-failure --alluredir=allure-results --junitxml=junit-report.xml --clean-alluredir -v || true
                     '''
                 }
             }
