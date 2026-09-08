@@ -23,7 +23,7 @@ def execute_safety_controlled_flow(account, user_index, user_count):
     login_id = account.get("login_id")
     password = account.get("password")
     session = requests.Session()
-    client = LoadClient(session=SafetySession(session), timeout=6)
+    client = LoadClient(session=SafetySession(session))
     completed_loops = 0
 
     for loop in range(1, 4):

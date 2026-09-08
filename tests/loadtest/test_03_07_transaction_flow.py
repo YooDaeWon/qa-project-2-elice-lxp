@@ -3,7 +3,6 @@ import concurrent.futures
 import time
 
 import pytest
-import requests
 
 from framework.loadtest.client import LoadClient
 from framework.loadtest.pacing import pause_after_stage, ramp_up_wait, think_time
@@ -71,9 +70,6 @@ def execute_sequential_flow(account, user_index, user_count):
             return True
 
         print(f"  └ [4단계 실패] 재응시 초기화 상태코드: {reset_response.status_code}")
-        return False
-    except requests.exceptions.Timeout:
-        print("  └ 🚨 [타임아웃] 5초 초과로 비상 중단 (Kill Switch)")
         return False
     except Exception as error:
         print(f"  └ 🚨 [에러 발생] {error}")

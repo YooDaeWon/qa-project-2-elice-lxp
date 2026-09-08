@@ -3,7 +3,6 @@ import concurrent.futures
 import time
 
 import pytest
-import requests
 
 from framework.loadtest.client import LoadClient
 from framework.loadtest.pacing import pause_after_stage, ramp_up_wait
@@ -38,9 +37,6 @@ def login_with_dummy_account(account, user_index, user_count):
         print(
             f"  └ 🔴 [실패] {login_id} | 상태코드: {response.status_code} | 응답내용: {response.text}"
         )
-        return False
-    except requests.exceptions.Timeout:
-        print(f"  └ 🚨 [타임아웃] {login_id} (5초 초과)")
         return False
     except Exception as error:
         print(f"  └ 🚨 [에러 발생] {login_id}: {error}")

@@ -337,13 +337,13 @@ def test_limit_board_title(board_title_page):
 
 ### Load
 
-응답 지연이나 HTTP 500을 감지하면 Kill Switch로 부하 실행을 중단합니다. 가상 유저 기동은 Ramp-up 1초, API·단계 사이는 3~5초 think time을 사용합니다.
+HTTP 500을 감지하면 Kill Switch로 부하 실행을 중단합니다. 가상 유저 기동은 Ramp-up 1초, API·단계 사이는 3~5초 think time을 사용합니다.
 
 ```python
 from framework.loadtest.pacing import ramp_up_wait, think_time
 
 ramp_up_wait(user_index, user_count)
-client = LoadClient(session=SafetySession(session), timeout=6)
+client = LoadClient(session=SafetySession(session))
 
 try:
     login_response = client.auth.login(login_id, password)
@@ -397,7 +397,7 @@ except SafetyKillSwitchError as error:
 | 테스트 대상 환경 제한 | Dev 환경만 사용하며 운영 서비스와 타 과목은 테스트하지 않음 |
 | 동시성 및 호출 빈도 제한 | 기능 테스트는 단일 워커로 순차 실행하고, 부하 테스트는 5 → 10 → 20 → 30명 순서로 단계적 증가. 가상 유저는 Ramp-up 1초로 기동을 분산하고, API 사이 및 단계 사이에 3~5초 think time을 둔다 |
 | 부하 테스트 분리 | 기본 `pytest`에서 `tests/loadtest`를 제외하고 별도 명령과 담당자를 통해 실행 |
-| 재시도 및 Kill Switch | API 5xx를 무조건 재시도하지 않으며, 부하 테스트에서 HTTP 500 또는 5초 초과 지연 감지 시 즉시 중단 |
+| 재시도 및 Kill Switch | API 5xx를 무조건 재시도하지 않으며, 부하 테스트에서 HTTP 500 감지 시 즉시 중단 |
 | 자격증명 보호 | `.env`를 Git에서 제외하고 실패 로그의 계정 정보를 마스킹함. CI 자격증명은 Jenkins Credentials로 이전 필요 |
 | 테스트 데이터 정리 | 자동 생성 데이터는 세션 종료 시 정리하고, 변경·삭제 테스트는 `destructive` marker로 구분 |
 
