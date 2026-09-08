@@ -20,6 +20,7 @@ import uuid
 
 import allure
 import pytest
+from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 
 from config.settings import settings
 from framework.api_security.pages.classroom_api import ClassroomApi
@@ -182,14 +183,20 @@ class TestInjection:
 
         # 3단계: 게시글을 열고 렌더링 결과 확인
         page.goto(target_url)
-        page.wait_for_timeout(RENDER_WAIT_MS)
 
         # 페이지 전체가 아니라 게시글 본문 영역만 검사한다.
         # 광고·애널리틱스 스크립트가 정상적으로 쓰는 onload 등을 오탐하지 않기 위함.
         content_area = page.locator(f"#{ARTICLE_CONTENT_ID}")
-        content_html = (
-            content_area.inner_html() if content_area.count() else page.content()
-        )
+        try:
+            content_area.wait_for(state="attached", timeout=15_000)
+        except PlaywrightTimeoutError:
+            raise AssertionError(
+                f"게시글 본문 영역(#{ARTICLE_CONTENT_ID})을 찾지 못함 - "
+                f"게시글 페이지에 정상 도달하지 못한 것으로 추정(url={page.url})"
+            )
+        # 렌더링 자체는 끝났어도, 지연 실행되는 스크립트까지 포착하기 위해 조금 더 기다린다.
+        page.wait_for_timeout(RENDER_WAIT_MS)
+        content_html = content_area.inner_html()
 
         # 주입한 요소에 이벤트 핸들러가 실제로 붙어 있는지 DOM 속성으로 확인
         leaked_handlers = page.evaluate(

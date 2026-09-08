@@ -31,8 +31,9 @@ DUMMY_ID = os.getenv("DUMMY_ID")
 DUMMY_PW = os.getenv("DUMMY_PW")
 
 # ID-30 전용 계정 (권한 부여/회수 반복 검증용 - 다른 테스트와 공유하지 않음)
-WITHDRAW_LOGIN_ID = os.getenv("SEC_WITHDRAW_ID")
-WITHDRAW_PW = os.getenv("SEC_WITHDRAW_PW")
+# Jenkins Credential 파일은 bash로 source되므로 CRLF·공백이 값에 섞여 들어올 수 있어 strip한다.
+WITHDRAW_LOGIN_ID = (os.getenv("SEC_WITHDRAW_ID") or "").strip()
+WITHDRAW_PW = (os.getenv("SEC_WITHDRAW_PW") or "").strip()
 
 # 숫자 계정 ID (성적/BOLA 등 리소스 경로에 쓰는 account_id) - 팀 settings 재사용
 MY_ACCOUNT_ID = settings.STUDENT_ID          # 본인 숫자 id (예: 150)
