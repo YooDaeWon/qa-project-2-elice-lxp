@@ -37,7 +37,7 @@ pipeline {
                     # Docker Jenkins에 npm이 없어도 portable Node로 Allure 3.15.0을 워크스페이스에 설치한다.
                     rm -rf .allure3 .node
                     mkdir -p .allure3 .node
-                    NODE_VERSION=v20.18.1
+                    NODE_VERSION=v20.19.0
                     NODE_DIST="node-${NODE_VERSION}-linux-x64"
                     if ! command -v npm >/dev/null 2>&1; then
                         echo "npm 없음 → portable Node.js ${NODE_VERSION} 다운로드"
@@ -76,7 +76,7 @@ pipeline {
         always {
             // Allure 3 플러그인은 PATH의 allure를 쓴다. portable Node + 워크스페이스 3.15.0을 우선한다.
             withEnv([
-                "PATH+ALLURE=${env.WORKSPACE}/.allure3/node_modules/.bin:${env.WORKSPACE}/.node/node-v20.18.1-linux-x64/bin"
+                "PATH+ALLURE=${env.WORKSPACE}/.allure3/node_modules/.bin:${env.WORKSPACE}/.node/node-v20.19.0-linux-x64/bin"
             ]) {
                 sh '''
                     rm -f .env || true
