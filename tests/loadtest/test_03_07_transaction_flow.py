@@ -6,6 +6,7 @@ import pytest
 import requests
 
 from framework.loadtest.client import LoadClient
+from framework.loadtest.pacing import pause_after_stage, ramp_up_wait, think_time
 from framework.loadtest.report import attach_load_summary
 
 
@@ -16,8 +17,9 @@ pytestmark = [
 ]
 
 
-def execute_sequential_flow(account, user_index):
+def execute_sequential_flow(account, user_index, user_count):
     """로그인부터 재응시 초기화까지 1~4단계 트랜잭션"""
+    ramp_up_wait(user_index, user_count)
     login_id = account.get("login_id")
     password = account.get("password")
     client = LoadClient()
@@ -30,6 +32,7 @@ def execute_sequential_flow(account, user_index):
             print(f"  └ ❌ 로그인 실패 (상태코드: {login_response.status_code})")
             return False
 
+        think_time()
         start_time = time.time()
         course_response = client.course.get_course()
         latency = round((time.time() - start_time) * 1000)
@@ -39,6 +42,7 @@ def execute_sequential_flow(account, user_index):
             print(f"  └ [1단계 실패] 과목 로딩 상태코드: {course_response.status_code}")
             return False
 
+        think_time()
         start_time = time.time()
         enter_response = client.exam.enter()
         latency = round((time.time() - start_time) * 1000)
@@ -48,6 +52,7 @@ def execute_sequential_flow(account, user_index):
             print(f"  └ [2단계 실패] 시험 입장 상태코드: {enter_response.status_code}")
             return False
 
+        think_time()
         start_time = time.time()
         submit_response = client.exam.submit()
         latency = round((time.time() - start_time) * 1000)
@@ -57,6 +62,7 @@ def execute_sequential_flow(account, user_index):
             print(f"  └ [3단계 실패] 답안 제출 상태코드: {submit_response.status_code}")
             return False
 
+        think_time()
         start_time = time.time()
         reset_response = client.exam.reset()
         latency = round((time.time() - start_time) * 1000)
@@ -90,7 +96,9 @@ def test_id_03_07_transaction_flow(accounts, user_count):
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=user_count) as executor:
         futures = [
-            executor.submit(execute_sequential_flow, accounts[index], index)
+            executor.submit(
+                execute_sequential_flow, accounts[index], index, user_count
+            )
             for index in range(user_count)
         ]
 
@@ -116,3 +124,4 @@ def test_id_03_07_transaction_flow(accounts, user_count):
     assert error_rate < 1.0, (
         f"부하 테스트 실패: {user_count}명 환경에서 에러율이 1%를 초과했습니다 ({error_rate}%)"
     )
+    pause_after_stage(user_count)

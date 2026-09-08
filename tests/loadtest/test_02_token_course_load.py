@@ -5,6 +5,7 @@ import time
 import pytest
 
 from framework.loadtest.client import LoadClient
+from framework.loadtest.pacing import pause_after_stage, ramp_up_wait, think_time
 from framework.loadtest.report import attach_load_summary
 
 
@@ -15,8 +16,9 @@ pytestmark = [
 ]
 
 
-def user_flow_with_token(account, user_index):
+def user_flow_with_token(account, user_index, user_count):
     """로그인 후 토큰으로 과목 조회"""
+    ramp_up_wait(user_index, user_count)
     login_id = account.get("login_id")
     password = account.get("password")
     client = LoadClient()
@@ -29,6 +31,7 @@ def user_flow_with_token(account, user_index):
             )
             return False
 
+        think_time()
         token = client.auth.extract_token(login_response)
         headers = {}
         if token:
@@ -67,7 +70,7 @@ def test_id_02_token_course_load(accounts, user_count):
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=user_count) as executor:
         futures = [
-            executor.submit(user_flow_with_token, accounts[index], index)
+            executor.submit(user_flow_with_token, accounts[index], index, user_count)
             for index in range(user_count)
         ]
 
@@ -93,3 +96,4 @@ def test_id_02_token_course_load(accounts, user_count):
     assert error_rate < 1.0, (
         f"토큰 연동 부하 테스트 실패: {user_count}명 환경에서 에러율이 1%를 초과했습니다 ({error_rate}%)"
     )
+    pause_after_stage(user_count)
