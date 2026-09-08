@@ -49,13 +49,16 @@ def verify_course_list_entry(page):
     """학습 과목 목록 진입 검증 및 실패 상태 복구"""
     course_list_page = CourseListPage(page)
     course_page = CoursePage(page)
+    classroom_page = ClassroomPage(page)
     course_list_page.wait_for_list_or_course()
 
     if course_list_page.is_course_list_visible():
         course_list_page.verify_loaded()
         return
 
-    course_page.open_course_list()
+    course_page.open_class_home()
+    classroom_page.verify_loaded()
+    classroom_page.open_learning_subjects_overview()
     course_list_page.verify_loaded()
 
     raise AssertionError(

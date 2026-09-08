@@ -13,6 +13,11 @@ class CoursePage:
             name="과목 목록",
             exact=True,
         )
+        self.class_home_link = page.get_by_role(
+            "link",
+            name="클래스 홈",
+            exact=True,
+        )
         self.lesson_list_tab = page.get_by_role(
             "tab",
             name="수업 목록",
@@ -32,6 +37,10 @@ class CoursePage:
     def open_course_list(self):
         """학습 과목 목록 페이지 열기"""
         self.course_list_button.click()
+
+    def open_class_home(self):
+        """클래스 홈 페이지 열기"""
+        self.class_home_link.click()
 
     def _test_card(self, test_name):
         """시험 이름으로 테스트 카드 찾기"""
