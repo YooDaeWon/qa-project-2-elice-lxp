@@ -25,12 +25,6 @@ from utils.helpers import contains_value, find_dict_by_value, find_first_value, 
 import allure
 
 
-pytestmark = [
-    allure.label("owner", "parksungbin"),
-    allure.label("team", "QA4"),
-]
-
-
 # ---------------------------------------------------------------------------
 # Category helpers
 # ---------------------------------------------------------------------------
@@ -274,6 +268,10 @@ def _tc60_61_precondition_log(
 # ---------------------------------------------------------------------------
 @pytest.mark.board
 @pytest.mark.positive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "52")
+@allure.label("priority", "P1")
 def test_api_52(student_client):
     require_values(CLASSROOM_ID=settings.CLASSROOM_ID)
     data = assert_success(BoardClient(student_client).classroom_articles(settings.CLASSROOM_ID, "created_desc", 0, 10))
@@ -289,6 +287,10 @@ def test_api_52(student_client):
 # ---------------------------------------------------------------------------
 @pytest.mark.board
 @pytest.mark.positive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "53")
+@allure.label("priority", "P1")
 def test_api_53(educator_client):
     require_values(CLASSROOM_ID=settings.CLASSROOM_ID)
     data = assert_success(BoardClient(educator_client).classroom_articles(settings.CLASSROOM_ID, "created_desc", 0, 10))
@@ -304,6 +306,10 @@ def test_api_53(educator_client):
 # ---------------------------------------------------------------------------
 @pytest.mark.board
 @pytest.mark.positive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "54")
+@allure.label("priority", "P1")
 def test_api_54(student_client):
     require_values(ORG=settings.ORG, BOARD_ARTICLE_ID=settings.BOARD_ARTICLE_ID)
     article = _article(BoardClient(student_client), settings.BOARD_ARTICLE_ID)
@@ -317,6 +323,10 @@ def test_api_54(student_client):
 # ---------------------------------------------------------------------------
 @pytest.mark.board
 @pytest.mark.positive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "55")
+@allure.label("priority", "P1")
 def test_api_55(educator_client):
     require_values(ORG=settings.ORG, BOARD_ARTICLE_ID=settings.BOARD_ARTICLE_ID)
     article = _article(BoardClient(educator_client), settings.BOARD_ARTICLE_ID)
@@ -329,6 +339,10 @@ def test_api_55(educator_client):
 # ---------------------------------------------------------------------------
 @pytest.mark.board
 @pytest.mark.destructive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "56")
+@allure.label("priority", "P1")
 def test_api_56(student_client, payloads):
     require_values(ORG=settings.ORG, BOARD_ID=settings.BOARD_ID)
     client = BoardClient(student_client)
@@ -353,6 +367,10 @@ def test_api_56(student_client, payloads):
 # ---------------------------------------------------------------------------
 @pytest.mark.board
 @pytest.mark.destructive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "57")
+@allure.label("priority", "P1")
 def test_api_57(student_client, payloads):
     require_values(ORG=settings.ORG, BOARD_ID=settings.BOARD_ID)
     client = BoardClient(student_client)
@@ -376,6 +394,10 @@ def test_api_57(student_client, payloads):
 # ---------------------------------------------------------------------------
 @pytest.mark.board
 @pytest.mark.destructive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "58")
+@allure.label("priority", "P1")
 def test_api_58(student_client, payloads):
     require_values(ORG=settings.ORG, OWN_ARTICLE_ID=settings.OWN_ARTICLE_ID, BOARD_ID=settings.BOARD_ID)
     client = BoardClient(student_client)
@@ -394,6 +416,10 @@ def test_api_58(student_client, payloads):
 # ---------------------------------------------------------------------------
 @pytest.mark.board
 @pytest.mark.destructive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "59")
+@allure.label("priority", "P1")
 def test_api_59(student_client):
     require_values(ORG=settings.ORG, OWN_ARTICLE_ID=settings.OWN_ARTICLE_ID)
     client = BoardClient(student_client)
@@ -407,6 +433,10 @@ def test_api_59(student_client):
 @pytest.mark.board
 @pytest.mark.negative
 @pytest.mark.destructive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "60")
+@allure.label("priority", "P0")
 def test_api_60(student_a_client, student_b_client, payloads):
     require_values(ORG=settings.ORG, BOARD_ID=settings.BOARD_ID)
 
@@ -473,6 +503,10 @@ def test_api_60(student_a_client, student_b_client, payloads):
 @pytest.mark.board
 @pytest.mark.negative
 @pytest.mark.destructive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "61")
+@allure.label("priority", "P0")
 def test_api_61(student_a_client, student_b_client, payloads):
     require_values(ORG=settings.ORG, BOARD_ID=settings.BOARD_ID)
 
@@ -524,6 +558,10 @@ def test_api_61(student_a_client, student_b_client, payloads):
 # ---------------------------------------------------------------------------
 @pytest.mark.board
 @pytest.mark.destructive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "62")
+@allure.label("priority", "P1")
 def test_api_62(educator_client):
     require_values(ORG=settings.ORG, EDUCATOR_DELETE_ARTICLE_ID=settings.EDUCATOR_DELETE_ARTICLE_ID)
     client = BoardClient(educator_client)
@@ -536,6 +574,10 @@ def test_api_62(educator_client):
 # ---------------------------------------------------------------------------
 @pytest.mark.board
 @pytest.mark.destructive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "63")
+@allure.label("priority", "P1")
 def test_api_63(educator_client, payloads):
     require_values(ORG=settings.ORG, COURSE_ID=settings.COURSE_ID)
     _require_real_notice_board(educator_client)
@@ -560,6 +602,10 @@ def test_api_63(educator_client, payloads):
 @pytest.mark.board
 @pytest.mark.negative
 @pytest.mark.destructive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "64")
+@allure.label("priority", "P0")
 def test_api_64(student_client, educator_client, payloads):
     require_values(ORG=settings.ORG, COURSE_ID=settings.COURSE_ID)
     _require_real_notice_board(educator_client)
@@ -577,6 +623,10 @@ def test_api_64(student_client, educator_client, payloads):
 # ---------------------------------------------------------------------------
 @pytest.mark.board
 @pytest.mark.destructive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "65")
+@allure.label("priority", "P1")
 def test_api_65(educator_client):
     require_values(ORG=settings.ORG, COURSE_ID=settings.COURSE_ID, BOARD_ID=settings.BOARD_ID)
     client = BoardClient(educator_client)
@@ -599,6 +649,10 @@ def test_api_65(educator_client):
 @pytest.mark.board
 @pytest.mark.negative
 @pytest.mark.destructive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "66")
+@allure.label("priority", "P0")
 def test_api_66(student_client, educator_client):
     require_values(ORG=settings.ORG, COURSE_ID=settings.COURSE_ID, BOARD_ID=settings.BOARD_ID)
     owner = BoardClient(educator_client); attacker = BoardClient(student_client)
@@ -616,6 +670,10 @@ def test_api_66(student_client, educator_client):
 @pytest.mark.board
 @pytest.mark.negative
 @pytest.mark.destructive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "67")
+@allure.label("priority", "P0")
 def test_api_67(student_a_client, student_b_client, payloads):
     require_values(ORG=settings.ORG, BOARD_ID=settings.BOARD_ID)
     attacker = BoardClient(student_a_client); owner = BoardClient(student_b_client)
@@ -652,6 +710,10 @@ def test_api_67(student_a_client, student_b_client, payloads):
 @pytest.mark.board
 @pytest.mark.negative
 @pytest.mark.destructive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "68")
+@allure.label("priority", "P2")
 def test_api_68(student_client, payloads):
     require_values(ORG=settings.ORG, BOARD_ID=settings.BOARD_ID)
     client = BoardClient(student_client)
