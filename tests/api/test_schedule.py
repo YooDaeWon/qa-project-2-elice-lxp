@@ -26,12 +26,6 @@ from utils.helpers import contains_value, find_first_value, first_list, require_
 import allure
 
 
-pytestmark = [
-    allure.label("owner", "parksungbin"),
-    allure.label("team", "QA4"),
-]
-
-
 # ---------------------------------------------------------------------------
 # Category helpers
 # ---------------------------------------------------------------------------
@@ -98,6 +92,10 @@ def _find_schedule_by_summary(data, summary):
 # ---------------------------------------------------------------------------
 @pytest.mark.schedule
 @pytest.mark.positive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "39")
+@allure.label("priority", "P1")
 def test_api_39(student_client):
     _require_range()
     data = assert_success(ScheduleClient(student_client).list_schedules(settings.CLASSROOM_ID, settings.DATE_START, settings.DATE_END, settings.SCHEDULE_COUNT))
@@ -109,6 +107,10 @@ def test_api_39(student_client):
 # ---------------------------------------------------------------------------
 @pytest.mark.schedule
 @pytest.mark.positive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "40")
+@allure.label("priority", "P1")
 def test_api_40(educator_client):
     _require_range()
     data = assert_success(ScheduleClient(educator_client).list_schedules(settings.CLASSROOM_ID, settings.DATE_START, settings.DATE_END, settings.SCHEDULE_COUNT))
@@ -120,6 +122,10 @@ def test_api_40(educator_client):
 # ---------------------------------------------------------------------------
 @pytest.mark.schedule
 @pytest.mark.destructive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "41")
+@allure.label("priority", "P1")
 def test_api_41(educator_client):
     _require_range()
     client = ScheduleClient(educator_client)
@@ -160,6 +166,10 @@ def test_api_41(educator_client):
 @pytest.mark.schedule
 @pytest.mark.negative
 @pytest.mark.destructive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "42")
+@allure.label("priority", "P0")
 def test_api_42(student_client):
     _require_range()
     client = ScheduleClient(student_client)
@@ -175,6 +185,10 @@ def test_api_42(student_client):
 # ---------------------------------------------------------------------------
 @pytest.mark.schedule
 @pytest.mark.destructive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "43")
+@allure.label("priority", "P1")
 def test_api_43(educator_client):
     require_values(CLASSROOM_ID=settings.CLASSROOM_ID, SCHEDULE_ID=settings.SCHEDULE_ID)
     client = ScheduleClient(educator_client)
@@ -190,6 +204,10 @@ def test_api_43(educator_client):
 @pytest.mark.schedule
 @pytest.mark.negative
 @pytest.mark.destructive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "44")
+@allure.label("priority", "P0")
 def test_api_44(student_client, educator_client):
     require_values(CLASSROOM_ID=settings.CLASSROOM_ID, BLOCK_UPDATE_SCHEDULE_ID=settings.BLOCK_UPDATE_SCHEDULE_ID)
     owner = ScheduleClient(educator_client)
@@ -207,6 +225,10 @@ def test_api_44(student_client, educator_client):
 # ---------------------------------------------------------------------------
 @pytest.mark.schedule
 @pytest.mark.destructive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "45")
+@allure.label("priority", "P1")
 def test_api_45(educator_client):
     require_values(CLASSROOM_ID=settings.CLASSROOM_ID, DELETE_SCHEDULE_ID=settings.DELETE_SCHEDULE_ID)
     client = ScheduleClient(educator_client)
@@ -220,6 +242,10 @@ def test_api_45(educator_client):
 @pytest.mark.schedule
 @pytest.mark.negative
 @pytest.mark.destructive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "46")
+@allure.label("priority", "P0")
 def test_api_46(student_client, educator_client):
     require_values(CLASSROOM_ID=settings.CLASSROOM_ID, BLOCK_DELETE_SCHEDULE_ID=settings.BLOCK_DELETE_SCHEDULE_ID)
     attacker = ScheduleClient(student_client)
@@ -235,6 +261,10 @@ def test_api_46(student_client, educator_client):
 @pytest.mark.schedule
 @pytest.mark.negative
 @pytest.mark.destructive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "47")
+@allure.label("priority", "P2")
 def test_api_47(educator_client):
     _require_range()
     client = ScheduleClient(educator_client)
@@ -251,6 +281,10 @@ def test_api_47(educator_client):
 # ---------------------------------------------------------------------------
 @pytest.mark.schedule
 @pytest.mark.destructive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "48")
+@allure.label("priority", "P1")
 def test_api_48(educator_client):
     _require_range(); require_values(COURSE_ID=settings.COURSE_ID)
     client = ScheduleClient(educator_client)
@@ -308,6 +342,10 @@ def test_api_48(educator_client):
 @pytest.mark.schedule
 @pytest.mark.negative
 @pytest.mark.destructive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "49")
+@allure.label("priority", "P0")
 def test_api_49(student_client):
     _require_range(); require_values(COURSE_ID=settings.COURSE_ID)
     client = ScheduleClient(student_client)
@@ -323,6 +361,10 @@ def test_api_49(student_client):
 # ---------------------------------------------------------------------------
 @pytest.mark.schedule
 @pytest.mark.positive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "50")
+@allure.label("priority", "P1")
 def test_api_50(student_client):
     require_values(ORG=settings.ORG, LECTUREROOM_ID=settings.LECTUREROOM_ID)
     data = assert_success(ScheduleClient(student_client).join_lectureroom(settings.ORG, settings.LECTUREROOM_ID, 0))
@@ -335,6 +377,10 @@ def test_api_50(student_client):
 # ---------------------------------------------------------------------------
 @pytest.mark.schedule
 @pytest.mark.positive
+@allure.label("owner", "parkseongbin")
+@allure.label("team", "QA4")
+@allure.label("tc_id", "51")
+@allure.label("priority", "P1")
 def test_api_51(educator_client):
     require_values(ORG=settings.ORG, LECTUREROOM_ID=settings.LECTUREROOM_ID)
     data = assert_success(ScheduleClient(educator_client).join_lectureroom(settings.ORG, settings.LECTUREROOM_ID, 10))
