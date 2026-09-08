@@ -66,6 +66,11 @@ class Settings:
     STSESSION_A_KEY = _env("STSESSION_A_KEY")
     STSESSION_B_KEY = _env("STSESSION_B_KEY")
 
+    # TC60/TC61/TC67 전용 더미 학습자 로그인 계정
+    # 기존 STSESSION_B_KEY는 다른 테스트에서 계속 사용한다.
+    DUMMY_2_ID = _env("DUMMY_2_ID")
+    DUMMY_2_PW = _env("DUMMY_2_PW")
+
     # 개발가이드의 기관 경로는 /org/academy/... 이다.
     # 기존 .env에 qatrack이 남아 있어도 AUTO_DISCOVER 시 후보를 실제 API로 검사해 교정한다.
     ORG = _env("ORG", "academy")

@@ -12,6 +12,7 @@ except ImportError:
 
 from clients.api_client import APIClient
 from config.settings import settings
+from framework.api_security.pages.account_client import AccountClient
 from utils.auto_data import AutoDataResolver
 from utils.tc_catalog import TC_META
 
@@ -182,13 +183,58 @@ def student_a_client():
 
 @pytest.fixture(scope="session")
 def student_b_client():
+    """기존 STSESSION_B_KEY 기반 수강생 B 클라이언트.
+
+    다른 테스트에서 계속 사용할 수 있도록 기존 동작을 유지한다.
+    """
     if not settings.STSESSION_B_KEY:
-        pytest.skip(
-            "TC60/TC61/TC67용 STSESSION_B_KEY이 설정되지 않았습니다."
-        )
+        pytest.skip("STSESSION_B_KEY가 설정되지 않았습니다.")
     client = APIClient(settings.STSESSION_B_KEY, role="student_b")
     yield client
     client.close()
+
+
+@pytest.fixture(scope="function")
+def dummy_2_client():
+    """TC60/TC61/TC67 전용 더미계정으로 테스트마다 새 토큰을 발급한다."""
+    login_id = settings.DUMMY_2_ID
+    password = settings.DUMMY_2_PW
+
+    if not login_id or not password:
+        pytest.skip(
+            "TC60/TC61/TC67 전용 더미계정이 설정되지 않았습니다. "
+            ".env에 DUMMY_2_ID와 DUMMY_2_PW를 입력하세요."
+        )
+
+    account_client = AccountClient()
+    try:
+        response = account_client.login(login_id, password)
+
+        try:
+            data = response.json()
+        except ValueError:
+            data = {}
+
+        token = data.get("access_token") if isinstance(data, dict) else None
+
+        if response.status_code != 200 or not token:
+            fail_code = data.get("fail_code") if isinstance(data, dict) else None
+            fail_message = data.get("fail_message") if isinstance(data, dict) else None
+            pytest.fail(
+                "DUMMY_2 로그인 또는 access_token 발급 실패 | "
+                f"http={response.status_code}, "
+                f"fail_code={fail_code}, fail_message={fail_message}"
+            )
+
+        print("[DUMMY_2 AUTH] 로그인 성공 - 이번 테스트용 새 access_token 발급 완료")
+
+        client = APIClient(token, role="dummy_2_student")
+        try:
+            yield client
+        finally:
+            client.close()
+    finally:
+        account_client.api.close()
 
 
 @pytest.fixture(scope="session")
