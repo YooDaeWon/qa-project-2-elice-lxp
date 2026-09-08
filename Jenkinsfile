@@ -85,10 +85,11 @@ pipeline {
                     allure --version || true
                 '''
                 allure(
-                    allureVersion: '3',
+                    commandline: 'allure',
                     // configPath: 'allurerc.yml',
                     includeProperties: false,
-                    report: 'allure-report',
+                    jdk: '',
+                    resultPolicy: 'LEAVE_AS_IS',
                     results: [[path: 'allure-results']]
                 )
             }
