@@ -5,6 +5,7 @@ import time
 import pytest
 
 from framework.loadtest.client import LoadClient
+from framework.loadtest.pacing import pause_after_stage, ramp_up_wait, think_time
 from framework.loadtest.report import attach_load_summary
 
 
@@ -15,27 +16,45 @@ pytestmark = [
 ]
 
 
-def execute_single_user_flow(account):
+def execute_single_user_flow(account, user_index, user_count):
     """단일 유저가 1~4단계를 1회 완주"""
+    ramp_up_wait(user_index, user_count)
     login_id = account.get("login_id")
     password = account.get("password")
     client = LoadClient()
-    start_time = time.time()
+    api_elapsed = 0.0
 
     try:
+        started = time.time()
         if client.auth.login(login_id, password).status_code != 200:
             return False, 0
+        api_elapsed += time.time() - started
+
+        think_time()
+        started = time.time()
         if client.course.get_course().status_code != 200:
             return False, 0
+        api_elapsed += time.time() - started
+
+        think_time()
+        started = time.time()
         if client.exam.enter().status_code not in [200, 201]:
             return False, 0
+        api_elapsed += time.time() - started
+
+        think_time()
+        started = time.time()
         if client.exam.submit().status_code != 200:
             return False, 0
+        api_elapsed += time.time() - started
+
+        think_time()
+        started = time.time()
         if client.exam.reset().status_code != 200:
             return False, 0
+        api_elapsed += time.time() - started
 
-        total_latency = round((time.time() - start_time) * 1000)
-        return True, total_latency
+        return True, round(api_elapsed * 1000)
     except Exception:
         return False, 0
 
@@ -55,9 +74,11 @@ def test_id_08_11_load_profile(accounts, target_users):
     print(f"\n[Pytest 부하 프로필] {target_users}명 동시 접속 테스트 시작 (Loop 3회)")
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=target_users) as executor:
-        for _ in range(3):
+        for loop in range(3):
             futures = [
-                executor.submit(execute_single_user_flow, accounts[index])
+                executor.submit(
+                    execute_single_user_flow, accounts[index], index, target_users
+                )
                 for index in range(target_users)
             ]
             for future in concurrent.futures.as_completed(futures):
@@ -67,6 +88,8 @@ def test_id_08_11_load_profile(accounts, target_users):
                     all_latencies.append(latency)
                 else:
                     fail_count += 1
+            if loop < 2:
+                think_time()
 
     error_rate = (fail_count / total_requests) * 100
     avg_latency = sum(all_latencies) / len(all_latencies) if all_latencies else 0
@@ -99,3 +122,4 @@ def test_id_08_11_load_profile(accounts, target_users):
         f"부하 테스트 실패: {target_users}명 환경에서 평균 Latency({round(avg_latency)}ms)가 "
         f"허용 기준치({max_allowed_latency}ms)를 초과했습니다."
     )
+    pause_after_stage(target_users)

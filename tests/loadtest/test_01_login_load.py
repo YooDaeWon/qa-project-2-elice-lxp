@@ -6,6 +6,7 @@ import pytest
 import requests
 
 from framework.loadtest.client import LoadClient
+from framework.loadtest.pacing import pause_after_stage, ramp_up_wait
 from framework.loadtest.report import attach_load_summary
 
 
@@ -16,8 +17,9 @@ pytestmark = [
 ]
 
 
-def login_with_dummy_account(account, user_index):
+def login_with_dummy_account(account, user_index, user_count):
     """단일 유저 로그인 요청"""
+    ramp_up_wait(user_index, user_count)
     login_id = account.get("login_id")
     password = account.get("password")
     client = LoadClient()
@@ -61,7 +63,9 @@ def test_id_01_login_load(accounts, user_count):
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=user_count) as executor:
         futures = [
-            executor.submit(login_with_dummy_account, accounts[index], index)
+            executor.submit(
+                login_with_dummy_account, accounts[index], index, user_count
+            )
             for index in range(user_count)
         ]
 
@@ -91,3 +95,4 @@ def test_id_01_login_load(accounts, user_count):
     assert error_rate < 1.0, (
         f"로그인 부하 테스트 실패: {user_count}명 환경에서 에러율이 1%를 초과했습니다 ({error_rate}%)"
     )
+    pause_after_stage(user_count)
