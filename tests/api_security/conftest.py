@@ -39,6 +39,12 @@ MY_ACCOUNT_ID = settings.STUDENT_ID          # 본인 숫자 id (예: 150)
 OTHER_STUDENT_ID = settings.OTHER_STUDENT_ID  # 타인 숫자 id (예: 177)
 
 
+@pytest.fixture(scope="session")
+def browser_context_args(browser_context_args):
+    """브라우저 필요 케이스(ID-38 등) 언어를 한국어로 고정 (CI 기본 로케일은 영어)."""
+    return {**browser_context_args, "locale": "ko-KR"}
+
+
 @pytest.fixture
 def account_client():
     """account-api 로그인 클라이언트 (토큰 없이 익명 호출)"""
