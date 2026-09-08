@@ -4,10 +4,10 @@ import pytest
 from framework.e2euiux.flows import (
     login_to_main,
     open_sandbox_from_course_list,
+    verify_course_list_entry,
 )
 from framework.e2euiux.pages import (
     ClassroomPage,
-    CourseListPage,
     CoursePage,
     ExamCompletePage,
     ExamNoticePage,
@@ -68,9 +68,7 @@ def test_open_course_list(e2e_page):
     학습 과목 목록 페이지와 SANDBOX 과목 페이지로 랜덤하게 전환됨"""
     classroom_page = ClassroomPage(e2e_page)
     classroom_page.open_learning_subjects()
-
-    course_list_page = CourseListPage(e2e_page)
-    course_list_page.verify_page_title()
+    verify_course_list_entry(e2e_page)
 
 
 @allure.label("tc_id", "05")

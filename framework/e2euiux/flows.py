@@ -45,14 +45,28 @@ def open_sandbox_for_setup(page):
     return course_page
 
 
-def open_sandbox_from_course_list(page):
-    """목록 복구 후 SANDBOX 카드 클릭 경로 검증"""
+def verify_course_list_entry(page):
+    """학습 과목 목록 진입 검증 및 실패 상태 복구"""
     course_list_page = CourseListPage(page)
     course_page = CoursePage(page)
     course_list_page.wait_for_list_or_course()
 
-    if not course_list_page.is_course_list_visible():
-        course_page.open_course_list()
+    if course_list_page.is_course_list_visible():
+        course_list_page.verify_loaded()
+        return
+
+    course_page.open_course_list()
+    course_list_page.verify_loaded()
+
+    raise AssertionError(
+        "학습 과목 버튼이 학습 과목 목록이 아닌 SANDBOX 페이지로 이동함"
+    )
+
+
+def open_sandbox_from_course_list(page):
+    """학습 과목 목록에서 SANDBOX 카드 클릭 경로 검증"""
+    course_list_page = CourseListPage(page)
+    course_page = CoursePage(page)
 
     course_list_page.verify_loaded()
     course_list_page.open_sandbox()
