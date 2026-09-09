@@ -6,16 +6,15 @@
 2. [팀 구성 및 업무 분장](#2-팀-구성-및-업무-분장)
 3. [기술 스택](#3-기술-스택)
 4. [프로젝트 구조](#4-프로젝트-구조)
-5. [테스트 설계](#5-테스트-설계)
-6. [코드 작성 기준](#6-코드-작성-기준)
-7. [실행 환경 및 설치](#7-실행-환경-및-설치)
-8. [테스트 실행 방법](#8-테스트-실행-방법)
-9. [핵심 코드 스니펫](#9-핵심-코드-스니펫)
-10. [CI/CD 파이프라인](#10-cicd-파이프라인)
-11. [테스트 결과 및 산출물](#11-테스트-결과-및-산출물)
-12. [Safety Design](#12-safety-design)
-13. [트러블슈팅 및 알려진 이슈](#13-트러블슈팅-및-알려진-이슈)
-14. [참고 자료](#14-참고-자료)
+5. [코드 작성 기준](#5-코드-작성-기준)
+6. [실행 환경 및 설치](#6-실행-환경-및-설치)
+7. [테스트 실행 방법](#7-테스트-실행-방법)
+8. [핵심 코드 스니펫](#8-핵심-코드-스니펫)
+9. [CI/CD 파이프라인](#9-cicd-파이프라인)
+10. [테스트 결과 및 산출물](#10-테스트-결과-및-산출물)
+11. [Safety Design](#11-safety-design)
+12. [트러블슈팅 및 알려진 이슈](#12-트러블슈팅-및-알려진-이슈)
+13. [참고 자료](#13-참고-자료)
 
 ---
 
@@ -23,7 +22,7 @@
 
 ### 프로젝트 목적
 ```
--
+Elice LXP의 핵심 기능을 자동화 테스트로 검증하고 CI를 통해 지속적인 품질 관리를 수행한다.
 ```
 
 ### 테스트 대상 서비스
@@ -33,9 +32,15 @@
 | Elice LXP(Dev)| [https://dev-qatrack-web.dev.elicer.io/lxp](https://dev-qatrack-web.dev.elicer.io/lxp) |
 
 ### 테스트 범위
-```
--
-```
+
+Elice LXP(Dev)를 대상으로 기능, 보안, 성능 및 사용자 흐름을 검증한다. 테스트 케이스 문서에 설계된 범위는 총 191건이다.
+
+| 테스트 영역 | TC 수 | 주요 검증 범위 |
+| --- | ---: | --- |
+| [API](https://docs.google.com/spreadsheets/d/19UYRMJlXTdcG8zDIy5Gt8rRAlB0yT8is74YtEo1CMWM/edit?gid=1167603962#gid=1167603962) | 68 | 클래스 홈, 학습 과목, 수업 일정, 게시판 API의 조회·생성·수정·삭제와 학습자·교육자 권한 검증 |
+| [API 호출 보안](https://docs.google.com/spreadsheets/d/19UYRMJlXTdcG8zDIy5Gt8rRAlB0yT8is74YtEo1CMWM/edit?gid=1399124983#gid=1399124983) | 47 | 인증 강도, 토큰·세션, BOLA, 권한 상승, 기관·클래스 접근 통제, 비즈니스 로직, 인젝션 및 정보 노출 검증 |
+| [부하 테스트](https://docs.google.com/spreadsheets/d/19UYRMJlXTdcG8zDIy5Gt8rRAlB0yT8is74YtEo1CMWM/edit?gid=151845502#gid=151845502) | 16 | 계정·토큰 준비, 과목 조회와 시험 입장·제출·재응시 흐름, 5~30명 부하 프로필, Kill Switch와 호출 간격 검증 |
+| [E2E/UI/UX](https://docs.google.com/spreadsheets/d/19UYRMJlXTdcG8zDIy5Gt8rRAlB0yT8is74YtEo1CMWM/edit?gid=1802487519#gid=1802487519) | 60 | 로그인, 클래스·과목·시험, 게시판, 수업 일정, 반응형 UI와 네트워크·중복 요청·시간 초과·HTTP 오류 등 예외 흐름 검증 |
 
 ---
 
@@ -43,10 +48,10 @@
 
 | 팀원 | 역할 | 담당 테스트 영역 | 담당 산출물 |
 | --- | --- | --- | --- |
-| 이효민 | 팀장 | 부하 테스트 | |
+| 이효민 | 팀장 | 부하 테스트 | QA 자동화 테스트 계획서, 최종 발표 자료|
 | 박성빈 | 팀원 | API 테스트 | |
-| 유대원 | 팀원 | API 테스트 | |
-| 홍성우 | 팀원 | E2E/UI/UX 테스트 | |
+| 유대원 | 팀원 | API 보안 테스트 | |
+| 홍성우 | 팀원 | E2E/UI/UX 테스트 | QA 자동화 테스트 결과 보고서, README.md |
 
 ---
 
@@ -59,7 +64,7 @@
 | 테스트 실행 | pytest | 테스트 수집, fixture 및 실행 결과 관리 |
 | UI 자동화 | Playwright | Chromium 기반 E2E/UI/UX 테스트 |
 | API 테스트 | Requests | HTTP 요청 및 응답 검증 |
-| 부하 테스트 | ThreadPoolExecutor | 가상 사용자 동시 요청 실행 |
+| 부하 테스트 | Requests, JMeter |  |
 
 ### 언어 및 라이브러리
 
@@ -90,68 +95,72 @@
 
 | 경로 | 역할 |
 | --- | --- |
-| `tests/e2euiux/` | Playwright E2E/UI/UX 테스트 |
 | `tests/api/` | 클래스, 과목, 일정, 게시판 API 테스트 |
 | `tests/api_security/` | 인증, 권한, 세션 및 웹 보안 테스트 |
+| `tests/e2euiux/` | Playwright 기반 E2E/UI/UX 테스트 |
 | `tests/loadtest/` | 경량 부하 및 안전성 통제 테스트 |
-| `framework/e2euiux/` | E2E 공통 flow와 페이지 객체 |
-| `framework/api_security/` | API Security 요청 객체와 보안 유틸리티 |
-| `framework/loadtest/` | 부하 테스트 클라이언트와 Kill Switch |
-| `clients/` | 공통 API 요청 클라이언트 |
-| `config/` | 환경변수와 공통 설정 |
-| `data/` | API 명세, payload와 테스트 데이터 |
-| `utils/` | assertion, Allure, 자동 데이터 준비 유틸리티 |
-| `scripts/` | 테스트 지원 스크립트 |
-| `videos/` | Playwright 실행 영상 보관 |
-| `allure-results/` | Allure 원본 결과 저장 |
+| `framework/api/` | API 영역별 요청 클라이언트 |
+| `framework/api_security/` | API Security 요청 객체, 토큰 및 명세 비교 기능 |
+| `framework/e2euiux/` | E2E 공통 flow와 페이지 객체(POM) |
+| `framework/loadtest/` | 부하 테스트 클라이언트, pacing, 리포트 및 Kill Switch |
+| `clients/` | API와 API Security가 함께 사용하는 기본 HTTP 클라이언트 |
+| `config/` | 환경변수 로드와 공통 설정 |
+| `data/` | API 명세, 요청 payload와 테스트 데이터 |
+| `utils/` | API 계열 assertion, Allure, 데이터 준비 및 공통 유틸리티 |
+| `scripts/` | HAR 요약 생성 등 테스트 지원 스크립트 |
+
+
+### 주요 설정 파일
+
+| 파일 | 역할 |
+| --- | --- |
+| `.env.sample` | 테스트 실행에 필요한 환경변수 예시 |
+| `pytest.ini` | pytest 옵션과 marker 등록 |
+| `requirements.txt` | Python 패키지 의존성 |
+| `Jenkinsfile` | 전체 테스트 실행을 위한 Jenkins CI 파이프라인 정의 |
+| `Jenkinsfile.api` | `tests/api/` 전용 테스트 실행과 Allure·Discord 연동을 위한 Jenkins CI 파이프라인 정의 |
+| `Jenkinsfile.api_security` | `tests/api_security/` 전용 테스트 실행과 Allure·Discord 연동을 위한 Jenkins CI 파이프라인 정의 |
+| `Jenkinsfile.e2euiux` | `tests/e2euiux/` 전용 테스트 실행과 Allure·Discord 연동을 위한 Jenkins CI 파이프라인 정의 |
 
 ### 테스트 영역별 구성
 
 | 테스트 영역 | 테스트 경로 | Framework/Client | 구성 |
 | --- | --- | --- | --- |
 | E2E/UI/UX | `tests/e2euiux/` | `framework/e2euiux/` | 사용자 흐름, 예외 상황, 반응형 UI 검증 |
-| API | `tests/api/` | `clients/` | 클래스, 과목, 일정, 게시판 API 검증 |
-| API Security | `tests/api_security/` | `framework/api_security/` | 인증, 세션, BOLA, 권한상승, 인젝션 검증 |
+| API | `tests/api/` | `framework/api/`, `clients/` | 클래스, 과목, 일정, 게시판 API 검증 |
+| API Security | `tests/api_security/` | `framework/api_security/`, `clients/` | 인증, 세션, BOLA, 권한상승, 인젝션 검증 |
 | Load | `tests/loadtest/` | `framework/loadtest/` | 단계별 동시 사용자와 안전성 통제 검증 |
 
 ---
 
-## 5. 테스트 설계
-```
--
-```
+## 5. 코드 작성 기준
 
----
+### 영역별 코드 구조
 
-## 6. 코드 작성 기준
+| 테스트 영역 | 주요 위치 | 구성 기준 |
+| --- | --- | --- |
+| API | `framework/api/`, `clients/`, `utils/` | 영역별 요청 클라이언트와 공통 HTTP 요청·응답 검증 기능 분리 |
+| API Security | `framework/api_security/`, `clients/`, `utils/` | 보안 대상별 요청 객체와 토큰·명세 분석 및 공통 응답 검증 기능 분리 |
+| E2E/UI/UX | `framework/e2euiux/pages/`, `framework/e2euiux/flows.py` | 페이지 내부 동작은 POM, 여러 페이지를 잇는 반복 절차는 flow로 관리 |
+| Load | `framework/loadtest/` | 계정, 요청 클라이언트, pacing, 안전성 통제와 리포트 기능 분리 |
 
-### POM 구조
+### E2E POM 기준
 
 | 구분 | 위치 | 기준 |
 | --- | --- | --- |
-| Locator | `framework/e2euiux/pages/` | 페이지별 요소 선택자를 한곳에서 관리 |
-| 동작 | `framework/e2euiux/pages/` | 클릭, 입력 등 한 페이지 안의 동작 관리 |
-| 검증 | `framework/e2euiux/pages/` | Playwright `expect`를 이용한 화면 상태 검증 |
-| Flow | `framework/e2euiux/flows.py` | 여러 페이지에서 반복되는 이동 절차 관리 |
+| Page Object | `framework/e2euiux/pages/` | 페이지별 locator, 동작과 화면 검증 관리 |
+| Flow | `framework/e2euiux/flows.py` | 여러 페이지에서 반복되는 공통 절차 관리 |
 
 ### fixture 사용 기준
 
-| 기준 | 설명 |
-| --- | --- |
-| `session` scope | 전체 실행에서 공통으로 사용하는 계정 및 설정 관리 |
-| `module` scope | 하나의 E2E flow에서 브라우저 상태 공유 |
-| `function` scope | 서로 영향을 주면 안 되는 독립 테스트 상태 관리 |
-| 종료 처리 | context, session과 자동 생성 데이터 정리 |
-| 사전조건 | 로그인, 시험 재응시 허용, API 테스트 데이터 준비 |
-
-### locator 기준
-
-| 우선순위 | 기준 | 예시 |
-| ---: | --- | --- |
-| 1 | 입력 요소의 안정적인 `name` 속성 | `locator('input[name="loginId"]')` |
-| 2 | 버튼과 링크의 role 및 접근성 이름 | `get_by_role("button", name="로그인")` |
-| 3 | 고유한 화면 문구 | `get_by_text("페이지를 찾을 수 없습니다.")` |
-| 4 | 안정적인 CSS 속성 | `locator('[data-lexical-editor="true"]')` |
+| 테스트 영역 | 주요 fixture | 사용 기준 |
+| --- | --- | --- |
+| 공통 | 각 영역의 `conftest.py` | 반복되는 사전조건과 자원 생명주기를 관리하고 테스트 함수에는 검증 흐름만 유지 |
+| API | 사용자별 client, `payloads`, 자동 데이터 탐색 | 여러 TC에서 재사용하는 인증 client와 payload는 `session` scope로 관리 |
+| API Security | 사용자별 token과 client | 토큰·세션 간 상태 간섭을 줄이기 위해 기본적으로 함수 단위로 준비 |
+| E2E/UI/UX | 계정, 브라우저 context, 시험 초기화 | 계정은 `session`, 연속 flow는 `module`, 독립 상태와 초기화는 `function` scope로 관리 |
+| Load | `accounts` | 전체 부하 시나리오에서 사용할 계정 목록을 `session` scope로 한 번 로드 |
+| 종료 처리 | 생성 데이터, 브라우저 context와 외부 자원 | fixture에서 생성한 자원은 가능한 경우 `yield` 이후 정리하고 테스트 간 영향을 최소화 |
 
 
 ### marker 및 Allure 메타데이터
@@ -160,7 +169,7 @@
 | --- | --- |
 | pytest marker | 테스트 영역과 flow를 선택 실행하는 기준 |
 | `tc_id` | Google Sheet TC와 자동화 결과 연결 |
-| `priority` | `P1`, `P2` 중요도 구분 |
+| `priority` | `P0`, `P1`, `P2` 중요도 구분 |
 | `owner` | 테스트 담당자 표시 |
 | `team` | 담당 팀 표시 |
 | Allure title/feature | API Security 테스트의 기능과 목적 표시 |
@@ -176,11 +185,11 @@ marker 목록은 `pytest.ini`, E2E 메타데이터와 수집 순서는 `tests/e2
 | API Security | 보안 카테고리별 테스트 파일 수집 순서 |
 | Load | marker와 단계별 가상 사용자 수 기준 |
 
-E2E flow는 이전 TC의 화면 상태를 이어받을 수 있으므로 개별 ID만 단독으로 실행하지 않으며, 병렬 실행 옵션 `-n`을 사용하지 않습니다.
+E2E flow는 이전 TC의 화면 상태를 이어받을 수 있으므로 개별 ID만 단독으로 실행하지 않으며, 병렬 실행 옵션을 사용하지 않습니다.
 
 ---
 
-## 7. 실행 환경 및 설치
+## 6. 실행 환경 및 설치
 
 ### 지원 환경
 
@@ -214,11 +223,11 @@ python -m playwright install chromium
 Copy-Item .env.sample .env
 ```
 
-CI의 민감정보는 Jenkins Credentials를 통해 주입하는 방식입니다.
+CI의 민감정보는 `Jenkins Credentials`를 통해 주입하는 방식입니다.
 
 ---
 
-## 8. 테스트 실행 방법
+## 7. 테스트 실행 방법
 
 ### 전체 실행
 
@@ -283,7 +292,7 @@ pytest -v --alluredir allure-results --clean-alluredir --video=retain-on-failure
 
 ---
 
-## 9. 핵심 코드 스니펫
+## 8. 핵심 코드 스니펫
 
 ### API
 
@@ -315,10 +324,6 @@ def test_id01_정상_로그인_토큰_발급(self, account_client):
     assert response.status_code == 200
     assert body.get("access_token")
 ```
-### 3. .env 환경변수
-로컬에서는 프로젝트 루트 `.env`를 pytest가 읽습니다. (`.env.sample` 참고)
-
-Jenkins Pipeline은 Secret file Credentials(`seethrough-env`)를 환경 변수로 주입한 뒤 `SEETHROUGH_USE_CREDENTIALS=1`로 `.env` 파일 로드를 건너뜁니다.
 
 ### E2E/UI/UX
 
@@ -355,7 +360,7 @@ except SafetyKillSwitchError as error:
 
 ---
 
-## 10. CI/CD 파이프라인
+## 9. CI 및 테스트 자동화 파이프라인
 
 ### 전체 실행 순서
 ```
@@ -363,9 +368,10 @@ except SafetyKillSwitchError as error:
 ```
 
 ### GitLab 자동 빌드 조건
-```
--
-```
+
+- GitLab Push Event 발생 시 Webhook을 통해 Jenkins 파이프라인을 자동 실행한다.
+- 브랜치 범위는 GitLab Webhook 및 Jenkins 작업 설정에 따른다.
+
 
 ### Jenkins Credentials
 ```
@@ -373,47 +379,60 @@ except SafetyKillSwitchError as error:
 ```
 
 ### Allure 및 Discord 연동
-```
--
-```
+
+- pytest 실행 시 `allure-results/`에 Allure 원본 결과를 저장하고 `junit-report.xml`에 테스트 결과를 기록한다
+- Jenkins Pipeline 종료 후 Allure 플러그인이 `allure-results/`를 기반으로 `allure-report`를 생성하고 게시한다
+- Jenkins는 JUnit 결과에서 전체·통과·실패·오류·스킵 건수와 최종 성공률을 계산한다
+- 빌드 상태가 `SUCCESS`, `UNSTABLE`, `FAILURE`일 때 각각 Discord Webhook으로 테스트 요약과 Jenkins 빌드 상세 링크를 전송한다
+
+<img src="docs/images/discord_test_summary.png" alt="Discord 테스트 결과 요약 알림" width="360">
 
 ---
 
-## 11. 테스트 결과 및 산출물
+## 10. 테스트 결과 및 산출물
 
 | 항목 | 결과 및 이미지 |
 | --- | --- |
-| TC 문서 | |
-| Allure 리포트 | |
-| Jenkins 실행 결과 | |
-| 결함 및 영상 증거 | |
+| TC 문서 | <img src="docs/images/TC_img_01.png" alt="테스트 케이스 문서" width="900"> |
+| Allure 리포트 | <img src="docs/images/allure_report_overview.png" alt="Allure 리포트 전체 결과" width="900"><br><br><img src="docs/images/allure_test_detail.png" alt="Allure 테스트 상세 결과" width="900"> |
+| Jenkins 실행 결과 | <img src="docs/images/jenkins_pipeline_result.png" alt="Jenkins 파이프라인 실행 결과" width="900"> |
+| 결함 및 영상 증거 | ![E2E/UI/UX 45 게시글 중복 작성 결함 영상](docs/bug_videos/e2euiux_45.webm) |
 
 ---
 
-## 12. Safety Design
+## 11. Safety Design
 
 | 안전 항목 | 적용 기준 |
 | --- | --- |
 | 테스트 대상 환경 제한 | Dev 환경만 사용하며 운영 서비스와 타 과목은 테스트하지 않음 |
-| 동시성 및 호출 빈도 제한 | 기능 테스트는 단일 워커로 순차 실행하고, 부하 테스트는 5 → 10 → 20 → 30명 순서로 단계적 증가. 가상 유저는 Ramp-up 1초로 기동을 분산하고, API 사이 및 단계 사이에 3~5초 think time을 둔다 |
+| 동시성 및 호출 빈도 제한 | - |
 | 부하 테스트 분리 | 기본 `pytest`에서 `tests/loadtest`를 제외하고 별도 명령과 담당자를 통해 실행 |
-| 재시도 및 Kill Switch | API 5xx를 무조건 재시도하지 않으며, 부하 테스트에서 HTTP 500 감지 시 즉시 중단 |
-| 자격증명 보호 | `.env`를 Git에서 제외하고 실패 로그의 계정 정보를 마스킹함. CI 자격증명은 Jenkins Credentials로 이전 필요 |
+| 재시도 및 Kill Switch | - |
+| 자격증명 보호 | `.env`를 Git에서 제외하고 실패 로그의 계정 정보를 마스킹함. CI 자격증명은 Jenkins Credentials 적용 |
 | 테스트 데이터 정리 | 자동 생성 데이터는 세션 종료 시 정리하고, 변경·삭제 테스트는 `destructive` marker로 구분 |
 
-E2E/UI/UX 테스트는 테스트 간 상태 충돌을 방지하기 위해 `pytest-xdist` 병렬 실행 옵션 `-n`을 사용하지 않습니다.
 
 ---
 
-## 13. 트러블슈팅 및 알려진 이슈
-13-1. 
-```
--
-```
+## 12. 트러블슈팅 및 알려진 이슈
+
+| 이슈 | 현상 | 확인 및 대응 |
+| --- | --- | --- |
+| 로그인 세션 끊김 및<br>재로그인 페이지 전환 | 로그인 후 LXP 메인 페이지 대신<br>재로그인 페이지`accounts/signin/history`로 이동해<br>후속 테스트가 실패할 수 있음 | 최종 URL과 인증 응답 상태를 확인하고,<br>재로그인 페이지면 기록 삭제 후 로그인 페이지로 돌아가<br>정보를 다시 입력해 메인 페이지 표시 여부를 확인함 |
+| 안정성 통제 기준에 따른<br>부하테스트 실패 | 테스트 케이스 설계 단계에서 모든 테스트 스텝에<br>`Latency < 5,000ms` Time-Out 통제를 적용했으나,<br>부하테스트에서 주요 실패 원인으로 작용해<br>대부분의 케이스가 실패함 | 부하테스트에서 해당 통제를 완화한 뒤 재실행했고,<br>테스트 성공을 확인함 |
 
 ---
 
-## 14. 참고 자료
-```
--
-```
+## 13. 참고 자료
+
+| 구분 | 참고 문서 | 활용 내용 |
+| --- | --- | --- |
+| 테스트 프레임워크 | [pytest 공식 문서](https://docs.pytest.org/en/stable/) | 테스트 실행, fixture, marker 및 pytest hook |
+| E2E/UI 자동화 | [Playwright Python 공식 문서](https://playwright.dev/python/docs/intro) | 브라우저 제어, locator, assertion 및 테스트 실행 |
+| API 테스트 | [Requests 공식 문서](https://docs.python-requests.org/en/stable/) | HTTP 요청, 인증, 세션 및 응답 처리 |
+| API 보안 설계 | [OWASP API Security Top 10 2023](https://owasp.org/API-Security/editions/2023/en/0x11-t10/) | 인증, 객체 권한, 자원 소비, 비즈니스 흐름 및 보안 설정 위험 기반 테스트 설계 |
+| 부하 테스트 | [Requests 공식 문서](https://docs.python-requests.org/en/stable/), [Apache JMeter 공식 문서](https://jmeter.apache.org/usermanual/) | Requests 기반 HTTP 요청·세션 처리와 JMeter 기반 Ramp-up 및 동시 사용자 부하 시나리오 검증 |
+| 테스트 리포트 | [Allure Report 공식 문서](https://allurereport.org/docs/) | pytest 결과 수집, 첨부 파일 및 HTML 리포트 생성 |
+| CI 파이프라인 | [Jenkins Pipeline 공식 문서](https://www.jenkins.io/doc/book/pipeline/) | Jenkinsfile 기반 테스트 실행과 결과 게시 |
+| 자동 빌드 트리거 | [GitLab Webhooks 공식 문서](https://docs.gitlab.com/user/project/integrations/webhooks/) | Push Event와 Jenkins Webhook 연동 |
+| 실행 환경 | [Docker 공식 문서](https://docs.docker.com/get-started/) | Jenkins와 테스트 실행 환경의 컨테이너 구성 |
