@@ -51,7 +51,7 @@ Elice LXP(Dev)를 대상으로 기능, 보안, 성능 및 사용자 흐름을 �
 | 이효민 | 팀장 | 부하 테스트 | |
 | 박성빈 | 팀원 | API 테스트 | |
 | 유대원 | 팀원 | API 테스트 | |
-| 홍성우 | 팀원 | E2E/UI/UX 테스트 | README.md |
+| 홍성우 | 팀원 | E2E/UI/UX 테스트 | QA 자동화 테스트 결과 보고서, README.md |
 
 ---
 
@@ -64,7 +64,7 @@ Elice LXP(Dev)를 대상으로 기능, 보안, 성능 및 사용자 흐름을 �
 | 테스트 실행 | pytest | 테스트 수집, fixture 및 실행 결과 관리 |
 | UI 자동화 | Playwright | Chromium 기반 E2E/UI/UX 테스트 |
 | API 테스트 | Requests | HTTP 요청 및 응답 검증 |
-| 부하 테스트 | ThreadPoolExecutor | 가상 사용자 동시 요청 실행 |
+| 부하 테스트 |  |  |
 
 ### 언어 및 라이브러리
 
@@ -322,10 +322,6 @@ def test_id01_정상_로그인_토큰_발급(self, account_client):
     assert response.status_code == 200
     assert body.get("access_token")
 ```
-### 3. .env 환경변수
-로컬에서는 프로젝트 루트 `.env`를 pytest가 읽습니다. (`.env.sample` 참고)
-
-Jenkins Pipeline은 Secret file Credentials(`seethrough-env`)를 환경 변수로 주입한 뒤 `SEETHROUGH_USE_CREDENTIALS=1`로 `.env` 파일 로드를 건너뜁니다.
 
 ### E2E/UI/UX
 
@@ -391,9 +387,9 @@ except SafetyKillSwitchError as error:
 | 항목 | 결과 및 이미지 |
 | --- | --- |
 | TC 문서 | <img src="docs/images/TC_img_01.png" alt="테스트 케이스 문서" width="900"> |
-| Allure 리포트 | |
-| Jenkins 실행 결과 | |
-| 결함 및 영상 증거 | |
+| Allure 리포트 | <img src="docs/images/allure_report_overview.png" alt="Allure 리포트 전체 결과" width="900"><br><br><img src="docs/images/allure_test_detail.png" alt="Allure 테스트 상세 결과" width="900"> |
+| Jenkins 실행 결과 | <img src="docs/images/jenkins_pipeline_result.png" alt="Jenkins 파이프라인 실행 결과" width="900"> |
+| 결함 및 영상 증거 | ![E2E/UI/UX 45 게시글 중복 작성 결함 영상](docs/bug_videos/e2euiux_45.webm) |
 
 ---
 
