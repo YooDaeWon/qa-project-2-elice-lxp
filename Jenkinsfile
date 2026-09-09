@@ -54,19 +54,23 @@ pipeline {
         stage('Test Execution') {
             steps {
                 echo 'Running pytest with Jenkins Credentials (no workspace .env read)...'
-                withCredentials([file(credentialsId: 'env', variable: 'DOTENV_FILE')]) {
-                    sh '''
-                        . venv/bin/activate
-                        rm -f .env
-                        set +x
-                        set -a
-                        . "$DOTENV_FILE"
-                        set +a
-                        export SEETHROUGH_USE_CREDENTIALS=1
-                        set -x
-                        mkdir -p allure-results
-                        pytest --video=retain-on-failure --alluredir=allure-results --junitxml=junit-report.xml --clean-alluredir -v || true
-                    '''
+                // api/api_security/e2euiux 영역별 빌드와 같은 계정(ST_ID/TC_ID)·같은 CLASSROOM_ID/COURSE_ID를 공유한다.
+                // 동시 빌드 시 데이터 충돌을 막기 위해 실제 테스트 실행 구간만 lock으로 직렬화한다.
+                lock(resource: 'qa-shared-env') {
+                    withCredentials([file(credentialsId: 'env', variable: 'DOTENV_FILE')]) {
+                        sh '''
+                            . venv/bin/activate
+                            rm -f .env
+                            set +x
+                            set -a
+                            . "$DOTENV_FILE"
+                            set +a
+                            export SEETHROUGH_USE_CREDENTIALS=1
+                            set -x
+                            mkdir -p allure-results
+                            pytest --video=retain-on-failure --alluredir=allure-results --junitxml=junit-report.xml --clean-alluredir -v || true
+                        '''
+                    }
                 }
             }
         }
