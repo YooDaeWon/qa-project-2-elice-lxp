@@ -48,9 +48,9 @@ Elice LXP(Dev)를 대상으로 기능, 보안, 성능 및 사용자 흐름을 �
 
 | 팀원 | 역할 | 담당 테스트 영역 | 담당 산출물 |
 | --- | --- | --- | --- |
-| 이효민 | 팀장 | 부하 테스트 | |
+| 이효민 | 팀장 | 부하 테스트 | QA 자동화 테스트 계획서, 최종 발표 자료|
 | 박성빈 | 팀원 | API 테스트 | |
-| 유대원 | 팀원 | API 테스트 | |
+| 유대원 | 팀원 | API 보안 테스트 | |
 | 홍성우 | 팀원 | E2E/UI/UX 테스트 | QA 자동화 테스트 결과 보고서, README.md |
 
 ---
@@ -64,7 +64,7 @@ Elice LXP(Dev)를 대상으로 기능, 보안, 성능 및 사용자 흐름을 �
 | 테스트 실행 | pytest | 테스트 수집, fixture 및 실행 결과 관리 |
 | UI 자동화 | Playwright | Chromium 기반 E2E/UI/UX 테스트 |
 | API 테스트 | Requests | HTTP 요청 및 응답 검증 |
-| 부하 테스트 |  |  |
+| 부하 테스트 | Requests, Jmeter |  |
 
 ### 언어 및 라이브러리
 
@@ -117,8 +117,10 @@ Elice LXP(Dev)를 대상으로 기능, 보안, 성능 및 사용자 흐름을 �
 | `.env.sample` | 테스트 실행에 필요한 환경변수 예시 |
 | `pytest.ini` | pytest 옵션과 marker 등록 |
 | `requirements.txt` | Python 패키지 의존성 |
-| `Jenkinsfile` | Jenkins CI 파이프라인 정의 |
-| `AGENTS.md` | 프로젝트 작업 범위와 코드 작성 규칙 |
+| `Jenkinsfile` | 전체 테스트 실행을 위한 Jenkins CI 파이프라인 정의 |
+| `Jenkinsfile.api` | `tests/api/` 전용 테스트 실행과 Allure·Discord 연동을 위한 Jenkins CI 파이프라인 정의 |
+| `Jenkinsfile.api_security` | `tests/api_security/` 전용 테스트 실행과 Allure·Discord 연동을 위한 Jenkins CI 파이프라인 정의 |
+| `Jenkinsfile.e2euiux` | `tests/e2euiux/` 전용 테스트 실행과 Allure·Discord 연동을 위한 Jenkins CI 파이프라인 정의 |
 
 ### 테스트 영역별 구성
 
