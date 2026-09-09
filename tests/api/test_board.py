@@ -138,7 +138,7 @@ def _token_state(value):
 
 
 def _require_student_b_board_access(tc_id, student_b_client):
-    """TC60/TC61 본 테스트 전에 수강생 B의 인증/게시판 접근 사전조건을 확인한다."""
+    """TC60/TC61/TC67 본 테스트 전에 더미 수강생의 인증/게시판 접근 사전조건을 확인한다."""
     prefix = f"[{tc_id} DIAG]"
     response = BoardClient(student_b_client).article_list(
         settings.ORG,
@@ -183,10 +183,12 @@ def _tc60_61_precondition_log(
         f"TARGET_ARTICLE_ID={target_article_id or '<EMPTY>'}"
     )
     print(
-        f"{prefix} token states | "
+        f"{prefix} auth states | "
         f"STSESSION_KEY={_token_state(settings.STSESSION_KEY)}, "
         f"STSESSION_A_KEY={_token_state(settings.STSESSION_A_KEY)}, "
-        f"STSESSION_B_KEY={_token_state(settings.STSESSION_B_KEY)}"
+        f"DUMMY_2_ID={'SET' if settings.DUMMY_2_ID else 'EMPTY'}, "
+        f"DUMMY_2_PW={'SET' if settings.DUMMY_2_PW else 'EMPTY'}, "
+        "dummy_2_token=FRESH_LOGIN_TOKEN"
     )
 
     if not settings.ORG or not settings.COURSE_ID:
@@ -437,7 +439,8 @@ def test_api_59(student_client):
 @allure.label("team", "QA4")
 @allure.label("tc_id", "60")
 @allure.label("priority", "P0")
-def test_api_60(student_a_client, student_b_client, payloads):
+def test_api_60(student_a_client, dummy_2_client, payloads):
+    student_b_client = dummy_2_client
     require_values(ORG=settings.ORG, BOARD_ID=settings.BOARD_ID)
 
     owner = BoardClient(student_a_client)
@@ -507,7 +510,8 @@ def test_api_60(student_a_client, student_b_client, payloads):
 @allure.label("team", "QA4")
 @allure.label("tc_id", "61")
 @allure.label("priority", "P0")
-def test_api_61(student_a_client, student_b_client, payloads):
+def test_api_61(student_a_client, dummy_2_client, payloads):
+    student_b_client = dummy_2_client
     require_values(ORG=settings.ORG, BOARD_ID=settings.BOARD_ID)
 
     owner = BoardClient(student_a_client)
@@ -674,8 +678,10 @@ def test_api_66(student_client, educator_client):
 @allure.label("team", "QA4")
 @allure.label("tc_id", "67")
 @allure.label("priority", "P0")
-def test_api_67(student_a_client, student_b_client, payloads):
+def test_api_67(student_a_client, dummy_2_client, payloads):
+    student_b_client = dummy_2_client
     require_values(ORG=settings.ORG, BOARD_ID=settings.BOARD_ID)
+    _require_student_b_board_access("TC67", student_b_client)
     attacker = BoardClient(student_a_client); owner = BoardClient(student_b_client)
     payload = dict(payloads["board"]["article_secret"])
     payload.update(
