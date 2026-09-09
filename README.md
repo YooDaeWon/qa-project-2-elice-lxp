@@ -64,7 +64,7 @@ Elice LXP(Dev)를 대상으로 기능, 보안, 성능 및 사용자 흐름을 �
 | 테스트 실행 | pytest | 테스트 수집, fixture 및 실행 결과 관리 |
 | UI 자동화 | Playwright | Chromium 기반 E2E/UI/UX 테스트 |
 | API 테스트 | Requests | HTTP 요청 및 응답 검증 |
-| 부하 테스트 | Requests, Jmeter |  |
+| 부하 테스트 | Requests, JMeter |  |
 
 ### 언어 및 라이브러리
 
@@ -431,7 +431,7 @@ except SafetyKillSwitchError as error:
 | E2E/UI 자동화 | [Playwright Python 공식 문서](https://playwright.dev/python/docs/intro) | 브라우저 제어, locator, assertion 및 테스트 실행 |
 | API 테스트 | [Requests 공식 문서](https://docs.python-requests.org/en/stable/) | HTTP 요청, 인증, 세션 및 응답 처리 |
 | API 보안 설계 | [OWASP API Security Top 10 2023](https://owasp.org/API-Security/editions/2023/en/0x11-t10/) | 인증, 객체 권한, 자원 소비, 비즈니스 흐름 및 보안 설정 위험 기반 테스트 설계 |
-| 부하 테스트 | |  |
+| 부하 테스트 | [Requests 공식 문서](https://docs.python-requests.org/en/stable/), [Apache JMeter 공식 문서](https://jmeter.apache.org/usermanual/) | Requests 기반 HTTP 요청·세션 처리와 JMeter 기반 Ramp-up 및 동시 사용자 부하 시나리오 검증 |
 | 테스트 리포트 | [Allure Report 공식 문서](https://allurereport.org/docs/) | pytest 결과 수집, 첨부 파일 및 HTML 리포트 생성 |
 | CI 파이프라인 | [Jenkins Pipeline 공식 문서](https://www.jenkins.io/doc/book/pipeline/) | Jenkinsfile 기반 테스트 실행과 결과 게시 |
 | 자동 빌드 트리거 | [GitLab Webhooks 공식 문서](https://docs.gitlab.com/user/project/integrations/webhooks/) | Push Event와 Jenkins Webhook 연동 |
