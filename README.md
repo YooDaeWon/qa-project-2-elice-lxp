@@ -358,7 +358,7 @@ except SafetyKillSwitchError as error:
 
 ---
 
-## 9. CI/CD 파이프라인
+## 9. CI 및 테스트 자동화 파이프라인
 
 ### 전체 실행 순서
 ```
@@ -366,9 +366,10 @@ except SafetyKillSwitchError as error:
 ```
 
 ### GitLab 자동 빌드 조건
-```
--
-```
+
+- GitLab Push Event 발생 시 Webhook을 통해 Jenkins 파이프라인을 자동 실행한다.
+- 브랜치 범위는 GitLab Webhook 및 Jenkins 작업 설정에 따른다.
+
 
 ### Jenkins Credentials
 ```
@@ -376,9 +377,13 @@ except SafetyKillSwitchError as error:
 ```
 
 ### Allure 및 Discord 연동
-```
--
-```
+
+- pytest 실행 시 `allure-results/`에 Allure 원본 결과를 저장하고 `junit-report.xml`에 테스트 결과를 기록한다
+- Jenkins Pipeline 종료 후 Allure 플러그인이 `allure-results/`를 기반으로 `allure-report`를 생성하고 게시한다
+- Jenkins는 JUnit 결과에서 전체·통과·실패·오류·스킵 건수와 최종 성공률을 계산한다
+- 빌드 상태가 `SUCCESS`, `UNSTABLE`, `FAILURE`일 때 각각 Discord Webhook으로 테스트 요약과 Jenkins 빌드 상세 링크를 전송한다
+
+<img src="docs/images/discord_test_summary.png" alt="Discord 테스트 결과 요약 알림" width="360">
 
 ---
 
@@ -398,9 +403,9 @@ except SafetyKillSwitchError as error:
 | 안전 항목 | 적용 기준 |
 | --- | --- |
 | 테스트 대상 환경 제한 | Dev 환경만 사용하며 운영 서비스와 타 과목은 테스트하지 않음 |
-| 동시성 및 호출 빈도 제한 | 기능 테스트는 단일 워커로 순차 실행하고, 부하 테스트는 5 → 10 → 20 → 30명 순서로 단계적 증가. 가상 유저는 Ramp-up 1초로 기동을 분산하고, API 사이 및 단계 사이에 3~5초 think time을 둔다 |
+| 동시성 및 호출 빈도 제한 | - |
 | 부하 테스트 분리 | 기본 `pytest`에서 `tests/loadtest`를 제외하고 별도 명령과 담당자를 통해 실행 |
-| 재시도 및 Kill Switch | API 5xx를 무조건 재시도하지 않으며, 부하 테스트에서 HTTP 500 감지 시 즉시 중단 |
+| 재시도 및 Kill Switch | - |
 | 자격증명 보호 | `.env`를 Git에서 제외하고 실패 로그의 계정 정보를 마스킹함. CI 자격증명은 Jenkins Credentials 적용 |
 | 테스트 데이터 정리 | 자동 생성 데이터는 세션 종료 시 정리하고, 변경·삭제 테스트는 `destructive` marker로 구분 |
 
