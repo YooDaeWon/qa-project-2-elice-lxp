@@ -16,11 +16,18 @@ pipeline {
                 echo 'Checking out source code from GitLab...'
                 checkout scm
                 // Credentials만 사용. 워크스페이스에 남은 .env는 UI 노출 위험이 있어 제거한다.
-                sh 'rm -f .env && echo "workspace .env removed (if present)"'
+                // .area_tests_ran은 이번 빌드에서 실제로 pytest가 돌았는지 post{}가 판단하는 마커라 매 빌드 시작 시 초기화한다.
+                sh 'rm -f .env .area_tests_ran && echo "workspace .env removed (if present)"'
             }
         }
 
         stage('Environment Setup') {
+            when {
+                anyOf {
+                    changeset 'tests/e2euiux/**'
+                    changeset 'Jenkinsfile.e2euiux'
+                }
+            }
             steps {
                 echo 'Setting up isolated Python virtual environment and Playwright browsers...'
                 sh '''
@@ -53,6 +60,12 @@ pipeline {
         }
 
         stage('Test Execution') {
+            when {
+                anyOf {
+                    changeset 'tests/e2euiux/**'
+                    changeset 'Jenkinsfile.e2euiux'
+                }
+            }
             steps {
                 echo 'Running pytest (e2euiux) with Jenkins Credentials (no workspace .env read)...'
                 // api/api_security/e2euiux는 같은 계정(ST_ID/TC_ID)과 같은 CLASSROOM_ID/COURSE_ID를 공유한다.
@@ -62,6 +75,7 @@ pipeline {
                         sh '''
                             . venv/bin/activate
                             rm -f .env
+                            touch .area_tests_ran
                             set +x
                             set -a
                             . "$DOTENV_FILE"
@@ -79,26 +93,36 @@ pipeline {
 
     post {
         always {
-            // Allure 3 플러그인은 PATH의 allure를 쓴다. portable Node + 워크스페이스 3.15.0을 우선한다.
-            withEnv([
-                "PATH+ALLURE=${env.WORKSPACE}/.allure3/node_modules/.bin:${env.WORKSPACE}/.node/node-v20.19.0-linux-x64/bin"
-            ]) {
-                sh '''
-                    rm -f .env || true
-                    echo "Allure CLI on PATH:"
-                    command -v allure || true
-                    allure --version || true
-                '''
-                allure(
-                    commandline: 'allure3',
-                    includeProperties: false,
-                    report: 'allure-report',
-                    results: [[path: 'allure-results']]
-                )
+            script {
+                if (!fileExists('.area_tests_ran')) {
+                    echo '관련 변경 없음 - Allure 리포트 갱신 스킵 (이전 결과 재게시로 인한 Trend 왜곡 방지)'
+                    return
+                }
+                // Allure 3 플러그인은 PATH의 allure를 쓴다. portable Node + 워크스페이스 3.15.0을 우선한다.
+                withEnv([
+                    "PATH+ALLURE=${env.WORKSPACE}/.allure3/node_modules/.bin:${env.WORKSPACE}/.node/node-v20.19.0-linux-x64/bin"
+                ]) {
+                    sh '''
+                        rm -f .env || true
+                        echo "Allure CLI on PATH:"
+                        command -v allure || true
+                        allure --version || true
+                    '''
+                    allure(
+                        commandline: 'allure3',
+                        includeProperties: false,
+                        report: 'allure-report',
+                        results: [[path: 'allure-results']]
+                    )
+                }
             }
         }
         success {
             script {
+                if (!fileExists('.area_tests_ran')) {
+                    echo '관련 변경 없음 - 이번 빌드는 테스트를 실행하지 않아 Discord 알림을 보내지 않음'
+                    return
+                }
                 def total = 0, failures = 0, errors = 0, skipped = 0, passed = 0
                 if (fileExists('junit-report.xml')) {
                     def content = readFile('junit-report.xml')
@@ -125,6 +149,10 @@ pipeline {
         }
         unstable {
             script {
+                if (!fileExists('.area_tests_ran')) {
+                    echo '관련 변경 없음 - 이번 빌드는 테스트를 실행하지 않아 Discord 알림을 보내지 않음'
+                    return
+                }
                 def total = 0, failures = 0, errors = 0, skipped = 0, passed = 0
                 if (fileExists('junit-report.xml')) {
                     def content = readFile('junit-report.xml')
@@ -151,6 +179,10 @@ pipeline {
         }
         failure {
             script {
+                if (!fileExists('.area_tests_ran')) {
+                    echo '관련 변경 없음 - 이번 빌드는 테스트를 실행하지 않아 Discord 알림을 보내지 않음'
+                    return
+                }
                 def total = 0, failures = 0, errors = 0, skipped = 0, passed = 0
                 if (fileExists('junit-report.xml')) {
                     def content = readFile('junit-report.xml')
