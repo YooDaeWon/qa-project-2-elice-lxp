@@ -21,20 +21,17 @@ ROOT_DIR = Path(__file__).resolve().parents[2]
 
 
 # ---------------------------------------------------------------------------
-# API result policy: Negative TC = actual pytest FAILED
+# API result policy
 # ---------------------------------------------------------------------------
-# 프로젝트 표시 요구:
+# pytest의 기본 결과 정책을 그대로 사용한다.
 #
-# - Positive TC 정상 동작       -> PASSED
-# - Negative TC 기대 동작 확인 -> FAILED (EXPECTED NEGATIVE)
-# - Negative TC 실제 이상      -> FAILED (UNEXPECTED NEGATIVE)
-# - 사전조건 미충족            -> SKIPPED
+# - 기대결과와 실제결과가 일치하면: PASSED
+# - 기대결과와 실제결과가 불일치하면: FAILED
+# - 사전조건이 충족되지 않으면: SKIPPED
 #
-# @pytest.mark.negative TC가 기능적으로 올바르게 차단되어도
-# pytest의 실제 call outcome 자체를 FAILED로 변환한다.
-# 따라서 터미널 / Allure / Jenkins 모두 Failed로 본다.
-
-_NEGATIVE_NODEIDS = set()
+# @pytest.mark.negative는 네거티브 테스트를 분류하기 위한 메타데이터일 뿐,
+# 테스트 결과(PASS/FAIL)를 강제로 변경하지 않는다. 따라서 Allure/Jenkins에도
+# pytest의 실제 검증 결과가 그대로 전달된다.
 
 
 def _is_api_test(item):
@@ -51,14 +48,7 @@ def _api_tc_number(item):
 
 
 def pytest_collection_modifyitems(config, items):
-    _NEGATIVE_NODEIDS.clear()
-
-    # Negative TC 목록은 기존대로 유지
-    for item in items:
-        if item.get_closest_marker("negative") is not None:
-            _NEGATIVE_NODEIDS.add(item.nodeid)
-
-    # API 테스트만 실행하는 경우 TC01 -> TC68 순으로 정렬
+    """API 테스트를 TC01 -> TC68 순으로 정렬한다."""
     numbered_items = []
     unnumbered_items = []
 
@@ -78,79 +68,6 @@ def pytest_collection_modifyitems(config, items):
         ]
     else:
         items[:] = [item for _, _, item in numbered_items]
-
-
-@pytest.hookimpl(hookwrapper=True, trylast=True)
-def pytest_runtest_makereport(item, call):
-    """
-    정상적으로 검증을 끝낸 Negative TC도 프로젝트 정책상 actual FAILED로 변환한다.
-
-    trylast hookwrapper를 사용해 Allure 같은 report 소비 플러그인이
-    최종 FAILED outcome을 보도록 한다.
-    """
-    outcome = yield
-    report = outcome.get_result()
-
-    if report.when != "call":
-        return
-
-    if item.nodeid not in _NEGATIVE_NODEIDS:
-        return
-
-    if report.passed:
-        report.outcome = "failed"
-        report.longrepr = (
-            "EXPECTED NEGATIVE RESULT\n"
-            "이 TC는 API 실패/권한 차단/유효성 차단 등 Negative 결과를 검증합니다.\n"
-            "기대된 Negative 동작이 확인되었으므로 프로젝트 표시 정책에 따라 "
-            "pytest 결과를 FAILED로 기록합니다."
-        )
-        report.user_properties.append(("negative_result", "EXPECTED"))
-        report.user_properties.append(("v19_forced_failed", "true"))
-    elif report.failed:
-        report.user_properties.append(("negative_result", "UNEXPECTED"))
-
-
-def pytest_report_teststatus(report, config):
-    if report.when != "call" or report.nodeid not in _NEGATIVE_NODEIDS:
-        return None
-
-    props = dict(getattr(report, "user_properties", []))
-
-    if report.failed and props.get("negative_result") == "EXPECTED":
-        return "failed", "F", "FAILED (EXPECTED NEGATIVE)"
-
-    if report.failed:
-        return "failed", "F", "FAILED (UNEXPECTED NEGATIVE)"
-
-    return None
-
-
-def pytest_terminal_summary(terminalreporter, exitstatus, config):
-    expected_negative = []
-    unexpected_negative = []
-
-    for report in terminalreporter.stats.get("failed", []):
-        if report.when != "call" or report.nodeid not in _NEGATIVE_NODEIDS:
-            continue
-
-        props = dict(getattr(report, "user_properties", []))
-        if props.get("negative_result") == "EXPECTED":
-            expected_negative.append(report)
-        else:
-            unexpected_negative.append(report)
-
-    terminalreporter.write_sep("-", "API Negative TC Result")
-    terminalreporter.write_line(
-        f"FAILED (EXPECTED NEGATIVE)   : {len(expected_negative)}"
-    )
-    terminalreporter.write_line(
-        f"FAILED (UNEXPECTED NEGATIVE) : {len(unexpected_negative)}"
-    )
-    terminalreporter.write_line(
-        "※ API Negative TC는 실제 pytest FAILED로 집계하며 "
-        "Allure/Jenkins에도 Failed로 전달합니다."
-    )
 
 
 @pytest.fixture(scope="session")
