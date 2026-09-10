@@ -1,4 +1,5 @@
 import json
+import os
 from pathlib import Path
 
 import re
@@ -70,88 +71,110 @@ def pytest_collection_modifyitems(config, items):
         items[:] = [item for _, _, item in numbered_items]
 
 
-@pytest.fixture(scope="session")
-def student_client():
-    if not settings.STSESSION_KEY:
-        pytest.skip("STSESSION_KEY가 설정되지 않았습니다.")
-    client = APIClient(settings.STSESSION_KEY, role="student")
-    yield client
-    client.close()
+def _credential(name):
+    return (os.getenv(name) or "").strip()
 
 
-@pytest.fixture(scope="session")
-def educator_client():
-    if not settings.TCSESSION_KEY:
-        pytest.skip("TCSESSION_KEY가 설정되지 않았습니다.")
-    client = APIClient(settings.TCSESSION_KEY, role="educator")
-    yield client
-    client.close()
+def _fresh_access_token(login_id, password, label):
+    """저장 토큰을 사용하지 않고 계정 ID/PW로 이번 실행용 토큰을 발급한다.
 
-
-@pytest.fixture(scope="session")
-def student_a_client():
-    token = settings.STSESSION_A_KEY or settings.STSESSION_KEY
-    if not token:
-        pytest.skip("STSESSION_KEY가 설정되지 않았습니다.")
-    client = APIClient(token, role="student_a")
-    yield client
-    client.close()
-
-
-@pytest.fixture(scope="session")
-def student_b_client():
-    """기존 STSESSION_B_KEY 기반 수강생 B 클라이언트.
-
-    다른 테스트에서 계속 사용할 수 있도록 기존 동작을 유지한다.
+    tests/api 전용 인증 기준선이다. .env의 STSESSION_KEY/TCSESSION_KEY 값은
+    API TC 실행 결과에 영향을 주지 않는다.
     """
-    if not settings.STSESSION_B_KEY:
-        pytest.skip("STSESSION_B_KEY가 설정되지 않았습니다.")
-    client = APIClient(settings.STSESSION_B_KEY, role="student_b")
-    yield client
-    client.close()
-
-
-@pytest.fixture(scope="function")
-def dummy_2_client():
-    """TC60/TC61/TC67 전용 더미계정으로 테스트마다 새 토큰을 발급한다."""
-    login_id = settings.DUMMY_2_ID
-    password = settings.DUMMY_2_PW
-
     if not login_id or not password:
         pytest.skip(
-            "TC60/TC61/TC67 전용 더미계정이 설정되지 않았습니다. "
-            ".env에 DUMMY_2_ID와 DUMMY_2_PW를 입력하세요."
+            f"{label} 로그인 계정이 설정되지 않았습니다. "
+            "ST_ID/ST_PW 또는 TC_ID/TC_PW를 확인하세요."
         )
 
     account_client = AccountClient()
     try:
         response = account_client.login(login_id, password)
-
         try:
             data = response.json()
         except ValueError:
             data = {}
 
         token = data.get("access_token") if isinstance(data, dict) else None
-
         if response.status_code != 200 or not token:
             fail_code = data.get("fail_code") if isinstance(data, dict) else None
             fail_message = data.get("fail_message") if isinstance(data, dict) else None
             pytest.fail(
-                "DUMMY_2 로그인 또는 access_token 발급 실패 | "
+                f"{label} 로그인/access_token 발급 실패 | "
                 f"http={response.status_code}, "
                 f"fail_code={fail_code}, fail_message={fail_message}"
             )
 
-        print("[DUMMY_2 AUTH] 로그인 성공 - 이번 테스트용 새 access_token 발급 완료")
-
-        client = APIClient(token, role="dummy_2_student")
-        try:
-            yield client
-        finally:
-            client.close()
+        print(f"[API AUTH] {label} 로그인 성공 - 이번 실행용 새 access_token 발급 완료")
+        return token
     finally:
         account_client.api.close()
+
+
+@pytest.fixture(scope="session")
+def student_access_token():
+    # STSESSION_KEY/STSESSION_A_KEY는 의도적으로 읽지 않는다.
+    return _fresh_access_token(_credential("ST_ID"), _credential("ST_PW"), "학습자")
+
+
+@pytest.fixture(scope="session")
+def educator_access_token():
+    # TCSESSION_KEY는 의도적으로 읽지 않는다.
+    return _fresh_access_token(_credential("TC_ID"), _credential("TC_PW"), "교육자")
+
+
+@pytest.fixture(scope="session")
+def student_client(student_access_token):
+    client = APIClient(student_access_token, role="student")
+    yield client
+    client.close()
+
+
+@pytest.fixture(scope="session")
+def educator_client(educator_access_token):
+    client = APIClient(educator_access_token, role="educator")
+    yield client
+    client.close()
+
+
+@pytest.fixture(scope="session")
+def student_a_client(student_access_token):
+    # 기본 학습자와 같은 계정이다. 재로그인하지 않고 같은 실행 토큰을 공유해
+    # 동일 계정 재로그인으로 기존 세션이 갱신되는 부작용을 막는다.
+    client = APIClient(student_access_token, role="student_a")
+    yield client
+    client.close()
+
+
+@pytest.fixture(scope="session")
+def dummy_2_access_token():
+    # STSESSION_B_KEY는 사용하지 않는다. B 계정도 ID/PW로 새 토큰을 발급한다.
+    return _fresh_access_token(
+        _credential("DUMMY_2_ID"),
+        _credential("DUMMY_2_PW"),
+        "수강생 B(DUMMY_2)",
+    )
+
+
+@pytest.fixture(scope="session")
+def student_b_client(dummy_2_access_token):
+    client = APIClient(dummy_2_access_token, role="student_b")
+    yield client
+    client.close()
+
+
+@pytest.fixture(scope="function")
+def dummy_2_client(dummy_2_access_token):
+    """TC60/TC61/TC67 전용 B 계정 클라이언트.
+
+    세션 시작 시 ID/PW로 발급한 fresh token을 사용한다. .env의 STSESSION_B_KEY와
+    무관하며, 같은 계정으로 반복 로그인해 이전 세션을 갱신하는 것도 피한다.
+    """
+    client = APIClient(dummy_2_access_token, role="dummy_2_student")
+    try:
+        yield client
+    finally:
+        client.close()
 
 
 @pytest.fixture(scope="session")
@@ -173,16 +196,16 @@ def auto_discover_test_data(student_client, educator_client):
         yield
         return
 
-    student_b_api = (
-        APIClient(settings.STSESSION_B_KEY, role="student_b_auto")
-        if settings.STSESSION_B_KEY
-        else None
-    )
+    # API 자동 데이터 준비도 저장된 STSESSION_B_KEY에 의존하지 않는다.
+    # 현재 TC60/61/67은 DUMMY_2_ID/PW fresh login fixture로 B 계정을 준비하므로
+    # 공통 auto-data 단계에서는 B 계정 토큰이 필수가 아니다.
+    student_b_api = None
 
     resolver = AutoDataResolver(
         educator_api=educator_client,
         student_api=student_client,
         student_b_api=student_b_api,
+        student_login_id=_credential("ST_ID"),
     )
 
     # 자동 fixture 준비 요청 수십 건이 첫 TC의 Allure Step에 섞이지 않도록 숨긴다.
