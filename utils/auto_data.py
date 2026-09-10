@@ -63,10 +63,17 @@ def _list_at(data, key):
 class AutoDataResolver:
     """실행 전 테스트에 필요한 ID를 조회하거나 QA 전용 데이터로 생성한다."""
 
-    def __init__(self, educator_api, student_api, student_b_api=None):
+    def __init__(
+        self,
+        educator_api,
+        student_api,
+        student_b_api=None,
+        student_login_id="",
+    ):
         self.educator_api = educator_api
         self.student_api = student_api
         self.student_b_api = student_b_api
+        self.student_login_id = str(student_login_id or "").strip().lower()
 
         self.educator_classroom = ClassroomClient(educator_api)
         self.student_classroom = ClassroomClient(student_api)
@@ -236,74 +243,71 @@ class AutoDataResolver:
     # Preflight
     # ------------------------------------------------------------
     def preflight(self):
-        """대량 실행 전에 3개 API 계층의 기본 연결 상태를 로그로 보여준다."""
+        """대량 실행 전 교육자/학습자 각각의 기본 접근 상태를 로그로 보여준다.
 
-        self.log(
-            f"PREFLIGHT ORG={settings.ORG}"
-        )
+        읽기 전용 확인이며 COURSE_ID/CLASSROOM_ID를 다른 값으로 바꾸지 않는다.
+        """
+        self.log(f"PREFLIGHT ORG={settings.ORG}")
 
         checks = []
 
         if settings.CLASSROOM_ID:
-            checks.append(
+            checks.extend([
                 (
-                    "classroom",
-                    lambda: self.educator_classroom.get_classroom(
-                        settings.CLASSROOM_ID
-                    ),
-                )
-            )
-
-            checks.append(
+                    "classroom(교육자)",
+                    lambda: self.educator_classroom.get_classroom(settings.CLASSROOM_ID),
+                ),
                 (
-                    "dashboard",
+                    "classroom(수강생)",
+                    lambda: self.student_classroom.get_classroom(settings.CLASSROOM_ID),
+                ),
+                (
+                    "dashboard(교육자)",
                     lambda: self.educator_classroom.get_dashboard_courses(
-                        settings.CLASSROOM_ID,
-                        offset=0,
-                        count=1,
+                        settings.CLASSROOM_ID, offset=0, count=1
                     ),
-                )
-            )
+                ),
+                (
+                    "dashboard(수강생)",
+                    lambda: self.student_classroom.get_dashboard_courses(
+                        settings.CLASSROOM_ID, offset=0, count=1
+                    ),
+                ),
+            ])
 
         if settings.ORG and settings.COURSE_ID:
-            checks.append(
+            checks.extend([
                 (
-                    "legacy-course",
+                    "legacy-course(교육자)",
                     lambda: self.educator_course.course_get(
-                        settings.ORG,
-                        settings.COURSE_ID,
+                        settings.ORG, settings.COURSE_ID
                     ),
-                )
-            )
+                ),
+                (
+                    "legacy-course(수강생)",
+                    lambda: self.student_course.course_get(
+                        settings.ORG, settings.COURSE_ID
+                    ),
+                ),
+            ])
 
         for name, call in checks:
             try:
                 response = call()
-
                 data = _json(response)
                 fail_code = self._fail_code(data)
-
-                suffix = (
-                    f", fail_code={fail_code}"
-                    if fail_code
-                    else ""
-                )
+                suffix = f", fail_code={fail_code}" if fail_code else ""
 
                 self.log(
-                    f"PREFLIGHT {name}: "
-                    f"HTTP {response.status_code}{suffix}"
+                    f"PREFLIGHT {name}: HTTP {response.status_code}{suffix}"
                 )
 
-                if (
-                    response.status_code == 404
-                    and name == "legacy-course"
-                ):
+                if response.status_code == 404 and name.startswith("legacy-course"):
                     attempted = (
                         f"{settings.API_BASE_URL.rstrip('/')}"
                         f"/org/{settings.ORG}/course/get/"
                         f"?course_id={settings.COURSE_ID}"
                     )
-
                     self.log(
                         "PREFLIGHT legacy-course가 404입니다. "
                         f"시도 URL={attempted}"
@@ -380,112 +384,146 @@ class AutoDataResolver:
     # ------------------------------------------------------------
     # Student IDs
     # ------------------------------------------------------------
-    def discover_students(self):
-        if (
-            not settings.DASHBOARD_API_BASE_URL
-            or not settings.CLASSROOM_ID
+    def _runtime_set(self, name, value, source):
+        """.env 파일은 건드리지 않고 현재 pytest 프로세스의 settings만 교정한다."""
+        if value in (None, ""):
+            return False
+
+        value = str(value)
+        previous = str(getattr(settings, name, "") or "")
+        if previous == value:
+            return False
+
+        setattr(settings, name, value)
+        self.log(
+            f"{name} 런타임 교정: {previous or '(빈값)'} -> {value}  ← {source}"
+        )
+        return True
+
+    @staticmethod
+    def _record_account_id(record):
+        if not isinstance(record, dict):
+            return None
+        account = record.get("account")
+        if isinstance(account, dict) and account.get("id") not in (None, ""):
+            return account.get("id")
+        # dashboard 응답 버전에 따라 account.id가 없을 때만 record.id를 fallback으로 사용
+        return record.get("id")
+
+    def _record_matches_student_login(self, record):
+        """교육자 학생목록의 account 정보가 현재 ST_ID와 같은 계정인지 확인한다."""
+        if not self.student_login_id or not isinstance(record, dict):
+            return False
+
+        account = record.get("account")
+        if not isinstance(account, dict):
+            return False
+
+        target = self.student_login_id
+        # 서버 버전별 필드명이 달라도 이메일/로그인 문자열이 account 안에 있으면 매칭한다.
+        for key in (
+            "login_id",
+            "email",
+            "email_address",
+            "username",
+            "user_email",
         ):
+            value = account.get(key)
+            if isinstance(value, str) and value.strip().lower() == target:
+                return True
+
+        # 필드명이 예상과 달라도 exact email 값만 비교한다.
+        if "@" in target:
+            for value in account.values():
+                if isinstance(value, str) and value.strip().lower() == target:
+                    return True
+
+        return False
+
+    def discover_students(self):
+        if not settings.DASHBOARD_API_BASE_URL or not settings.CLASSROOM_ID:
             return
 
         response = self.educator_classroom.get_students(
-            settings.CLASSROOM_ID,
-            offset=0,
-            count=10,
+            settings.CLASSROOM_ID, offset=0, count=100
         )
 
         if not _is_success(response):
             self.log(
                 "학생 목록 조회 실패: "
-                f"HTTP {response.status_code} "
-                f"BODY={response.text[:800]}"
+                f"HTTP {response.status_code} BODY={response.text[:800]}"
             )
             return
 
         data = _json(response)
-
         records = []
-
         for node in _walk(data):
-            if (
-                isinstance(node, dict)
-                and isinstance(
-                    node.get("account"),
-                    dict,
-                )
-            ):
+            if isinstance(node, dict) and isinstance(node.get("account"), dict):
                 records.append(node)
 
-        candidates = []
-
+        account_ids = []
         for record in records:
-            values = []
+            account_id = self._record_account_id(record)
+            if account_id not in (None, "") and str(account_id) not in {str(v) for v in account_ids}:
+                account_ids.append(account_id)
 
-            if record.get("id") not in (
-                None,
-                "",
-            ):
-                values.append(
-                    record["id"]
-                )
+        # 1순위: 현재 ST_ID와 교육자 학생목록의 account 정보를 직접 매칭한다.
+        matched_id = None
+        for record in records:
+            if self._record_matches_student_login(record):
+                matched_id = self._record_account_id(record)
+                if matched_id not in (None, ""):
+                    break
 
-            account = (
-                record.get("account")
-                or {}
+        if matched_id not in (None, ""):
+            self._runtime_set(
+                "STUDENT_ID",
+                matched_id,
+                "현재 ST_ID와 교육자 학생목록 account 매칭",
             )
-
-            if account.get("id") not in (
-                None,
-                "",
-            ):
-                values.append(
-                    account["id"]
+        else:
+            # 2순위: 기존 STUDENT_ID가 현재 학생 토큰으로 실제 조회 가능한지 확인한다.
+            configured = str(settings.STUDENT_ID or "")
+            configured_valid = False
+            if configured:
+                probe = self.student_classroom.get_student_courses(
+                    configured, settings.CLASSROOM_ID, offset=0, count=1
                 )
+                configured_valid = _is_success(probe)
 
-            for value in values:
-                if str(value) not in [
-                    str(v)
-                    for v in candidates
-                ]:
-                    candidates.append(
-                        value
+            # 기존 값이 없거나 현재 계정으로 사용할 수 없을 때만 후보를 탐색한다.
+            if not configured_valid:
+                for candidate in account_ids:
+                    probe = self.student_classroom.get_student_courses(
+                        candidate, settings.CLASSROOM_ID, offset=0, count=1
                     )
+                    if _is_success(probe):
+                        self._runtime_set(
+                            "STUDENT_ID",
+                            candidate,
+                            "교육자 학생목록 + 현재 학습자 fresh token 조회 검증",
+                        )
+                        break
 
-        if not settings.STUDENT_ID:
-            for candidate in candidates:
-                probe = (
-                    self.student_classroom.get_student_courses(
-                        candidate,
-                        settings.CLASSROOM_ID,
-                        offset=0,
-                        count=1,
-                    )
+        # OTHER_STUDENT_ID도 계정 교체 후 본인과 겹치거나 목록에 없는 오래된 값이면 런타임 교정한다.
+        current_student = str(settings.STUDENT_ID or "")
+        current_other = str(settings.OTHER_STUDENT_ID or "")
+        valid_other_ids = [
+            value for value in account_ids
+            if str(value) != current_student
+        ]
+
+        if (
+            not current_other
+            or current_other == current_student
+            or (account_ids and current_other not in {str(v) for v in account_ids})
+        ):
+            if valid_other_ids:
+                self._runtime_set(
+                    "OTHER_STUDENT_ID",
+                    valid_other_ids[0],
+                    "현재 학습자와 다른 교육자 학생목록 account",
                 )
-
-                if _is_success(probe):
-                    self.set_if_empty(
-                        "STUDENT_ID",
-                        candidate,
-                        (
-                            "교육자 학생목록 + "
-                            "학생토큰 본인 과목 조회 검증"
-                        ),
-                    )
-
-                    break
-
-        if not settings.OTHER_STUDENT_ID:
-            for candidate in candidates:
-                if (
-                    str(candidate)
-                    != str(settings.STUDENT_ID)
-                ):
-                    self.set_if_empty(
-                        "OTHER_STUDENT_ID",
-                        candidate,
-                        "교육자 학생목록의 다른 학생",
-                    )
-
-                    break
 
     # ------------------------------------------------------------
     # Lectures

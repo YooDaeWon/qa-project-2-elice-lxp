@@ -184,11 +184,11 @@ def _tc60_61_precondition_log(
     )
     print(
         f"{prefix} auth states | "
-        f"STSESSION_KEY={_token_state(settings.STSESSION_KEY)}, "
-        f"STSESSION_A_KEY={_token_state(settings.STSESSION_A_KEY)}, "
+        "student_a_token=FRESH_LOGIN_TOKEN, "
         f"DUMMY_2_ID={'SET' if settings.DUMMY_2_ID else 'EMPTY'}, "
         f"DUMMY_2_PW={'SET' if settings.DUMMY_2_PW else 'EMPTY'}, "
-        "dummy_2_token=FRESH_LOGIN_TOKEN"
+        "student_b_token=FRESH_LOGIN_TOKEN, "
+        "stored_session_tokens=IGNORED_BY_TESTS_API"
     )
 
     if not settings.ORG or not settings.COURSE_ID:
