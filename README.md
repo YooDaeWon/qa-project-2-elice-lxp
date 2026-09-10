@@ -14,7 +14,8 @@
 10. [테스트 결과 및 산출물](#10-테스트-결과-및-산출물)
 11. [Safety Design](#11-safety-design)
 12. [트러블슈팅 및 알려진 이슈](#12-트러블슈팅-및-알려진-이슈)
-13. [참고 자료](#13-참고-자료)
+13. [향후 개선 사항](#13-향후-개선-사항)
+14. [참고 자료](#14-참고-자료)
 
 ---
 
@@ -44,9 +45,9 @@ Elice LXP(Dev)를 대상으로 기능, 보안, 성능 및 사용자 흐름을 �
 
 ### 프로젝트 성과
 
-```
--
-```
+- 로그인, 클래스 · 과목 · 시험, 게시판, 수업 일정 등 사용자의 핵심 흐름을 E2E 테스트로 자동화하고 반응형 UI와 주요 예외 상황을 검증함
+- 학습자·교육자 계정별 client를 활용해 클래스 · 과목 · 일정 · 게시판 API의 요청 · 응답과 역할별 권한을 검증함
+- API Security 테스트를 통해 인증·토큰·세션, BOLA, 권한 상승, 인젝션 및 정보 노출 등 주요 보안 위험을 검증함
 
 ---
 
@@ -306,7 +307,8 @@ pytest -v --alluredir allure-results --clean-alluredir --video=retain-on-failure
 
 ## 8. 핵심 코드 스니펫
 
-### API
+<details>
+<summary>API</summary>
 
 클래스 조회 API의 HTTP 성공 여부와 주요 응답 필드를 검증합니다.
 
@@ -323,7 +325,10 @@ def test_api_01(student_client):
     assert "description" in data
 ```
 
-### API Security
+</details>
+
+<details>
+<summary>API Security</summary>
 
 로그인 성공 시 HTTP 200과 access token 발급 여부를 검증합니다.
 
@@ -337,7 +342,10 @@ def test_id01_정상_로그인_토큰_발급(self, account_client):
     assert body.get("access_token")
 ```
 
-### E2E/UI/UX
+</details>
+
+<details>
+<summary>E2E/UI/UX</summary>
 
 Allure Label과 POM을 이용해 게시물 작성 흐름을 검증합니다.
 
@@ -352,7 +360,10 @@ def test_limit_board_title(board_title_page):
     board_write_page.verify_title_limit(TITLE_VALUE)
 ```
 
-### Load
+</details>
+
+<details>
+<summary>Load</summary>
 
 HTTP 500을 감지하면 Kill Switch로 부하 실행을 중단합니다. 가상 유저 기동은 Ramp-up 1초, API·단계 사이는 3~5초 think time을 사용합니다.
 
@@ -369,6 +380,8 @@ try:
 except SafetyKillSwitchError as error:
     return False, str(error)
 ```
+
+</details>
 
 ---
 
@@ -405,10 +418,33 @@ except SafetyKillSwitchError as error:
 
 | 항목 | 결과 및 이미지 |
 | --- | --- |
-| TC 문서 | <img src="docs/images/TC_img_01.png" alt="테스트 케이스 문서" width="900"> |
-| Allure 리포트 | <img src="docs/images/allure_report_overview.png" alt="Allure 리포트 전체 결과" width="900"><br><br><img src="docs/images/allure_test_detail.png" alt="Allure 테스트 상세 결과" width="900"> |
-| Jenkins 실행 결과 | <img src="docs/images/jenkins_pipeline_result.png" alt="Jenkins 파이프라인 실행 결과" width="900"> |
-| 결함 및 영상 증거 | ![E2E/UI/UX 45 게시글 중복 작성 결함 영상](docs/bug_videos/e2euiux_45.webm) |
+| TC 문서 | 상세 자료에 포함 |
+| Allure 리포트 | 상세 자료에 포함 |
+| Jenkins 실행 결과 | 상세 자료에 포함 |
+| 결함 및 영상 증거 | 상세 자료에 포함 |
+
+<details>
+<summary>테스트 결과 상세 자료 보기</summary>
+
+#### TC 문서
+
+<img src="docs/images/TC_img_01.png" alt="테스트 케이스 문서" width="900">
+
+#### Allure 리포트
+
+<img src="docs/images/allure_report_overview.png" alt="Allure 리포트 전체 결과" width="900">
+
+<img src="docs/images/allure_test_detail.png" alt="Allure 테스트 상세 결과" width="900">
+
+#### Jenkins 실행 결과
+
+<img src="docs/images/jenkins_pipeline_result.png" alt="Jenkins 파이프라인 실행 결과" width="900">
+
+#### 결함 및 영상 증거
+
+![E2E/UI/UX 45 게시글 중복 작성 결함 영상](docs/bug_videos/e2euiux_45.webm)
+
+</details>
 
 ---
 
@@ -417,10 +453,10 @@ except SafetyKillSwitchError as error:
 | 안전 항목 | 적용 기준 |
 | --- | --- |
 | 테스트 대상 환경 제한 | Dev 환경만 사용하며 운영 서비스와 타 과목은 테스트하지 않음 |
-| 동시성 및 호출 빈도 제한 | - |
+| 동시성 및 호출 빈도 제한 | `ThreadPoolExecutor(max_workers=target_users)`로 동시 사용자 수를 5·10·20·30명으로 제한함. `ramp_up_wait`로 1초 동안 가상 사용자 기동을 분산하고, API·단계 사이에는 3~5초 `think_time`과 단계별 대기를 적용해 순간 호출을 완화함 |
 | 부하 테스트 분리 | 기본 `pytest`에서 `tests/loadtest`를 제외하고 별도 명령과 담당자를 통해 실행 |
-| 재시도 및 Kill Switch | - |
-| 자격증명 보호 | `.env`를 Git에서 제외하고 실패 로그의 계정 정보를 마스킹함. CI 자격증명은 Jenkins Credentials 적용 |
+| 재시도 및 Kill Switch | 테스트 결과를 숨기지 않도록 자동 재시도는 적용하지 않음. `SafetySession`이 HTTP 500을 감지하면 해당 가상 사용자 흐름을 즉시 중단하고, 중단 사유와 에러율을 Allure에 기록함. 에러율이 1%를 초과하면 테스트를 실패 처리함 |
+| 민감정보 관리(환경변수·Jenkins Credentials) | `.env`를 Git에서 제외하고 실패 로그의 계정 정보를 마스킹함. 로컬은 환경변수 또는 `.env`, CI는 Jenkins Credentials로 값을 주입함 |
 | 테스트 데이터 정리 | 자동 생성 데이터는 세션 종료 시 정리하고, 변경·삭제 테스트는 `destructive` marker로 구분 |
 
 
@@ -437,7 +473,18 @@ except SafetyKillSwitchError as error:
 
 ---
 
-## 13. 참고 자료
+## 13. 향후 개선 사항
+
+| 개선 영역 | 향후 개선 내용 | 기대 효과 |
+| --- | --- | --- |
+| 테스트 데이터·세션 격리 | 테스트 전용 계정과 데이터를 자동으로 준비·회수하고, 다중 계정 테스트 전 A·B 계정의 Session 상태를 자동 점검함 | 테스트 간 간섭과 사전조건 미충족에 따른 SKIP을 줄임 |
+| 부하 테스트 보완 및 지표 관리 | Requests·JMeter 시나리오를 예약 실행하고, 동시 사용자 수·Latency·에러율 추이를 누적 관리함 | 성능 저하와 오류율 증가를 조기에 감지함 |
+| E2E 품질 범위 확대 | 주요 사용자 흐름의 브라우저·해상도 조합을 확대하고 예외 케이스를 보완함 | 브라우저·화면 크기와 예외 상황에서 발생하는 오류를 조기에 발견하여 사용자 환경별 안정성을 향상함 |
+| 테스트 병렬 실행 | API·API_SECURITY·E2E 테스트를 독립적인 그룹 단위로 병렬 실행하고, 계정·테스트 데이터·Allure 결과를 분리함 | 전체 테스트 실행 시간을 단축하고 CI 피드백 속도를 향상함 |
+
+---
+
+## 14. 참고 자료
 
 | 구분 | 참고 문서 | 활용 내용 |
 | --- | --- | --- |
