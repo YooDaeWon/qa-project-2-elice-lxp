@@ -10,7 +10,7 @@
 6. [실행 환경 및 설치](#6-실행-환경-및-설치)
 7. [테스트 실행 방법](#7-테스트-실행-방법)
 8. [핵심 코드 스니펫](#8-핵심-코드-스니펫)
-9. [CI/CD 파이프라인](#9-cicd-파이프라인)
+9. [CI 및 테스트 자동화 파이프라인](#9-CI-및-테스트-자동화-파이프라인)
 10. [테스트 결과 및 산출물](#10-테스트-결과-및-산출물)
 11. [Safety Design](#11-safety-design)
 12. [트러블슈팅 및 알려진 이슈](#12-트러블슈팅-및-알려진-이슈)
@@ -41,6 +41,12 @@ Elice LXP(Dev)를 대상으로 기능, 보안, 성능 및 사용자 흐름을 �
 | [API 호출 보안](https://docs.google.com/spreadsheets/d/19UYRMJlXTdcG8zDIy5Gt8rRAlB0yT8is74YtEo1CMWM/edit?gid=1399124983#gid=1399124983) | 47 | 인증 강도, 토큰·세션, BOLA, 권한 상승, 기관·클래스 접근 통제, 비즈니스 로직, 인젝션 및 정보 노출 검증 |
 | [부하 테스트](https://docs.google.com/spreadsheets/d/19UYRMJlXTdcG8zDIy5Gt8rRAlB0yT8is74YtEo1CMWM/edit?gid=151845502#gid=151845502) | 16 | 계정·토큰 준비, 과목 조회와 시험 입장·제출·재응시 흐름, 5~30명 부하 프로필, Kill Switch와 호출 간격 검증 |
 | [E2E/UI/UX](https://docs.google.com/spreadsheets/d/19UYRMJlXTdcG8zDIy5Gt8rRAlB0yT8is74YtEo1CMWM/edit?gid=1802487519#gid=1802487519) | 60 | 로그인, 클래스·과목·시험, 게시판, 수업 일정, 반응형 UI와 네트워크·중복 요청·시간 초과·HTTP 오류 등 예외 흐름 검증 |
+
+### 프로젝트 성과
+
+```
+-
+```
 
 ---
 
@@ -91,36 +97,42 @@ Elice LXP(Dev)를 대상으로 기능, 보안, 성능 및 사용자 흐름을 �
 
 ## 4. 프로젝트 구조
 
-### 주요 폴더
+```text
+seethrough/
+├── Jenkinsfile                   # 기본 테스트 CI 파이프라인
+├── Jenkinsfile.api               # API 테스트 CI 파이프라인
+├── Jenkinsfile.api_security      # API Security 테스트 CI 파이프라인
+├── Jenkinsfile.e2euiux           # E2E/UI/UX 테스트 CI 파이프라인
+│
+├── tests/                        # 테스트 케이스
+│   ├── api/                      # 클래스, 과목, 일정, 게시판 API 테스트
+│   ├── api_security/             # 인증, 권한, 세션 및 웹 보안 테스트
+│   ├── e2euiux/                  # Playwright 기반 E2E/UI/UX 테스트
+│   └── loadtest/                 # 경량 부하 및 안전성 통제 테스트
+│
+├── framework/                    # 테스트 지원 코드
+│   ├── api/                      # API 영역별 요청 클라이언트
+│   ├── api_security/             # API Security 요청 객체, 토큰 및 명세 비교 기능
+│   ├── e2euiux/                  # E2E 공통 flow와 페이지 객체(POM)
+│   │   └── pages/                # 페이지별 POM
+│   └── loadtest/                 # 부하 테스트 클라이언트, pacing, 리포트 및 Kill Switch
+│
+├── clients/                      # API와 API Security가 함께 사용하는 기본 HTTP 클라이언트
+├── config/                       # 환경변수 로드와 공통 설정
+├── data/                         # API 명세, 요청 payload와 테스트 데이터
+├── utils/                        # API 계열 assertion, Allure, 데이터 준비 및 공통 유틸리티
+├── scripts/                      # HAR 요약 생성 등 테스트 지원 스크립트
+│
+├── docs/                         # 문서 및 테스트 산출물
+│   ├── images/                   # README 이미지
+│   └── bug_videos/               # README 표시할 재현 영상
+│
+├── .env.sample                   # 테스트 실행에 필요한 환경변수 예시
+├── pytest.ini                    # pytest 옵션과 marker 등록
+├── requirements.txt              # Python 패키지 의존성
+└── README.md                     # 프로젝트 문서
+```
 
-| 경로 | 역할 |
-| --- | --- |
-| `tests/api/` | 클래스, 과목, 일정, 게시판 API 테스트 |
-| `tests/api_security/` | 인증, 권한, 세션 및 웹 보안 테스트 |
-| `tests/e2euiux/` | Playwright 기반 E2E/UI/UX 테스트 |
-| `tests/loadtest/` | 경량 부하 및 안전성 통제 테스트 |
-| `framework/api/` | API 영역별 요청 클라이언트 |
-| `framework/api_security/` | API Security 요청 객체, 토큰 및 명세 비교 기능 |
-| `framework/e2euiux/` | E2E 공통 flow와 페이지 객체(POM) |
-| `framework/loadtest/` | 부하 테스트 클라이언트, pacing, 리포트 및 Kill Switch |
-| `clients/` | API와 API Security가 함께 사용하는 기본 HTTP 클라이언트 |
-| `config/` | 환경변수 로드와 공통 설정 |
-| `data/` | API 명세, 요청 payload와 테스트 데이터 |
-| `utils/` | API 계열 assertion, Allure, 데이터 준비 및 공통 유틸리티 |
-| `scripts/` | HAR 요약 생성 등 테스트 지원 스크립트 |
-
-
-### 주요 설정 파일
-
-| 파일 | 역할 |
-| --- | --- |
-| `.env.sample` | 테스트 실행에 필요한 환경변수 예시 |
-| `pytest.ini` | pytest 옵션과 marker 등록 |
-| `requirements.txt` | Python 패키지 의존성 |
-| `Jenkinsfile` | 전체 테스트 실행을 위한 Jenkins CI 파이프라인 정의 |
-| `Jenkinsfile.api` | `tests/api/` 전용 테스트 실행과 Allure·Discord 연동을 위한 Jenkins CI 파이프라인 정의 |
-| `Jenkinsfile.api_security` | `tests/api_security/` 전용 테스트 실행과 Allure·Discord 연동을 위한 Jenkins CI 파이프라인 정의 |
-| `Jenkinsfile.e2euiux` | `tests/e2euiux/` 전용 테스트 실행과 Allure·Discord 연동을 위한 Jenkins CI 파이프라인 정의 |
 
 ### 테스트 영역별 구성
 
@@ -418,10 +430,10 @@ except SafetyKillSwitchError as error:
 
 | 테스트 영역 | 이슈 | 현상 | 확인 및 대응 |
 | --- | --- | --- | --- |
-| API | 다중 계정 API Session 문제<br>(ID-60·61·67) | 수강생 A와 B를 함께 사용하는 권한 테스트에서 일정 시간이 지나면 B계정 요청이 `no_account_api_session` 응답으로 검증 단계에 도달하지 못하고 SKIP 처리됨 | `eliceSessionKey`와 계정 API Session을 구분하고, 테스트 전 A·B 계정의 로그인 및 Session 유효성을 확인함<br>Session 미확보는 제품 기능 실패가 아닌 사전조건 미충족으로 분리하고, ID-60·61·67은 A가 생성한 리소스에 B가 접근하는 구조로 검증함 |
-| API_SECURITY | 로컬 통과 / CI만 실패<br>Credential 보이지 않는 문자<br>(ID-30) | 로컬에서는 정상이나 Jenkins에서 토큰 발급이 실패함<br>bash로 직접 source한 Credential 값 끝에 CRLF(`\r`) 또는 공백이 섞인 것이 유력 원인으로 판단됨 | `os.getenv()` 결과에 `.strip()`을 적용하고<br>Jenkins 빌드 재실행 후 통과를 확인함 |
-| E2E/UI/UX | 로그인 세션 끊김 및 재로그인 페이지 전환 | 로그인 후 LXP 메인 페이지 대신<br>재로그인 페이지`accounts/signin/history`로 이동해<br>후속 테스트가 실패할 수 있음 | 최종 URL과 인증 응답 상태를 확인하고,<br>재로그인 페이지면 기록 삭제 후 로그인 페이지로 돌아가<br>정보를 다시 입력해 메인 페이지 표시 여부를 확인함 |
-| LOAD | 안정성 통제 기준에 따른 부하테스트 실패 | 테스트 케이스 설계 단계에서 모든 테스트 스텝에<br>`Latency < 5,000ms` Time-Out 통제를 적용했으나,<br>부하테스트에서 주요 실패 원인으로 작용해<br>대부분의 케이스가 실패함 | 부하테스트에서 해당 통제를 완화한 뒤 재실행했고,<br>테스트 성공을 확인함 |
+| API | 다중 계정 API Session 문제 (ID-60·61·67) | 수강생 A와 B를 함께 사용하는 권한 테스트에서 일정 시간이 지나면 B계정 요청이 `no_account_api_session` 응답으로 검증 단계에 도달하지 못하고 SKIP 처리됨 | `eliceSessionKey`와 계정 API Session을 구분하고, 테스트 전 A·B 계정의 로그인 및 Session 유효성을 확인함. Session 미확보는 제품 기능 실패가 아닌 사전조건 미충족으로 분리하고, ID-60·61·67은 A가 생성한 리소스에 B가 접근하는 구조로 검증함 |
+| API_SECURITY | 로컬 통과 / CI만 실패 Credential 보이지 않는 문자 (ID-30) | 로컬에서는 정상이나 Jenkins에서 토큰 발급이 실패함. bash로 직접 source한 Credential 값 끝에 CRLF(`\r`) 또는 공백이 섞인 것이 유력 원인으로 판단됨 | `os.getenv()` 결과에 `.strip()`을 적용하고 Jenkins 빌드 재실행 후 통과를 확인함 |
+| E2E/UI/UX | 로그인 세션 끊김 및 재로그인 페이지 전환 | 로그인 후 LXP 메인 페이지 대신 재로그인 페이지 `accounts/signin/history`로 이동해 후속 테스트가 실패할 수 있음 | 최종 URL과 인증 응답 상태를 확인하고, 재로그인 페이지면 기록 삭제 후 로그인 페이지로 돌아가 정보를 다시 입력해 메인 페이지 표시 여부를 확인함 |
+| LOAD | 안정성 통제 기준에 따른 부하테스트 실패 | 테스트 케이스 설계 단계에서 모든 테스트 스텝에 `Latency < 5,000ms` Time-Out 통제를 적용했으나, 부하테스트에서 주요 실패 원인으로 작용해 대부분의 케이스가 실패함 | 부하테스트에서 해당 통제를 완화한 뒤 재실행했고, 테스트 성공을 확인함 |
 
 ---
 
