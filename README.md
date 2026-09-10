@@ -212,9 +212,22 @@ E2E flow는 이전 TC의 화면 상태를 이어받을 수 있으므로 개별 I
 | CI | Linux | Docker 기반 Jenkins | Playwright Chromium |
 
 ### 가상환경
+
+프로젝트 루트에서 Python 가상환경을 만들고 활성화합니다. (로컬 Windows 기준)
+
+```powershell
+python -m venv venv
+.\venv\Scripts\Activate.ps1
 ```
--
+
+Linux / macOS / Jenkins 에이전트에서는 다음을 사용합니다.
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
 ```
+
+활성화 후 프롬프트에 `(venv)`가 보이면 가상환경에 진입한 상태입니다. 이후 패키지·Playwright 설치와 테스트 실행은 모두 이 환경에서 진행합니다.
 
 ### 패키지 설치
 
@@ -388,9 +401,43 @@ except SafetyKillSwitchError as error:
 ## 9. CI 및 테스트 자동화 파이프라인
 
 ### 전체 실행 순서
+
+```text
+1. 코드 커밋 / 푸시
+   - 개발자가 GitLab(dev 등)에 코드를 push하거나 Merge한다.
+   - GitLab Push Event Webhook이 Jenkins Job을 트리거한다.
+     (Webhook·브랜치 범위는 Jenkins/GitLab 작업 설정에 따름)
+
+2. Jenkins 빌드 실행 (Jenkinsfile)
+   2-1. Checkout
+        - SCM에서 소스 checkout
+   2-2. Environment Setup
+        - Python venv 생성, requirements.txt 설치
+        - Playwright Chromium 설치
+        - Allure 3.15.0 CLI 준비 (필요 시 portable Node)
+   2-3. Test Execution
+        - Jenkins Credentials(`env` Secret file)로 환경변수 주입
+        - `SEETHROUGH_USE_CREDENTIALS=1` 설정 → `.env` 파일 로드 생략
+        - 공유 자원 lock(`qa-shared-env`) 후 pytest 실행
+        - 통합 Job(`Jenkinsfile`):
+            pytest --alluredir=allure-results --junitxml=junit-report.xml ...
+            → pytest.ini testpaths 기준 tests/e2euiux, tests/api, tests/api_security
+        - 영역별 Job(선택):
+            Jenkinsfile.api / .api_security / .e2euiux 는 해당 경로만 실행
+        - 산출물: allure-results/, junit-report.xml
+          (실패 시 E2E 영상은 --video=retain-on-failure)
+        - 부하(tests/loadtest)는 CI 기본 실행에서 제외 (별도 실행)
+
+3. Allure 리포트 생성 (post always)
+   - Allure 플러그인이 allure-results/ 를 읽어 allure-report 게시
+   - Jenkins 빌드 페이지에서 대시보드 확인
+
+4. Discord 결과 알림 (post success / unstable / failure)
+   - junit-report.xml 로 Total / Pass / Fail / 성공률 집계
+   - Discord Webhook으로 요약 + Jenkins 빌드(Allure) 링크 전송
 ```
--
-```
+
+로컬에서는 `pytest` → `allure serve allure-results`(또는 `allure generate`)로 2~3단계에 해당하는 검증·리포트만 재현할 수 있다. Discord 알림은 Jenkins Pipeline `post`에서만 동작한다.
 
 ### GitLab 자동 빌드 조건
 
@@ -399,9 +446,34 @@ except SafetyKillSwitchError as error:
 
 
 ### Jenkins Credentials
-```
--
-```
+
+Pipeline은 Secret file Credentials로 테스트용 환경변수를 주입한다. 워크스페이스 `.env` 파일은 checkout·실행·post 단계에서 삭제하며, `SEETHROUGH_USE_CREDENTIALS=1`일 때 `config/settings.py`는 `.env`를 읽지 않는다.
+
+| 항목 | 값 |
+| --- | --- |
+| Credentials 종류 | Secret file |
+| Credentials ID | `env` (`Jenkinsfile`, `Jenkinsfile.api`, `Jenkinsfile.api_security`, `Jenkinsfile.e2euiux` 공통) |
+| 주입 방식 | `withCredentials([file(credentialsId: 'env', variable: 'DOTENV_FILE')])` 후 `set -a; . "$DOTENV_FILE"; set +a` |
+| 코드 연동 | `export SEETHROUGH_USE_CREDENTIALS=1` → dotenv 파일 로드 건너뜀 |
+| 로컬 대응 | `.env.sample`을 복사한 `.env` (Git 커밋 금지) |
+
+Secret file 내용은 `.env.sample`과 동일한 키 형식의 dotenv이며, 최소 아래 범주를 포함한다.
+
+| 범주 | 주요 키 예시 | 용도 |
+| --- | --- | --- |
+| API Base URL | `API_BASE_URL`, `ACCOUNT_API_BASE_URL`, `CLASSROOM_API_BASE_URL`, `DASHBOARD_API_BASE_URL` | 서비스 호스트 |
+| 기관·리소스 | `ORG`, `CLASSROOM_ID`, `COURSE_ID` 등 | 테스트 대상 데이터 |
+| 학습자/교육자 | `ST_ID`/`ST_PW`, `TC_ID`/`TC_PW`, 세션 토큰(`STSESSION_KEY`, `TCSESSION_KEY` 등) | E2E·API·Security 인증 |
+| 더미 계정 | `DUMMY_ID`/`DUMMY_PW`, `DUMMY_2_ID`/`DUMMY_2_PW` | 브루트포스·API TC60/61/67 등 |
+| 보안 전용 | `SEC_WITHDRAW_ID`/`SEC_WITHDRAW_PW` | API Security ID-30 등 |
+| 자동 준비 플래그 | `AUTO_DISCOVER`, `AUTO_SETUP_TEST_DATA`, `AUTO_CLEANUP` 등 | API 데이터 준비/정리 |
+
+운영 시 주의사항:
+
+- Credentials 값을 변경할 때는 Jenkins UI에서 Secret file을 **통째로 다시 업로드**한다. (파일형 Credentials는 내용 조회·부분 수정이 어렵다)
+- 계정·토큰·비밀번호는 README·Git·Discord 메시지·Allure 첨부 원문에 올리지 않는다.
+- GitLab checkout용 SCM Credentials는 Job/Folder 설정에서 별도 관리하며, 위 `env` Secret file과는 역할이 다르다.
+- 영역별 Job이 동일 `env` Credentials와 `qa-shared-env` lock을 공유하므로, 계정·CLASSROOM/COURSE 충돌을 막기 위해 테스트 실행 구간은 직렬화된다.
 
 ### Allure 및 Discord 연동
 
