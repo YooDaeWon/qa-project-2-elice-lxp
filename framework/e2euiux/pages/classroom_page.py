@@ -15,6 +15,18 @@ class ClassroomPage:
             name="학습 과목",
             exact=True,
         )
+        self.learning_subjects_more_button = page.get_by_role(
+            "main"
+        ).get_by_text(
+            "학습 과목",
+            exact=True,
+        ).locator(
+            "xpath=ancestor::*[.//button[normalize-space()='전체 보기']][1]"
+        ).get_by_role(
+            "button",
+            name="전체 보기",
+            exact=True,
+        )
         self.board_link = page.get_by_role(
             "link",
             name="게시판",
@@ -53,6 +65,10 @@ class ClassroomPage:
     def open_learning_subjects(self):
         """학습 과목 페이지 열기"""
         self.learning_subjects_link.click()
+
+    def open_learning_subjects_overview(self):
+        """학습 과목 전체 목록 페이지 열기"""
+        self.learning_subjects_more_button.click()
 
     def open_board(self):
         """게시판 페이지 열기"""

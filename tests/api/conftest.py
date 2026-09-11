@@ -1,4 +1,5 @@
 import json
+import os
 from pathlib import Path
 
 import re
@@ -12,6 +13,7 @@ except ImportError:
 
 from clients.api_client import APIClient
 from config.settings import settings
+from framework.api_security.pages.account_client import AccountClient
 from utils.auto_data import AutoDataResolver
 from utils.tc_catalog import TC_META
 
@@ -20,20 +22,17 @@ ROOT_DIR = Path(__file__).resolve().parents[2]
 
 
 # ---------------------------------------------------------------------------
-# V19 result policy: Negative TC = actual pytest FAILED
+# API result policy
 # ---------------------------------------------------------------------------
-# 프로젝트 표시 요구:
+# pytest의 기본 결과 정책을 그대로 사용한다.
 #
-# - Positive TC 정상 동작       -> PASSED
-# - Negative TC 기대 동작 확인 -> FAILED (EXPECTED NEGATIVE)
-# - Negative TC 실제 이상      -> FAILED (UNEXPECTED NEGATIVE)
-# - 사전조건 미충족            -> SKIPPED
+# - 기대결과와 실제결과가 일치하면: PASSED
+# - 기대결과와 실제결과가 불일치하면: FAILED
+# - 사전조건이 충족되지 않으면: SKIPPED
 #
-# @pytest.mark.negative TC가 기능적으로 올바르게 차단되어도
-# pytest의 실제 call outcome 자체를 FAILED로 변환한다.
-# 따라서 터미널 / Allure / Jenkins 모두 Failed로 본다.
-
-_NEGATIVE_NODEIDS = set()
+# @pytest.mark.negative는 네거티브 테스트를 분류하기 위한 메타데이터일 뿐,
+# 테스트 결과(PASS/FAIL)를 강제로 변경하지 않는다. 따라서 Allure/Jenkins에도
+# pytest의 실제 검증 결과가 그대로 전달된다.
 
 
 def _is_api_test(item):
@@ -42,23 +41,15 @@ def _is_api_test(item):
 
 
 def _api_tc_number(item):
-    """test_api_01 ~ test_api_68의 TC 번호를 반환한다."""
-    nodeid = item.nodeid.replace("\\", "/")
-    match = re.search(r"test_api_(\d{2})\.py::test_api_\d{2}$", nodeid)
+    """통합된 카테고리 파일에서도 test_api_01 ~ test_api_68의 TC 번호를 반환한다."""
+    match = re.fullmatch(r"test_api_(\d{2})", item.name, re.IGNORECASE)
     if match:
         return int(match.group(1))
     return None
 
 
 def pytest_collection_modifyitems(config, items):
-    _NEGATIVE_NODEIDS.clear()
-
-    # Negative TC 목록은 기존대로 유지
-    for item in items:
-        if item.get_closest_marker("negative") is not None:
-            _NEGATIVE_NODEIDS.add(item.nodeid)
-
-    # API 테스트만 실행하는 경우 TC01 -> TC68 순으로 정렬
+    """API 테스트를 TC01 -> TC68 순으로 정렬한다."""
     numbered_items = []
     unnumbered_items = []
 
@@ -80,116 +71,110 @@ def pytest_collection_modifyitems(config, items):
         items[:] = [item for _, _, item in numbered_items]
 
 
-@pytest.hookimpl(hookwrapper=True, trylast=True)
-def pytest_runtest_makereport(item, call):
+def _credential(name):
+    return (os.getenv(name) or "").strip()
+
+
+def _fresh_access_token(login_id, password, label):
+    """저장 토큰을 사용하지 않고 계정 ID/PW로 이번 실행용 토큰을 발급한다.
+
+    tests/api 전용 인증 기준선이다. .env의 STSESSION_KEY/TCSESSION_KEY 값은
+    API TC 실행 결과에 영향을 주지 않는다.
     """
-    정상적으로 검증을 끝낸 Negative TC도 프로젝트 정책상 actual FAILED로 변환한다.
-
-    trylast hookwrapper를 사용해 Allure 같은 report 소비 플러그인이
-    최종 FAILED outcome을 보도록 한다.
-    """
-    outcome = yield
-    report = outcome.get_result()
-
-    if report.when != "call":
-        return
-
-    if item.nodeid not in _NEGATIVE_NODEIDS:
-        return
-
-    if report.passed:
-        report.outcome = "failed"
-        report.longrepr = (
-            "EXPECTED NEGATIVE RESULT\n"
-            "이 TC는 API 실패/권한 차단/유효성 차단 등 Negative 결과를 검증합니다.\n"
-            "기대된 Negative 동작이 확인되었으므로 프로젝트 표시 정책에 따라 "
-            "pytest 결과를 FAILED로 기록합니다."
-        )
-        report.user_properties.append(("negative_result", "EXPECTED"))
-        report.user_properties.append(("v19_forced_failed", "true"))
-    elif report.failed:
-        report.user_properties.append(("negative_result", "UNEXPECTED"))
-
-
-def pytest_report_teststatus(report, config):
-    if report.when != "call" or report.nodeid not in _NEGATIVE_NODEIDS:
-        return None
-
-    props = dict(getattr(report, "user_properties", []))
-
-    if report.failed and props.get("negative_result") == "EXPECTED":
-        return "failed", "F", "FAILED (EXPECTED NEGATIVE)"
-
-    if report.failed:
-        return "failed", "F", "FAILED (UNEXPECTED NEGATIVE)"
-
-    return None
-
-
-def pytest_terminal_summary(terminalreporter, exitstatus, config):
-    expected_negative = []
-    unexpected_negative = []
-
-    for report in terminalreporter.stats.get("failed", []):
-        if report.when != "call" or report.nodeid not in _NEGATIVE_NODEIDS:
-            continue
-
-        props = dict(getattr(report, "user_properties", []))
-        if props.get("negative_result") == "EXPECTED":
-            expected_negative.append(report)
-        else:
-            unexpected_negative.append(report)
-
-    terminalreporter.write_sep("-", "V19 Negative TC Result")
-    terminalreporter.write_line(
-        f"FAILED (EXPECTED NEGATIVE)   : {len(expected_negative)}"
-    )
-    terminalreporter.write_line(
-        f"FAILED (UNEXPECTED NEGATIVE) : {len(unexpected_negative)}"
-    )
-    terminalreporter.write_line(
-        "※ V19에서는 Negative TC를 실제 pytest FAILED로 집계하며 "
-        "Allure/Jenkins에도 Failed로 전달합니다."
-    )
-
-
-@pytest.fixture(scope="session")
-def student_client():
-    if not settings.STSESSION_KEY:
-        pytest.skip("STSESSION_KEY가 설정되지 않았습니다.")
-    client = APIClient(settings.STSESSION_KEY, role="student")
-    yield client
-    client.close()
-
-
-@pytest.fixture(scope="session")
-def educator_client():
-    if not settings.TCSESSION_KEY:
-        pytest.skip("TCSESSION_KEY가 설정되지 않았습니다.")
-    client = APIClient(settings.TCSESSION_KEY, role="educator")
-    yield client
-    client.close()
-
-
-@pytest.fixture(scope="session")
-def student_a_client():
-    token = settings.STSESSION_A_KEY or settings.STSESSION_KEY
-    if not token:
-        pytest.skip("STSESSION_KEY가 설정되지 않았습니다.")
-    client = APIClient(token, role="student_a")
-    yield client
-    client.close()
-
-
-@pytest.fixture(scope="session")
-def student_b_client():
-    if not settings.STSESSION_B_KEY:
+    if not login_id or not password:
         pytest.skip(
-            "TC60/TC61/TC67용 STSESSION_B_KEY이 설정되지 않았습니다."
+            f"{label} 로그인 계정이 설정되지 않았습니다. "
+            "ST_ID/ST_PW 또는 TC_ID/TC_PW를 확인하세요."
         )
-    client = APIClient(settings.STSESSION_B_KEY, role="student_b")
+
+    account_client = AccountClient()
+    try:
+        response = account_client.login(login_id, password)
+        try:
+            data = response.json()
+        except ValueError:
+            data = {}
+
+        token = data.get("access_token") if isinstance(data, dict) else None
+        if response.status_code != 200 or not token:
+            fail_code = data.get("fail_code") if isinstance(data, dict) else None
+            fail_message = data.get("fail_message") if isinstance(data, dict) else None
+            pytest.fail(
+                f"{label} 로그인/access_token 발급 실패 | "
+                f"http={response.status_code}, "
+                f"fail_code={fail_code}, fail_message={fail_message}"
+            )
+
+        print(f"[API AUTH] {label} 로그인 성공 - 이번 실행용 새 access_token 발급 완료")
+        return token
+    finally:
+        account_client.api.close()
+
+
+@pytest.fixture(scope="session")
+def student_access_token():
+    # STSESSION_KEY/STSESSION_A_KEY는 의도적으로 읽지 않는다.
+    return _fresh_access_token(_credential("ST_ID"), _credential("ST_PW"), "학습자")
+
+
+@pytest.fixture(scope="session")
+def educator_access_token():
+    # TCSESSION_KEY는 의도적으로 읽지 않는다.
+    return _fresh_access_token(_credential("TC_ID"), _credential("TC_PW"), "교육자")
+
+
+@pytest.fixture(scope="session")
+def student_client(student_access_token):
+    client = APIClient(student_access_token, role="student")
     yield client
     client.close()
+
+
+@pytest.fixture(scope="session")
+def educator_client(educator_access_token):
+    client = APIClient(educator_access_token, role="educator")
+    yield client
+    client.close()
+
+
+@pytest.fixture(scope="session")
+def student_a_client(student_access_token):
+    # 기본 학습자와 같은 계정이다. 재로그인하지 않고 같은 실행 토큰을 공유해
+    # 동일 계정 재로그인으로 기존 세션이 갱신되는 부작용을 막는다.
+    client = APIClient(student_access_token, role="student_a")
+    yield client
+    client.close()
+
+
+@pytest.fixture(scope="session")
+def dummy_2_access_token():
+    # STSESSION_B_KEY는 사용하지 않는다. B 계정도 ID/PW로 새 토큰을 발급한다.
+    return _fresh_access_token(
+        _credential("DUMMY_2_ID"),
+        _credential("DUMMY_2_PW"),
+        "수강생 B(DUMMY_2)",
+    )
+
+
+@pytest.fixture(scope="session")
+def student_b_client(dummy_2_access_token):
+    client = APIClient(dummy_2_access_token, role="student_b")
+    yield client
+    client.close()
+
+
+@pytest.fixture(scope="function")
+def dummy_2_client(dummy_2_access_token):
+    """TC60/TC61/TC67 전용 B 계정 클라이언트.
+
+    세션 시작 시 ID/PW로 발급한 fresh token을 사용한다. .env의 STSESSION_B_KEY와
+    무관하며, 같은 계정으로 반복 로그인해 이전 세션을 갱신하는 것도 피한다.
+    """
+    client = APIClient(dummy_2_access_token, role="dummy_2_student")
+    try:
+        yield client
+    finally:
+        client.close()
 
 
 @pytest.fixture(scope="session")
@@ -211,16 +196,16 @@ def auto_discover_test_data(student_client, educator_client):
         yield
         return
 
-    student_b_api = (
-        APIClient(settings.STSESSION_B_KEY, role="student_b_auto")
-        if settings.STSESSION_B_KEY
-        else None
-    )
+    # API 자동 데이터 준비도 저장된 STSESSION_B_KEY에 의존하지 않는다.
+    # 현재 TC60/61/67은 DUMMY_2_ID/PW fresh login fixture로 B 계정을 준비하므로
+    # 공통 auto-data 단계에서는 B 계정 토큰이 필수가 아니다.
+    student_b_api = None
 
     resolver = AutoDataResolver(
         educator_api=educator_client,
         student_api=student_client,
         student_b_api=student_b_api,
+        student_login_id=_credential("ST_ID"),
     )
 
     # 자동 fixture 준비 요청 수십 건이 첫 TC의 Allure Step에 섞이지 않도록 숨긴다.
@@ -259,7 +244,6 @@ def allure_tc_metadata(request):
 
     name = request.node.name
     tc_id = None
-
     # 분리 전 함수명: test_tc01_...
     match_old = re.search(r"test_tc(\\d{2})", name, re.IGNORECASE)
     if match_old:

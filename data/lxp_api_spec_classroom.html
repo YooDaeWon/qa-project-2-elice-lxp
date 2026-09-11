@@ -1,0 +1,1549 @@
+<!doctype html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Classroom API Specifications</title>
+<style>
+*{box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;margin:0;padding:0;color:#333;background:#fafafa}
+.container{max-width:1200px;margin:0 auto;padding:20px}
+h1{border-bottom:2px solid #eee;padding-bottom:10px;margin-bottom:20px}
+.search-box{width:100%;padding:10px 15px;border:1px solid #ddd;border-radius:6px;font-size:14px;margin-bottom:20px;outline:none}
+.search-box:focus{border-color:#61affe;box-shadow:0 0 0 2px rgba(97,175,254,.2)}
+.category{margin-bottom:8px;border:1px solid #e0e0e0;border-radius:8px;overflow:hidden;background:#fff}
+.category-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;cursor:pointer;background:#f5f7f9;user-select:none;font-weight:600;font-size:.95em}
+.category-header:hover{background:#eef1f5}
+.category-header .count{color:#888;font-weight:400;font-size:.85em}
+.category-header .arrow{transition:transform .2s;font-size:.8em;color:#888}
+.category.collapsed .arrow{transform:rotate(-90deg)}
+.category.collapsed .category-body{display:none}
+.category-body{border-top:1px solid #e8e8e8}
+.ep{border-bottom:1px solid #f0f0f0;cursor:pointer}
+.ep:last-child{border-bottom:none}
+.ep-header{display:flex;align-items:center;padding:8px 16px;gap:10px}
+.ep-header:hover{background:#f8f9ff}
+.ep.collapsed .ep-detail{display:none}
+.badge{font-weight:700;padding:2px 6px;border-radius:3px;color:#fff;font-size:.75em;min-width:50px;text-align:center;display:inline-block}
+.ep-url{font-family:"SF Mono",Monaco,Consolas,monospace;font-size:.88em;color:#333}
+.ep-detail{padding:12px 16px 16px 16px;background:#fafbfc;border-top:1px solid #f0f0f0}
+.ep-name{color:#888;font-size:.82em;margin-bottom:8px}
+table{border-collapse:collapse;width:100%;font-size:.88em}
+th,td{border:1px solid #e0e0e0;padding:7px 10px;text-align:left;vertical-align:top}
+th{background:#f0f2f5;font-weight:600}
+code{background:#f0f0f0;padding:1px 4px;border-radius:3px;font-family:monospace;color:#d63384;font-size:.9em}
+.stats{color:#666;font-size:.9em;margin-bottom:15px}
+.auth{font-size:.82em;margin:0 0 8px 0;color:#555}
+.auth .tag{display:inline-block;padding:1px 6px;border-radius:3px;font-weight:600;font-size:.9em;margin-right:6px;color:#fff}
+.example{margin-top:10px}
+.example h4{margin:10px 0 4px 0;font-size:.85em;color:#555;font-weight:600}
+.example pre{background:#272822;color:#f8f8f2;padding:10px 12px;border-radius:5px;overflow-x:auto;font-size:.8em;line-height:1.45;margin:0;font-family:"SF Mono",Monaco,Consolas,monospace}
+.example .src{color:#999;font-size:.75em;margin-top:3px}
+.guide{background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:16px 18px;margin-bottom:16px;font-size:.9em;line-height:1.6}
+.guide h2{margin:0 0 10px 0;font-size:1.05em}
+.guide table{margin:8px 0}
+.guide code{font-size:.95em}
+</style></head><body>
+<div class="container">
+<h1>Classroom API Specifications</h1>
+<div class="stats">Total: 42 endpoints across 5 categories &middot; QA 기준 2026-08-14</div>
+<input type="text" class="search-box" placeholder="Search endpoints..." oninput="filterEndpoints(this.value)">
+<div class="guide">
+<h2>호출 규약 · 인증 안내</h2>
+<p><strong>인증</strong>: 모든 로그인 필요 API는 <code>Authorization: Bearer &lt;sessionkey&gt;</code> 헤더를 사용합니다.
+<code>sessionkey</code>는 로그인 시 account 서비스가 발급하는 세션 키이며, 브라우저 로그인 후 개발자도구
+네트워크 탭의 요청 헤더에서 그대로 확인할 수 있습니다. (API 키·JWT 별도 발급 없음)</p>
+<p><strong>엔드포인트별 AUTH 태그</strong></p>
+<table><thead><tr><th>태그</th><th>의미</th></tr></thead>
+<tbody>
+<tr><td><code>AUTH Full</code></td><td>로그인 세션 필수 — Verified 상태 계정만 허용</td></tr>
+<tr><td><code>AUTH Light</code></td><td>로그인 세션 필수 — 세션 정보만 사용(계정 전체 조회 없음)</td></tr>
+<tr><td><code>AUTH Skip</code></td><td>인증 불필요 — 비로그인 호출 가능</td></tr>
+<tr><td><code>AUTH Bearer</code></td><td>classroom 서비스: Bearer 토큰 필수</td></tr>
+</tbody></table>
+<p><strong>공통 헤더</strong>: 기관 식별을 위해 <code>x-elice-org-name-short</code> 헤더를 함께 보냅니다
+(예: <code>qatrack</code>). 파라미터 표의 <code>In</code> 열이 <code>header</code>인 항목이 이에 해당합니다.</p>
+<p><strong>응답 형식</strong>: 성공 시 모델 JSON을 그대로 반환하고, 실패 시
+<code>_ErrorResponseModel</code>(403 인증 / 409 논리 오류 / 422 검증 / 500 서버)이 내려옵니다.</p>
+<p><strong>예시 출처</strong>: Response 예시는 서비스가 게시하는 OpenAPI 스키마에서 생성한 형태 샘플입니다
+(값은 타입 기본값).</p>
+<p><strong>권한(학습자/교육자)</strong>: 인증을 통과해도 기관 내 역할(Student / TA / HeadTA / Admin)에 따라
+거부될 수 있습니다. 이때 HTTP 상태는 200이며 본문의 <code>fail_code</code>가
+<code>insufficient_permission</code>으로 내려옵니다 — 상태 코드만 보고 성공으로 판단하지 마십시오.</p>
+</div>
+<div class="category" data-cat="Classroom">
+<div class="category-header" onclick="toggleCategory(this)"><span>Classroom <span class="count">(23)</span></span><span class="arrow">&#9660;</span></div>
+<div class="category-body">
+<div class="ep collapsed" data-url="/classroom" data-name="Classroom Get">
+<div class="ep-header" onclick="toggleEp(this)"><span class="badge" style="background:#61affe">GET</span><span class="ep-url">/classroom</span></div>
+<div class="ep-detail">
+<div class="ep-name">Classroom Get</div>
+<p class="auth"><span class="tag" style="background:#e67e22">AUTH Bearer</span>Authorization: Bearer &lt;access token&gt; 필수 (HTTPBearer) · 기관 스코프</p>
+<table><thead><tr><th>Name</th><th>In</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>filter_opened_list</code></td><td>query</td><td>boolean[]</td><td>No</td><td></td></tr>
+<tr><td><code>filter_member_roles</code></td><td>query</td><td>MemberRole[]</td><td>No</td><td></td></tr>
+<tr><td><code>filter_name</code></td><td>query</td><td>string</td><td>No</td><td></td></tr>
+<tr><td><code>filter_member_account_id</code></td><td>query</td><td>integer</td><td>No</td><td></td></tr>
+<tr><td><code>filter_course_id</code></td><td>query</td><td>integer</td><td>No</td><td></td></tr>
+<tr><td><code>skip</code></td><td>query</td><td>integer</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>count</code></td><td>query</td><td>integer</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>x-elice-org-name-short</code></td><td>header</td><td>string</td><td>No</td><td></td></tr>
+</tbody></table><div class="example">
+<h4>Response 예시 (200)</h4>
+<pre>[
+  {
+    &quot;id&quot;: &quot;string&quot;,
+    &quot;name&quot;: &quot;string&quot;,
+    &quot;description&quot;: &quot;string&quot;,
+    &quot;opened&quot;: true,
+    &quot;course_count&quot;: 0,
+    &quot;member_count&quot;: 0,
+    &quot;preference&quot;: {},
+    &quot;features&quot;: {
+      &quot;lecture_objective&quot;: null,
+      &quot;ai_recommend_enabled&quot;: null,
+      &quot;ai_analysis_enabled&quot;: null,
+      &quot;timer_permission&quot;: null,
+      &quot;whiteboard_permission&quot;: null
+    },
+    &quot;logo_resource_id&quot;: &quot;string&quot;,
+    &quot;logo_resource_url&quot;: &quot;string&quot;,
+    &quot;image_resource_id&quot;: &quot;string&quot;,
+    &quot;image_resource_url&quot;: &quot;string&quot;,
+    &quot;assignment_policy&quot;: null,
+    &quot;created&quot;: &quot;2026-08-14T00:00:00+09:00&quot;,
+    &quot;modified&quot;: &quot;2026-08-14T00:00:00+09:00&quot;,
+    &quot;member_role&quot;: null,
+    &quot;enroll_type&quot;: &quot;admin_assigned&quot;,
+    &quot;enroll_begin&quot;: &quot;2026-08-14T00:00:00+09:00&quot;,
+    &quot;enroll_end&quot;: &quot;2026-08-14T00:00:00+09:00&quot;,
+    &quot;enroll_limit&quot;: 0,
+    &quot;enroll_price&quot;: null,
+    &quot;enroll_promotion&quot;: null,
+    &quot;product_uid&quot;: &quot;string&quot;,
+    &quot;time_zone&quot;: null,
+    &quot;ui_config&quot;: {
+      &quot;toolbar&quot;: null
+    },
+    &quot;course_added&quot;: true,
+    &quot;member_added&quot;: true
+  }
+]</pre>
+<div class="src">source: openapi schema</div>
+<h4>Response 예시 (403)</h4>
+<pre>{
+  &quot;code&quot;: &quot;string&quot;,
+  &quot;message&quot;: &quot;string&quot;,
+  &quot;detail&quot;: {}
+}</pre>
+<div class="src">source: openapi schema</div>
+</div></div></div>
+<div class="ep collapsed" data-url="/classroom" data-name="Classroom Post">
+<div class="ep-header" onclick="toggleEp(this)"><span class="badge" style="background:#49cc90">POST</span><span class="ep-url">/classroom</span></div>
+<div class="ep-detail">
+<div class="ep-name">Classroom Post</div>
+<p class="auth"><span class="tag" style="background:#e67e22">AUTH Bearer</span>Authorization: Bearer &lt;access token&gt; 필수 (HTTPBearer) · 기관 스코프</p>
+<p style="color:#999;font-size:.9em">### Error codes
+- **model_not_found**:Failed to find target model.Check specific information in detail.
+- **has_no_permission**:You have no permission</p>
+<table><thead><tr><th>Name</th><th>In</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>x-elice-org-name-short</code></td><td>header</td><td>string</td><td>No</td><td></td></tr>
+<tr><td><code>name</code></td><td>body</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>description</code></td><td>body</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>opened</code></td><td>body</td><td>boolean</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>preference</code></td><td>body</td><td>object</td><td>No</td><td></td></tr>
+<tr><td><code>features</code></td><td>body</td><td>ClassroomFeatures</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>logo_resource_id</code></td><td>body</td><td>string</td><td>No</td><td></td></tr>
+<tr><td><code>image_resource_id</code></td><td>body</td><td>string</td><td>No</td><td></td></tr>
+<tr><td><code>assignment_policy</code></td><td>body</td><td>AssigmentPolicy</td><td>No</td><td></td></tr>
+<tr><td><code>enroll_type</code></td><td>body</td><td></td><td>No</td><td></td></tr>
+<tr><td><code>course_ids</code></td><td>body</td><td>integer[]</td><td>No</td><td></td></tr>
+</tbody></table><div class="example">
+<h4>Response 예시 (200)</h4>
+<pre>{
+  &quot;id&quot;: &quot;string&quot;,
+  &quot;task_id&quot;: &quot;string&quot;
+}</pre>
+<div class="src">source: openapi schema</div>
+<h4>Response 예시 (403)</h4>
+<pre>{
+  &quot;code&quot;: &quot;string&quot;,
+  &quot;message&quot;: &quot;string&quot;,
+  &quot;detail&quot;: {}
+}</pre>
+<div class="src">source: openapi schema</div>
+</div></div></div>
+<div class="ep collapsed" data-url="/classroom/count" data-name="Classroom Count Get">
+<div class="ep-header" onclick="toggleEp(this)"><span class="badge" style="background:#61affe">GET</span><span class="ep-url">/classroom/count</span></div>
+<div class="ep-detail">
+<div class="ep-name">Classroom Count Get</div>
+<p class="auth"><span class="tag" style="background:#e67e22">AUTH Bearer</span>Authorization: Bearer &lt;access token&gt; 필수 (HTTPBearer) · 기관 스코프</p>
+<table><thead><tr><th>Name</th><th>In</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>filter_opened_list</code></td><td>query</td><td>boolean[]</td><td>No</td><td></td></tr>
+<tr><td><code>filter_member_roles</code></td><td>query</td><td>MemberRole[]</td><td>No</td><td></td></tr>
+<tr><td><code>filter_name</code></td><td>query</td><td>string</td><td>No</td><td></td></tr>
+<tr><td><code>filter_member_account_id</code></td><td>query</td><td>integer</td><td>No</td><td></td></tr>
+<tr><td><code>filter_member_role</code></td><td>query</td><td>MemberRole</td><td>No</td><td></td></tr>
+<tr><td><code>x-elice-org-name-short</code></td><td>header</td><td>string</td><td>No</td><td></td></tr>
+</tbody></table><div class="example">
+<h4>Response 예시 (200)</h4>
+<pre>0</pre>
+<div class="src">source: openapi schema</div>
+<h4>Response 예시 (403)</h4>
+<pre>{
+  &quot;code&quot;: &quot;string&quot;,
+  &quot;message&quot;: &quot;string&quot;,
+  &quot;detail&quot;: {}
+}</pre>
+<div class="src">source: openapi schema</div>
+</div></div></div>
+<div class="ep collapsed" data-url="/classroom/course/as_educator" data-name="Classroom Course As Educator Get">
+<div class="ep-header" onclick="toggleEp(this)"><span class="badge" style="background:#61affe">GET</span><span class="ep-url">/classroom/course/as_educator</span></div>
+<div class="ep-detail">
+<div class="ep-name">Classroom Course As Educator Get</div>
+<p class="auth"><span class="tag" style="background:#e67e22">AUTH Bearer</span>Authorization: Bearer &lt;access token&gt; 필수 (HTTPBearer) · 기관 스코프</p>
+<table><thead><tr><th>Name</th><th>In</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>filter_course_ids</code></td><td>query</td><td>integer[]</td><td>No</td><td></td></tr>
+<tr><td><code>filter_title</code></td><td>query</td><td>string</td><td>No</td><td></td></tr>
+<tr><td><code>skip</code></td><td>query</td><td>integer</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>count</code></td><td>query</td><td>integer</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>x-elice-org-name-short</code></td><td>header</td><td>string</td><td>No</td><td></td></tr>
+</tbody></table><div class="example">
+<h4>Response 예시 (200)</h4>
+<pre>[
+  {
+    &quot;classroom&quot;: {
+      &quot;id&quot;: null,
+      &quot;name&quot;: null,
+      &quot;description&quot;: null,
+      &quot;opened&quot;: null
+    },
+    &quot;id&quot;: &quot;string&quot;,
+    &quot;course_id&quot;: 0,
+    &quot;title&quot;: &quot;string&quot;,
+    &quot;short_description&quot;: &quot;string&quot;,
+    &quot;description&quot;: &quot;string&quot;,
+    &quot;course_type&quot;: 0,
+    &quot;logo_file_url&quot;: &quot;string&quot;,
+    &quot;status&quot;: 0,
+    &quot;created&quot;: &quot;2026-08-14T00:00:00+09:00&quot;,
+    &quot;modified&quot;: &quot;2026-08-14T00:00:00+09:00&quot;
+  }
+]</pre>
+<div class="src">source: openapi schema</div>
+<h4>Response 예시 (403)</h4>
+<pre>{
+  &quot;code&quot;: &quot;string&quot;,
+  &quot;message&quot;: &quot;string&quot;,
+  &quot;detail&quot;: {}
+}</pre>
+<div class="src">source: openapi schema</div>
+</div></div></div>
+<div class="ep collapsed" data-url="/classroom/public" data-name="Classroom Public Get">
+<div class="ep-header" onclick="toggleEp(this)"><span class="badge" style="background:#61affe">GET</span><span class="ep-url">/classroom/public</span></div>
+<div class="ep-detail">
+<div class="ep-name">Classroom Public Get</div>
+<p class="auth"><span class="tag" style="background:#e67e22">AUTH Bearer</span>Authorization: Bearer &lt;access token&gt; 필수 (HTTPBearer) · 기관 스코프</p>
+<table><thead><tr><th>Name</th><th>In</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>filter_classroom_ids</code></td><td>query</td><td>string[]</td><td>No</td><td></td></tr>
+<tr><td><code>organization_id</code></td><td>query</td><td>integer</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>filter_name</code></td><td>query</td><td>string</td><td>No</td><td></td></tr>
+<tr><td><code>skip</code></td><td>query</td><td>integer</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>count</code></td><td>query</td><td>integer</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>x-elice-org-name-short</code></td><td>header</td><td>string</td><td>No</td><td></td></tr>
+</tbody></table><div class="example">
+<h4>Response 예시 (200)</h4>
+<pre>[
+  {
+    &quot;id&quot;: &quot;string&quot;,
+    &quot;name&quot;: &quot;string&quot;,
+    &quot;description&quot;: &quot;string&quot;,
+    &quot;logo_url&quot;: &quot;string&quot;,
+    &quot;image_url&quot;: &quot;string&quot;,
+    &quot;enroll_type&quot;: &quot;admin_assigned&quot;,
+    &quot;enroll_begin&quot;: &quot;2026-08-14T00:00:00+09:00&quot;,
+    &quot;enroll_end&quot;: &quot;2026-08-14T00:00:00+09:00&quot;,
+    &quot;enroll_limit&quot;: 0,
+    &quot;enroll_price&quot;: null,
+    &quot;enroll_promotion&quot;: null,
+    &quot;enroll_status&quot;: null,
+    &quot;classroom_status&quot;: null,
+    &quot;product_uid&quot;: &quot;string&quot;
+  }
+]</pre>
+<div class="src">source: openapi schema</div>
+<h4>Response 예시 (403)</h4>
+<pre>{
+  &quot;code&quot;: &quot;string&quot;,
+  &quot;message&quot;: &quot;string&quot;,
+  &quot;detail&quot;: {}
+}</pre>
+<div class="src">source: openapi schema</div>
+</div></div></div>
+<div class="ep collapsed" data-url="/classroom/public/{classroom_id}" data-name="Classroom Public  Classroom Id  Get">
+<div class="ep-header" onclick="toggleEp(this)"><span class="badge" style="background:#61affe">GET</span><span class="ep-url">/classroom/public/{classroom_id}</span></div>
+<div class="ep-detail">
+<div class="ep-name">Classroom Public  Classroom Id  Get</div>
+<p class="auth"><span class="tag" style="background:#e67e22">AUTH Bearer</span>Authorization: Bearer &lt;access token&gt; 필수 (HTTPBearer) · 기관 스코프</p>
+<p style="color:#999;font-size:.9em">### Error codes
+- **model_not_found**:Failed to find target model.Check specific information in detail.</p>
+<table><thead><tr><th>Name</th><th>In</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>classroom_id</code></td><td>path</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>x-elice-org-name-short</code></td><td>header</td><td>string</td><td>No</td><td></td></tr>
+</tbody></table><div class="example">
+<h4>Response 예시 (200)</h4>
+<pre>{
+  &quot;id&quot;: &quot;string&quot;,
+  &quot;name&quot;: &quot;string&quot;,
+  &quot;description&quot;: &quot;string&quot;,
+  &quot;logo_url&quot;: &quot;string&quot;,
+  &quot;image_url&quot;: &quot;string&quot;,
+  &quot;member_role&quot;: &quot;admin&quot;,
+  &quot;enroll_type&quot;: &quot;admin_assigned&quot;,
+  &quot;enroll_begin&quot;: &quot;2026-08-14T00:00:00+09:00&quot;,
+  &quot;enroll_end&quot;: &quot;2026-08-14T00:00:00+09:00&quot;,
+  &quot;enroll_limit&quot;: 0,
+  &quot;enroll_price&quot;: {
+    &quot;krw&quot;: null,
+    &quot;usd&quot;: null
+  },
+  &quot;enroll_promotion&quot;: {
+    &quot;begin&quot;: null,
+    &quot;end&quot;: null,
+    &quot;type&quot;: null,
+    &quot;percentage_value&quot;: null,
+    &quot;fixed_value&quot;: null
+  },
+  &quot;enroll_status&quot;: &quot;not_logged_in&quot;,
+  &quot;classroom_status&quot;: &quot;not_logged_in&quot;,
+  &quot;student_count&quot;: 0,
+  &quot;available_seat_count&quot;: 0,
+  &quot;educator&quot;: {
+    &quot;id&quot;: null,
+    &quot;fullname&quot;: null,
+    &quot;profile_link_url&quot;: null,
+    &quot;profile_url&quot;: null
+  },
+  &quot;product_uid&quot;: &quot;string&quot;
+}</pre>
+<div class="src">source: openapi schema</div>
+<h4>Response 예시 (403)</h4>
+<pre>{
+  &quot;code&quot;: &quot;string&quot;,
+  &quot;message&quot;: &quot;string&quot;,
+  &quot;detail&quot;: {}
+}</pre>
+<div class="src">source: openapi schema</div>
+</div></div></div>
+<div class="ep collapsed" data-url="/classroom/{classroom_id}" data-name="Classroom  Classroom Id  Get">
+<div class="ep-header" onclick="toggleEp(this)"><span class="badge" style="background:#61affe">GET</span><span class="ep-url">/classroom/{classroom_id}</span></div>
+<div class="ep-detail">
+<div class="ep-name">Classroom  Classroom Id  Get</div>
+<p class="auth"><span class="tag" style="background:#e67e22">AUTH Bearer</span>Authorization: Bearer &lt;access token&gt; 필수 (HTTPBearer) · 기관 스코프</p>
+<p style="color:#999;font-size:.9em">### Error codes
+- **model_not_found**:Failed to find target model.Check specific information in detail.</p>
+<table><thead><tr><th>Name</th><th>In</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>classroom_id</code></td><td>path</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>x-elice-org-name-short</code></td><td>header</td><td>string</td><td>No</td><td></td></tr>
+</tbody></table><div class="example">
+<h4>Response 예시 (200)</h4>
+<pre>{
+  &quot;id&quot;: &quot;string&quot;,
+  &quot;name&quot;: &quot;string&quot;,
+  &quot;description&quot;: &quot;string&quot;,
+  &quot;opened&quot;: true,
+  &quot;course_count&quot;: 0,
+  &quot;member_count&quot;: 0,
+  &quot;preference&quot;: {},
+  &quot;features&quot;: {
+    &quot;lecture_objective&quot;: true,
+    &quot;ai_recommend_enabled&quot;: true,
+    &quot;ai_analysis_enabled&quot;: true,
+    &quot;timer_permission&quot;: &quot;student&quot;,
+    &quot;whiteboard_permission&quot;: &quot;student&quot;
+  },
+  &quot;logo_resource_id&quot;: &quot;string&quot;,
+  &quot;logo_resource_url&quot;: &quot;string&quot;,
+  &quot;image_resource_id&quot;: &quot;string&quot;,
+  &quot;image_resource_url&quot;: &quot;string&quot;,
+  &quot;assignment_policy&quot;: {
+    &quot;achievement_level_cutline&quot;: null,
+    &quot;assignment_assigned_count&quot;: null
+  },
+  &quot;created&quot;: &quot;2026-08-14T00:00:00+09:00&quot;,
+  &quot;modified&quot;: &quot;2026-08-14T00:00:00+09:00&quot;,
+  &quot;member_role&quot;: &quot;admin&quot;,
+  &quot;enroll_type&quot;: &quot;admin_assigned&quot;,
+  &quot;enroll_begin&quot;: &quot;2026-08-14T00:00:00+09:00&quot;,
+  &quot;enroll_end&quot;: &quot;2026-08-14T00:00:00+09:00&quot;,
+  &quot;enroll_limit&quot;: 0,
+  &quot;enroll_price&quot;: {
+    &quot;krw&quot;: null,
+    &quot;usd&quot;: null
+  },
+  &quot;enroll_promotion&quot;: {
+    &quot;begin&quot;: null,
+    &quot;end&quot;: null,
+    &quot;type&quot;: null,
+    &quot;percentage_value&quot;: null,
+    &quot;fixed_value&quot;: null
+  },
+  &quot;product_uid&quot;: &quot;string&quot;,
+  &quot;time_zone&quot;: &quot;KST&quot;,
+  &quot;ui_config&quot;: {
+    &quot;toolbar&quot;: null
+  },
+  &quot;course_added&quot;: true,
+  &quot;member_added&quot;: true
+}</pre>
+<div class="src">source: openapi schema</div>
+<h4>Response 예시 (403)</h4>
+<pre>{
+  &quot;code&quot;: &quot;string&quot;,
+  &quot;message&quot;: &quot;string&quot;,
+  &quot;detail&quot;: {}
+}</pre>
+<div class="src">source: openapi schema</div>
+</div></div></div>
+<div class="ep collapsed" data-url="/classroom/{classroom_id}" data-name="Classroom  Classroom Id  Patch">
+<div class="ep-header" onclick="toggleEp(this)"><span class="badge" style="background:#50e3c2">PATCH</span><span class="ep-url">/classroom/{classroom_id}</span></div>
+<div class="ep-detail">
+<div class="ep-name">Classroom  Classroom Id  Patch</div>
+<p class="auth"><span class="tag" style="background:#e67e22">AUTH Bearer</span>Authorization: Bearer &lt;access token&gt; 필수 (HTTPBearer) · 기관 스코프</p>
+<p style="color:#999;font-size:.9em">### Error codes
+- **model_not_found**:Failed to find target model.Check specific information in detail.</p>
+<table><thead><tr><th>Name</th><th>In</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>classroom_id</code></td><td>path</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>x-elice-org-name-short</code></td><td>header</td><td>string</td><td>No</td><td></td></tr>
+<tr><td><code>name</code></td><td>body</td><td>string</td><td>No</td><td></td></tr>
+<tr><td><code>description</code></td><td>body</td><td>string</td><td>No</td><td></td></tr>
+<tr><td><code>opened</code></td><td>body</td><td>boolean</td><td>No</td><td></td></tr>
+<tr><td><code>preference</code></td><td>body</td><td>object</td><td>No</td><td></td></tr>
+<tr><td><code>features</code></td><td>body</td><td>ClassroomFeatures</td><td>No</td><td></td></tr>
+<tr><td><code>logo_resource_id</code></td><td>body</td><td>string</td><td>No</td><td></td></tr>
+<tr><td><code>image_resource_id</code></td><td>body</td><td>string</td><td>No</td><td></td></tr>
+<tr><td><code>assignment_policy</code></td><td>body</td><td>AssigmentPolicy</td><td>No</td><td></td></tr>
+<tr><td><code>enroll_type</code></td><td>body</td><td>EnrollType</td><td>No</td><td></td></tr>
+<tr><td><code>enroll_begin</code></td><td>body</td><td>string</td><td>No</td><td></td></tr>
+<tr><td><code>enroll_end</code></td><td>body</td><td>string</td><td>No</td><td></td></tr>
+<tr><td><code>enroll_limit</code></td><td>body</td><td>integer</td><td>No</td><td></td></tr>
+<tr><td><code>enroll_price</code></td><td>body</td><td>Price-Input</td><td>No</td><td></td></tr>
+<tr><td><code>enroll_promotion</code></td><td>body</td><td>EnrollPromotion-Input</td><td>No</td><td></td></tr>
+<tr><td><code>time_zone</code></td><td>body</td><td>ClassroomTimeZone</td><td>No</td><td></td></tr>
+</tbody></table><div class="example">
+<h4>Response 예시 (200)</h4>
+<pre>{
+  &quot;id&quot;: &quot;string&quot;
+}</pre>
+<div class="src">source: openapi schema</div>
+<h4>Response 예시 (403)</h4>
+<pre>{
+  &quot;code&quot;: &quot;string&quot;,
+  &quot;message&quot;: &quot;string&quot;,
+  &quot;detail&quot;: {}
+}</pre>
+<div class="src">source: openapi schema</div>
+</div></div></div>
+<div class="ep collapsed" data-url="/classroom/{classroom_id}/article" data-name="Classroom  Classroom Id  Article Get">
+<div class="ep-header" onclick="toggleEp(this)"><span class="badge" style="background:#61affe">GET</span><span class="ep-url">/classroom/{classroom_id}/article</span></div>
+<div class="ep-detail">
+<div class="ep-name">Classroom  Classroom Id  Article Get</div>
+<p class="auth"><span class="tag" style="background:#e67e22">AUTH Bearer</span>Authorization: Bearer &lt;access token&gt; 필수 (HTTPBearer) · 기관 스코프</p>
+<table><thead><tr><th>Name</th><th>In</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>classroom_id</code></td><td>path</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>filter_title</code></td><td>query</td><td>string</td><td>No</td><td></td></tr>
+<tr><td><code>sort_by</code></td><td>query</td><td>ClassroomArticleSortByEnum</td><td>No</td><td></td></tr>
+<tr><td><code>skip</code></td><td>query</td><td>integer</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>count</code></td><td>query</td><td>integer</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>x-elice-org-name-short</code></td><td>header</td><td>string</td><td>No</td><td></td></tr>
+</tbody></table><div class="example">
+<h4>Response 예시 (200)</h4>
+<pre>[
+  {
+    &quot;id&quot;: 0,
+    &quot;user&quot;: {
+      &quot;id&quot;: null,
+      &quot;fullname&quot;: null,
+      &quot;profile_url&quot;: null
+    },
+    &quot;board_id&quot;: 0,
+    &quot;course&quot;: null,
+    &quot;classroom_id&quot;: &quot;string&quot;,
+    &quot;title&quot;: &quot;string&quot;,
+    &quot;content&quot;: &quot;string&quot;,
+    &quot;is_secret&quot;: true,
+    &quot;like_count&quot;: 0,
+    &quot;article_attachment_count&quot;: 0,
+    &quot;created&quot;: &quot;2026-08-14T00:00:00+09:00&quot;,
+    &quot;modified&quot;: &quot;2026-08-14T00:00:00+09:00&quot;
+  }
+]</pre>
+<div class="src">source: openapi schema</div>
+<h4>Response 예시 (403)</h4>
+<pre>{
+  &quot;code&quot;: &quot;string&quot;,
+  &quot;message&quot;: &quot;string&quot;,
+  &quot;detail&quot;: {}
+}</pre>
+<div class="src">source: openapi schema</div>
+</div></div></div>
+<div class="ep collapsed" data-url="/classroom/{classroom_id}/article/count" data-name="Classroom  Classroom Id  Article Count Get">
+<div class="ep-header" onclick="toggleEp(this)"><span class="badge" style="background:#61affe">GET</span><span class="ep-url">/classroom/{classroom_id}/article/count</span></div>
+<div class="ep-detail">
+<div class="ep-name">Classroom  Classroom Id  Article Count Get</div>
+<p class="auth"><span class="tag" style="background:#e67e22">AUTH Bearer</span>Authorization: Bearer &lt;access token&gt; 필수 (HTTPBearer) · 기관 스코프</p>
+<table><thead><tr><th>Name</th><th>In</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>classroom_id</code></td><td>path</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>filter_title</code></td><td>query</td><td>string</td><td>No</td><td></td></tr>
+<tr><td><code>x-elice-org-name-short</code></td><td>header</td><td>string</td><td>No</td><td></td></tr>
+</tbody></table><div class="example">
+<h4>Response 예시 (200)</h4>
+<pre>0</pre>
+<div class="src">source: openapi schema</div>
+<h4>Response 예시 (403)</h4>
+<pre>{
+  &quot;code&quot;: &quot;string&quot;,
+  &quot;message&quot;: &quot;string&quot;,
+  &quot;detail&quot;: {}
+}</pre>
+<div class="src">source: openapi schema</div>
+</div></div></div>
+<div class="ep collapsed" data-url="/classroom/{classroom_id}/classroom_ticket" data-name="Classroom  Classroom Id  Classroom Ticket Get">
+<div class="ep-header" onclick="toggleEp(this)"><span class="badge" style="background:#61affe">GET</span><span class="ep-url">/classroom/{classroom_id}/classroom_ticket</span></div>
+<div class="ep-detail">
+<div class="ep-name">Classroom  Classroom Id  Classroom Ticket Get</div>
+<p class="auth"><span class="tag" style="background:#e67e22">AUTH Bearer</span>Authorization: Bearer &lt;access token&gt; 필수 (HTTPBearer) · 기관 스코프</p>
+<table><thead><tr><th>Name</th><th>In</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>classroom_id</code></td><td>path</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>skip</code></td><td>query</td><td>integer</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>count</code></td><td>query</td><td>integer</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>x-elice-org-name-short</code></td><td>header</td><td>string</td><td>No</td><td></td></tr>
+</tbody></table><div class="example">
+<h4>Response 예시 (200)</h4>
+<pre>[
+  {
+    &quot;id&quot;: &quot;string&quot;,
+    &quot;classroom_id&quot;: &quot;string&quot;,
+    &quot;email&quot;: &quot;string&quot;,
+    &quot;fullname&quot;: &quot;string&quot;,
+    &quot;account_id&quot;: 0,
+    &quot;start&quot;: &quot;2026-08-14T00:00:00+09:00&quot;,
+    &quot;end&quot;: &quot;2026-08-14T00:00:00+09:00&quot;,
+    &quot;status&quot;: &quot;purchased&quot;,
+    &quot;profile_url&quot;: &quot;string&quot;,
+    &quot;role&quot;: null
+  }
+]</pre>
+<div class="src">source: openapi schema</div>
+<h4>Response 예시 (403)</h4>
+<pre>{
+  &quot;code&quot;: &quot;string&quot;,
+  &quot;message&quot;: &quot;string&quot;,
+  &quot;detail&quot;: {}
+}</pre>
+<div class="src">source: openapi schema</div>
+</div></div></div>
+<div class="ep collapsed" data-url="/classroom/{classroom_id}/classroom_ticket/count" data-name="Classroom  Classroom Id  Classroom Ticket Count Get">
+<div class="ep-header" onclick="toggleEp(this)"><span class="badge" style="background:#61affe">GET</span><span class="ep-url">/classroom/{classroom_id}/classroom_ticket/count</span></div>
+<div class="ep-detail">
+<div class="ep-name">Classroom  Classroom Id  Classroom Ticket Count Get</div>
+<p class="auth"><span class="tag" style="background:#e67e22">AUTH Bearer</span>Authorization: Bearer &lt;access token&gt; 필수 (HTTPBearer) · 기관 스코프</p>
+<table><thead><tr><th>Name</th><th>In</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>classroom_id</code></td><td>path</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>x-elice-org-name-short</code></td><td>header</td><td>string</td><td>No</td><td></td></tr>
+</tbody></table><div class="example">
+<h4>Response 예시 (200)</h4>
+<pre>{
+  &quot;count&quot;: 0
+}</pre>
+<div class="src">source: openapi schema</div>
+<h4>Response 예시 (403)</h4>
+<pre>{
+  &quot;code&quot;: &quot;string&quot;,
+  &quot;message&quot;: &quot;string&quot;,
+  &quot;detail&quot;: {}
+}</pre>
+<div class="src">source: openapi schema</div>
+</div></div></div>
+<div class="ep collapsed" data-url="/classroom/{classroom_id}/classroom_ticket/info" data-name="Classroom  Classroom Id  Classroom Ticket Info Get">
+<div class="ep-header" onclick="toggleEp(this)"><span class="badge" style="background:#61affe">GET</span><span class="ep-url">/classroom/{classroom_id}/classroom_ticket/info</span></div>
+<div class="ep-detail">
+<div class="ep-name">Classroom  Classroom Id  Classroom Ticket Info Get</div>
+<p class="auth"><span class="tag" style="background:#e67e22">AUTH Bearer</span>Authorization: Bearer &lt;access token&gt; 필수 (HTTPBearer) · 기관 스코프</p>
+<table><thead><tr><th>Name</th><th>In</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>classroom_id</code></td><td>path</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>x-elice-org-name-short</code></td><td>header</td><td>string</td><td>No</td><td></td></tr>
+</tbody></table><div class="example">
+<h4>Response 예시 (200)</h4>
+<pre>{
+  &quot;ticket_price&quot;: &quot;string&quot;,
+  &quot;total_ticket_count&quot;: 0,
+  &quot;purchased_ticket_count&quot;: 0,
+  &quot;invited_and_enrolled_ticket_count&quot;: 0,
+  &quot;ticket_expiration_type&quot;: &quot;one_year&quot;,
+  &quot;product_uid&quot;: &quot;string&quot;
+}</pre>
+<div class="src">source: openapi schema</div>
+<h4>Response 예시 (403)</h4>
+<pre>{
+  &quot;code&quot;: &quot;string&quot;,
+  &quot;message&quot;: &quot;string&quot;,
+  &quot;detail&quot;: {}
+}</pre>
+<div class="src">source: openapi schema</div>
+</div></div></div>
+<div class="ep collapsed" data-url="/classroom/{classroom_id}/classroom_ticket/{classroom_ticket_id}" data-name="Classroom  Classroom Id  Classroom Ticket  Classroom Ticket Id  Get">
+<div class="ep-header" onclick="toggleEp(this)"><span class="badge" style="background:#61affe">GET</span><span class="ep-url">/classroom/{classroom_id}/classroom_ticket/{classroom_ticket_id}</span></div>
+<div class="ep-detail">
+<div class="ep-name">Classroom  Classroom Id  Classroom Ticket  Classroom Ticket Id  Get</div>
+<p class="auth"><span class="tag" style="background:#e67e22">AUTH Bearer</span>Authorization: Bearer &lt;access token&gt; 필수 (HTTPBearer) · 기관 스코프</p>
+<table><thead><tr><th>Name</th><th>In</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>classroom_id</code></td><td>path</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>classroom_ticket_id</code></td><td>path</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>x-elice-org-name-short</code></td><td>header</td><td>string</td><td>No</td><td></td></tr>
+</tbody></table><div class="example">
+<h4>Response 예시 (200)</h4>
+<pre>{
+  &quot;id&quot;: &quot;string&quot;,
+  &quot;classroom_id&quot;: &quot;string&quot;,
+  &quot;email&quot;: &quot;string&quot;,
+  &quot;fullname&quot;: &quot;string&quot;,
+  &quot;account_id&quot;: 0,
+  &quot;start&quot;: &quot;2026-08-14T00:00:00+09:00&quot;,
+  &quot;end&quot;: &quot;2026-08-14T00:00:00+09:00&quot;,
+  &quot;status&quot;: &quot;purchased&quot;,
+  &quot;profile_url&quot;: &quot;string&quot;,
+  &quot;role&quot;: &quot;admin&quot;
+}</pre>
+<div class="src">source: openapi schema</div>
+<h4>Response 예시 (403)</h4>
+<pre>{
+  &quot;code&quot;: &quot;string&quot;,
+  &quot;message&quot;: &quot;string&quot;,
+  &quot;detail&quot;: {}
+}</pre>
+<div class="src">source: openapi schema</div>
+</div></div></div>
+<div class="ep collapsed" data-url="/classroom/{classroom_id}/course" data-name="Classroom  Classroom Id  Course Get">
+<div class="ep-header" onclick="toggleEp(this)"><span class="badge" style="background:#61affe">GET</span><span class="ep-url">/classroom/{classroom_id}/course</span></div>
+<div class="ep-detail">
+<div class="ep-name">Classroom  Classroom Id  Course Get</div>
+<p class="auth"><span class="tag" style="background:#e67e22">AUTH Bearer</span>Authorization: Bearer &lt;access token&gt; 필수 (HTTPBearer) · 기관 스코프</p>
+<table><thead><tr><th>Name</th><th>In</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>classroom_id</code></td><td>path</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>filter_title</code></td><td>query</td><td>string</td><td>No</td><td></td></tr>
+<tr><td><code>skip</code></td><td>query</td><td>integer</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>count</code></td><td>query</td><td>integer</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>x-elice-org-name-short</code></td><td>header</td><td>string</td><td>No</td><td></td></tr>
+</tbody></table><div class="example">
+<h4>Response 예시 (200)</h4>
+<pre>[
+  {
+    &quot;id&quot;: &quot;string&quot;,
+    &quot;course_id&quot;: 0,
+    &quot;title&quot;: &quot;string&quot;,
+    &quot;short_description&quot;: &quot;string&quot;,
+    &quot;description&quot;: &quot;string&quot;,
+    &quot;course_type&quot;: 0,
+    &quot;logo_file_url&quot;: &quot;string&quot;,
+    &quot;image_file_url&quot;: &quot;string&quot;,
+    &quot;status&quot;: 0,
+    &quot;categories&quot;: [],
+    &quot;programming_languages&quot;: [],
+    &quot;level&quot;: &quot;string&quot;,
+    &quot;classroom_course_status&quot;: &quot;assigned&quot;,
+    &quot;classroom_course_progress_data&quot;: {
+      &quot;progress&quot;: null,
+      &quot;total_material_cnt&quot;: null,
+      &quot;completed_material_cnt&quot;: null
+    },
+    &quot;created&quot;: &quot;2026-08-14T00:00:00+09:00&quot;,
+    &quot;modified&quot;: &quot;2026-08-14T00:00:00+09:00&quot;,
+    &quot;pass_info&quot;: null
+  }
+]</pre>
+<div class="src">source: openapi schema</div>
+<h4>Response 예시 (403)</h4>
+<pre>{
+  &quot;code&quot;: &quot;string&quot;,
+  &quot;message&quot;: &quot;string&quot;,
+  &quot;detail&quot;: {}
+}</pre>
+<div class="src">source: openapi schema</div>
+</div></div></div>
+<div class="ep collapsed" data-url="/classroom/{classroom_id}/course/bulk" data-name="Classroom  Classroom Id  Course Bulk Post">
+<div class="ep-header" onclick="toggleEp(this)"><span class="badge" style="background:#49cc90">POST</span><span class="ep-url">/classroom/{classroom_id}/course/bulk</span></div>
+<div class="ep-detail">
+<div class="ep-name">Classroom  Classroom Id  Course Bulk Post</div>
+<p class="auth"><span class="tag" style="background:#e67e22">AUTH Bearer</span>Authorization: Bearer &lt;access token&gt; 필수 (HTTPBearer) · 기관 스코프</p>
+<p style="color:#999;font-size:.9em">### Error codes
+- **model_not_found**:Failed to find target model.Check specific information in detail.</p>
+<table><thead><tr><th>Name</th><th>In</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>classroom_id</code></td><td>path</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>x-elice-org-name-short</code></td><td>header</td><td>string</td><td>No</td><td></td></tr>
+<tr><td><code>course_ids</code></td><td>body</td><td>integer[]</td><td><strong>Yes</strong></td><td></td></tr>
+</tbody></table><div class="example">
+<h4>Response 예시 (200)</h4>
+<pre>{}</pre>
+<div class="src">source: openapi schema</div>
+<h4>Response 예시 (403)</h4>
+<pre>{
+  &quot;code&quot;: &quot;string&quot;,
+  &quot;message&quot;: &quot;string&quot;,
+  &quot;detail&quot;: {}
+}</pre>
+<div class="src">source: openapi schema</div>
+</div></div></div>
+<div class="ep collapsed" data-url="/classroom/{classroom_id}/course/count" data-name="Classroom  Classroom Id  Course Count Get">
+<div class="ep-header" onclick="toggleEp(this)"><span class="badge" style="background:#61affe">GET</span><span class="ep-url">/classroom/{classroom_id}/course/count</span></div>
+<div class="ep-detail">
+<div class="ep-name">Classroom  Classroom Id  Course Count Get</div>
+<p class="auth"><span class="tag" style="background:#e67e22">AUTH Bearer</span>Authorization: Bearer &lt;access token&gt; 필수 (HTTPBearer) · 기관 스코프</p>
+<table><thead><tr><th>Name</th><th>In</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>classroom_id</code></td><td>path</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>filter_title</code></td><td>query</td><td>string</td><td>No</td><td></td></tr>
+<tr><td><code>x-elice-org-name-short</code></td><td>header</td><td>string</td><td>No</td><td></td></tr>
+</tbody></table><div class="example">
+<h4>Response 예시 (200)</h4>
+<pre>0</pre>
+<div class="src">source: openapi schema</div>
+<h4>Response 예시 (403)</h4>
+<pre>{
+  &quot;code&quot;: &quot;string&quot;,
+  &quot;message&quot;: &quot;string&quot;,
+  &quot;detail&quot;: {}
+}</pre>
+<div class="src">source: openapi schema</div>
+</div></div></div>
+<div class="ep collapsed" data-url="/classroom/{classroom_id}/course/reorder" data-name="Classroom  Classroom Id  Course Reorder Post">
+<div class="ep-header" onclick="toggleEp(this)"><span class="badge" style="background:#49cc90">POST</span><span class="ep-url">/classroom/{classroom_id}/course/reorder</span></div>
+<div class="ep-detail">
+<div class="ep-name">Classroom  Classroom Id  Course Reorder Post</div>
+<p class="auth"><span class="tag" style="background:#e67e22">AUTH Bearer</span>Authorization: Bearer &lt;access token&gt; 필수 (HTTPBearer) · 기관 스코프</p>
+<p style="color:#999;font-size:.9em">### Error codes
+- **has_no_permission**:You have no permission
+- **model_not_found**:Failed to find target model.Check specific information in detail.
+- **invalid_params**:Invalid params</p>
+<table><thead><tr><th>Name</th><th>In</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>classroom_id</code></td><td>path</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>x-elice-org-name-short</code></td><td>header</td><td>string</td><td>No</td><td></td></tr>
+<tr><td><code>course_ids</code></td><td>body</td><td>integer[]</td><td><strong>Yes</strong></td><td></td></tr>
+</tbody></table><div class="example">
+<h4>Response 예시 (200)</h4>
+<pre>{}</pre>
+<div class="src">source: openapi schema</div>
+<h4>Response 예시 (403)</h4>
+<pre>{
+  &quot;code&quot;: &quot;string&quot;,
+  &quot;message&quot;: &quot;string&quot;,
+  &quot;detail&quot;: {}
+}</pre>
+<div class="src">source: openapi schema</div>
+</div></div></div>
+<div class="ep collapsed" data-url="/classroom/{classroom_id}/course/{course_id}" data-name="Classroom  Classroom Id  Course  Course Id  Delete">
+<div class="ep-header" onclick="toggleEp(this)"><span class="badge" style="background:#f93e3e">DELETE</span><span class="ep-url">/classroom/{classroom_id}/course/{course_id}</span></div>
+<div class="ep-detail">
+<div class="ep-name">Classroom  Classroom Id  Course  Course Id  Delete</div>
+<p class="auth"><span class="tag" style="background:#e67e22">AUTH Bearer</span>Authorization: Bearer &lt;access token&gt; 필수 (HTTPBearer) · 기관 스코프</p>
+<p style="color:#999;font-size:.9em">### Error codes
+- **model_not_found**:Failed to find target model.Check specific information in detail.</p>
+<table><thead><tr><th>Name</th><th>In</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>classroom_id</code></td><td>path</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>course_id</code></td><td>path</td><td>integer</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>x-elice-org-name-short</code></td><td>header</td><td>string</td><td>No</td><td></td></tr>
+</tbody></table><div class="example">
+<h4>Response 예시 (200)</h4>
+<pre>{}</pre>
+<div class="src">source: openapi schema</div>
+<h4>Response 예시 (403)</h4>
+<pre>{
+  &quot;code&quot;: &quot;string&quot;,
+  &quot;message&quot;: &quot;string&quot;,
+  &quot;detail&quot;: {}
+}</pre>
+<div class="src">source: openapi schema</div>
+</div></div></div>
+<div class="ep collapsed" data-url="/classroom/{classroom_id}/course/{course_id}" data-name="Classroom  Classroom Id  Course  Course Id  Get">
+<div class="ep-header" onclick="toggleEp(this)"><span class="badge" style="background:#61affe">GET</span><span class="ep-url">/classroom/{classroom_id}/course/{course_id}</span></div>
+<div class="ep-detail">
+<div class="ep-name">Classroom  Classroom Id  Course  Course Id  Get</div>
+<p class="auth"><span class="tag" style="background:#e67e22">AUTH Bearer</span>Authorization: Bearer &lt;access token&gt; 필수 (HTTPBearer) · 기관 스코프</p>
+<p style="color:#999;font-size:.9em">### Error codes
+- **model_not_found**:Failed to find target model.Check specific information in detail.</p>
+<table><thead><tr><th>Name</th><th>In</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>classroom_id</code></td><td>path</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>course_id</code></td><td>path</td><td>integer</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>x-elice-org-name-short</code></td><td>header</td><td>string</td><td>No</td><td></td></tr>
+</tbody></table><div class="example">
+<h4>Response 예시 (200)</h4>
+<pre>{
+  &quot;id&quot;: &quot;string&quot;,
+  &quot;course_id&quot;: 0,
+  &quot;title&quot;: &quot;string&quot;,
+  &quot;short_description&quot;: &quot;string&quot;,
+  &quot;description&quot;: &quot;string&quot;,
+  &quot;course_type&quot;: 0,
+  &quot;logo_file_url&quot;: &quot;string&quot;,
+  &quot;image_file_url&quot;: &quot;string&quot;,
+  &quot;status&quot;: 0,
+  &quot;categories&quot;: [
+    &quot;string&quot;
+  ],
+  &quot;programming_languages&quot;: [
+    &quot;string&quot;
+  ],
+  &quot;level&quot;: &quot;string&quot;,
+  &quot;created&quot;: &quot;2026-08-14T00:00:00+09:00&quot;,
+  &quot;modified&quot;: &quot;2026-08-14T00:00:00+09:00&quot;
+}</pre>
+<div class="src">source: openapi schema</div>
+<h4>Response 예시 (403)</h4>
+<pre>{
+  &quot;code&quot;: &quot;string&quot;,
+  &quot;message&quot;: &quot;string&quot;,
+  &quot;detail&quot;: {}
+}</pre>
+<div class="src">source: openapi schema</div>
+</div></div></div>
+<div class="ep collapsed" data-url="/classroom/{classroom_id}/course/{course_id}/reorder" data-name="Classroom  Classroom Id  Course  Course Id  Reorder Post">
+<div class="ep-header" onclick="toggleEp(this)"><span class="badge" style="background:#49cc90">POST</span><span class="ep-url">/classroom/{classroom_id}/course/{course_id}/reorder</span></div>
+<div class="ep-detail">
+<div class="ep-name">Classroom  Classroom Id  Course  Course Id  Reorder Post</div>
+<p class="auth"><span class="tag" style="background:#e67e22">AUTH Bearer</span>Authorization: Bearer &lt;access token&gt; 필수 (HTTPBearer) · 기관 스코프</p>
+<p style="color:#999;font-size:.9em">### Error codes
+- **model_not_found**:Failed to find target model.Check specific information in detail.</p>
+<table><thead><tr><th>Name</th><th>In</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>classroom_id</code></td><td>path</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>course_id</code></td><td>path</td><td>integer</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>x-elice-org-name-short</code></td><td>header</td><td>string</td><td>No</td><td></td></tr>
+<tr><td><code>new_order_no</code></td><td>body</td><td>integer</td><td><strong>Yes</strong></td><td></td></tr>
+</tbody></table><div class="example">
+<h4>Response 예시 (200)</h4>
+<pre>{}</pre>
+<div class="src">source: openapi schema</div>
+<h4>Response 예시 (403)</h4>
+<pre>{
+  &quot;code&quot;: &quot;string&quot;,
+  &quot;message&quot;: &quot;string&quot;,
+  &quot;detail&quot;: {}
+}</pre>
+<div class="src">source: openapi schema</div>
+</div></div></div>
+<div class="ep collapsed" data-url="/v2/classroom/{classroom_id}/course/bulk" data-name="V2 Classroom  Classroom Id  Course Bulk Post">
+<div class="ep-header" onclick="toggleEp(this)"><span class="badge" style="background:#49cc90">POST</span><span class="ep-url">/v2/classroom/{classroom_id}/course/bulk</span></div>
+<div class="ep-detail">
+<div class="ep-name">V2 Classroom  Classroom Id  Course Bulk Post</div>
+<p class="auth"><span class="tag" style="background:#e67e22">AUTH Bearer</span>Authorization: Bearer &lt;access token&gt; 필수 (HTTPBearer) · 기관 스코프</p>
+<p style="color:#999;font-size:.9em">### Error codes
+- **model_not_found**:Failed to find target model.Check specific information in detail.</p>
+<table><thead><tr><th>Name</th><th>In</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>classroom_id</code></td><td>path</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>x-elice-org-name-short</code></td><td>header</td><td>string</td><td>No</td><td></td></tr>
+<tr><td><code>original_course_ids</code></td><td>body</td><td>integer[]</td><td><strong>Yes</strong></td><td></td></tr>
+</tbody></table><div class="example">
+<h4>Response 예시 (200)</h4>
+<pre>{
+  &quot;task_id&quot;: &quot;string&quot;
+}</pre>
+<div class="src">source: openapi schema</div>
+<h4>Response 예시 (403)</h4>
+<pre>{
+  &quot;code&quot;: &quot;string&quot;,
+  &quot;message&quot;: &quot;string&quot;,
+  &quot;detail&quot;: {}
+}</pre>
+<div class="src">source: openapi schema</div>
+</div></div></div>
+<div class="ep collapsed" data-url="/v2/classroom/{classroom_id}/course/progress" data-name="V2 Classroom  Classroom Id  Course Progress Get">
+<div class="ep-header" onclick="toggleEp(this)"><span class="badge" style="background:#61affe">GET</span><span class="ep-url">/v2/classroom/{classroom_id}/course/progress</span></div>
+<div class="ep-detail">
+<div class="ep-name">V2 Classroom  Classroom Id  Course Progress Get</div>
+<p class="auth"><span class="tag" style="background:#e67e22">AUTH Bearer</span>Authorization: Bearer &lt;access token&gt; 필수 (HTTPBearer) · 기관 스코프</p>
+<p style="color:#999;font-size:.9em">### Error codes
+- **model_not_found**:Failed to find target model.Check specific information in detail.</p>
+<table><thead><tr><th>Name</th><th>In</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>classroom_id</code></td><td>path</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>skip</code></td><td>query</td><td>integer</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>count</code></td><td>query</td><td>integer</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>x-elice-org-name-short</code></td><td>header</td><td>string</td><td>No</td><td></td></tr>
+</tbody></table><div class="example">
+<h4>Response 예시 (200)</h4>
+<pre>[
+  {
+    &quot;id&quot;: &quot;string&quot;,
+    &quot;course_id&quot;: 0,
+    &quot;title&quot;: &quot;string&quot;,
+    &quot;logo_file_url&quot;: &quot;string&quot;,
+    &quot;classroom_course_status&quot;: &quot;assigned&quot;,
+    &quot;classroom_course_progress_data&quot;: {
+      &quot;progress&quot;: null,
+      &quot;total_material_cnt&quot;: null,
+      &quot;completed_material_cnt&quot;: null
+    },
+    &quot;created&quot;: &quot;2026-08-14T00:00:00+09:00&quot;,
+    &quot;modified&quot;: &quot;2026-08-14T00:00:00+09:00&quot;
+  }
+]</pre>
+<div class="src">source: openapi schema</div>
+<h4>Response 예시 (403)</h4>
+<pre>{
+  &quot;code&quot;: &quot;string&quot;,
+  &quot;message&quot;: &quot;string&quot;,
+  &quot;detail&quot;: {}
+}</pre>
+<div class="src">source: openapi schema</div>
+</div></div></div>
+</div></div>
+<div class="category" data-cat="Member">
+<div class="category-header" onclick="toggleCategory(this)"><span>Member <span class="count">(3)</span></span><span class="arrow">&#9660;</span></div>
+<div class="category-body">
+<div class="ep collapsed" data-url="/member" data-name="Member Get">
+<div class="ep-header" onclick="toggleEp(this)"><span class="badge" style="background:#61affe">GET</span><span class="ep-url">/member</span></div>
+<div class="ep-detail">
+<div class="ep-name">Member Get</div>
+<p class="auth"><span class="tag" style="background:#e67e22">AUTH Bearer</span>Authorization: Bearer &lt;access token&gt; 필수 (HTTPBearer) · 기관 스코프</p>
+<table><thead><tr><th>Name</th><th>In</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>filter_roles</code></td><td>query</td><td>MemberRole[]</td><td>No</td><td></td></tr>
+<tr><td><code>classroom_id</code></td><td>query</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>filter_search</code></td><td>query</td><td>string</td><td>No</td><td></td></tr>
+<tr><td><code>skip</code></td><td>query</td><td>integer</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>count</code></td><td>query</td><td>integer</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>x-elice-org-name-short</code></td><td>header</td><td>string</td><td>No</td><td></td></tr>
+</tbody></table><div class="example">
+<h4>Response 예시 (200)</h4>
+<pre>[
+  {
+    &quot;id&quot;: &quot;string&quot;,
+    &quot;account_id&quot;: 0,
+    &quot;fullname&quot;: &quot;string&quot;,
+    &quot;profile_url&quot;: &quot;string&quot;,
+    &quot;email&quot;: &quot;string&quot;,
+    &quot;role&quot;: &quot;admin&quot;,
+    &quot;created&quot;: &quot;2026-08-14T00:00:00+09:00&quot;,
+    &quot;modified&quot;: &quot;2026-08-14T00:00:00+09:00&quot;,
+    &quot;child_name_list&quot;: [],
+    &quot;enroll_start&quot;: &quot;2026-08-14T00:00:00+09:00&quot;,
+    &quot;enroll_end&quot;: &quot;2026-08-14T00:00:00+09:00&quot;
+  }
+]</pre>
+<div class="src">source: openapi schema</div>
+<h4>Response 예시 (403)</h4>
+<pre>{
+  &quot;code&quot;: &quot;string&quot;,
+  &quot;message&quot;: &quot;string&quot;,
+  &quot;detail&quot;: {}
+}</pre>
+<div class="src">source: openapi schema</div>
+</div></div></div>
+<div class="ep collapsed" data-url="/member/count" data-name="Member Count Get">
+<div class="ep-header" onclick="toggleEp(this)"><span class="badge" style="background:#61affe">GET</span><span class="ep-url">/member/count</span></div>
+<div class="ep-detail">
+<div class="ep-name">Member Count Get</div>
+<p class="auth"><span class="tag" style="background:#e67e22">AUTH Bearer</span>Authorization: Bearer &lt;access token&gt; 필수 (HTTPBearer) · 기관 스코프</p>
+<table><thead><tr><th>Name</th><th>In</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>filter_roles</code></td><td>query</td><td>MemberRole[]</td><td>No</td><td></td></tr>
+<tr><td><code>classroom_id</code></td><td>query</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>filter_search</code></td><td>query</td><td>string</td><td>No</td><td></td></tr>
+<tr><td><code>x-elice-org-name-short</code></td><td>header</td><td>string</td><td>No</td><td></td></tr>
+</tbody></table><div class="example">
+<h4>Response 예시 (200)</h4>
+<pre>0</pre>
+<div class="src">source: openapi schema</div>
+<h4>Response 예시 (403)</h4>
+<pre>{
+  &quot;code&quot;: &quot;string&quot;,
+  &quot;message&quot;: &quot;string&quot;,
+  &quot;detail&quot;: {}
+}</pre>
+<div class="src">source: openapi schema</div>
+</div></div></div>
+<div class="ep collapsed" data-url="/member/{member_id}" data-name="Member  Member Id  Get">
+<div class="ep-header" onclick="toggleEp(this)"><span class="badge" style="background:#61affe">GET</span><span class="ep-url">/member/{member_id}</span></div>
+<div class="ep-detail">
+<div class="ep-name">Member  Member Id  Get</div>
+<p class="auth"><span class="tag" style="background:#e67e22">AUTH Bearer</span>Authorization: Bearer &lt;access token&gt; 필수 (HTTPBearer) · 기관 스코프</p>
+<table><thead><tr><th>Name</th><th>In</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>member_id</code></td><td>path</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>x-elice-org-name-short</code></td><td>header</td><td>string</td><td>No</td><td></td></tr>
+</tbody></table><div class="example">
+<h4>Response 예시 (200)</h4>
+<pre>{
+  &quot;id&quot;: &quot;string&quot;,
+  &quot;account_id&quot;: 0,
+  &quot;fullname&quot;: &quot;string&quot;,
+  &quot;profile_url&quot;: &quot;string&quot;,
+  &quot;email&quot;: &quot;string&quot;,
+  &quot;role&quot;: &quot;admin&quot;,
+  &quot;created&quot;: &quot;2026-08-14T00:00:00+09:00&quot;,
+  &quot;modified&quot;: &quot;2026-08-14T00:00:00+09:00&quot;,
+  &quot;child_name_list&quot;: [
+    &quot;string&quot;
+  ],
+  &quot;enroll_start&quot;: &quot;2026-08-14T00:00:00+09:00&quot;,
+  &quot;enroll_end&quot;: &quot;2026-08-14T00:00:00+09:00&quot;
+}</pre>
+<div class="src">source: openapi schema</div>
+<h4>Response 예시 (403)</h4>
+<pre>{
+  &quot;code&quot;: &quot;string&quot;,
+  &quot;message&quot;: &quot;string&quot;,
+  &quot;detail&quot;: {}
+}</pre>
+<div class="src">source: openapi schema</div>
+</div></div></div>
+</div></div>
+<div class="category" data-cat="Schedule">
+<div class="category-header" onclick="toggleCategory(this)"><span>Schedule <span class="count">(9)</span></span><span class="arrow">&#9660;</span></div>
+<div class="category-body">
+<div class="ep collapsed" data-url="/schedule" data-name="Schedule Get">
+<div class="ep-header" onclick="toggleEp(this)"><span class="badge" style="background:#61affe">GET</span><span class="ep-url">/schedule</span></div>
+<div class="ep-detail">
+<div class="ep-name">Schedule Get</div>
+<p class="auth"><span class="tag" style="background:#e67e22">AUTH Bearer</span>Authorization: Bearer &lt;access token&gt; 필수 (HTTPBearer) · 기관 스코프</p>
+<p style="color:#999;font-size:.9em">### Error codes
+- **model_not_found**:Failed to find target model.Check specific information in detail.</p>
+<table><thead><tr><th>Name</th><th>In</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>classroom_id</code></td><td>query</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>dt_start_ge</code></td><td>query</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>dt_start_le</code></td><td>query</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>count</code></td><td>query</td><td>integer</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>x-elice-org-name-short</code></td><td>header</td><td>string</td><td>No</td><td></td></tr>
+</tbody></table><div class="example">
+<h4>Response 예시 (200)</h4>
+<pre>[
+  {
+    &quot;id&quot;: &quot;string&quot;,
+    &quot;uid&quot;: &quot;string&quot;,
+    &quot;recurrence_id&quot;: &quot;string&quot;,
+    &quot;summary&quot;: &quot;string&quot;,
+    &quot;lecture_title&quot;: &quot;string&quot;,
+    &quot;description&quot;: &quot;string&quot;,
+    &quot;dt_start&quot;: &quot;string&quot;,
+    &quot;dt_end&quot;: &quot;string&quot;,
+    &quot;rrule&quot;: null,
+    &quot;tags&quot;: {}
+  }
+]</pre>
+<div class="src">source: openapi schema</div>
+<h4>Response 예시 (403)</h4>
+<pre>{
+  &quot;code&quot;: &quot;string&quot;,
+  &quot;message&quot;: &quot;string&quot;,
+  &quot;detail&quot;: {}
+}</pre>
+<div class="src">source: openapi schema</div>
+</div></div></div>
+<div class="ep collapsed" data-url="/schedule" data-name="Schedule Post">
+<div class="ep-header" onclick="toggleEp(this)"><span class="badge" style="background:#49cc90">POST</span><span class="ep-url">/schedule</span></div>
+<div class="ep-detail">
+<div class="ep-name">Schedule Post</div>
+<p class="auth"><span class="tag" style="background:#e67e22">AUTH Bearer</span>Authorization: Bearer &lt;access token&gt; 필수 (HTTPBearer) · 기관 스코프</p>
+<table><thead><tr><th>Name</th><th>In</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>x-elice-org-name-short</code></td><td>header</td><td>string</td><td>No</td><td></td></tr>
+<tr><td><code>classroom_id</code></td><td>body</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>course_id</code></td><td>body</td><td>integer</td><td>No</td><td></td></tr>
+<tr><td><code>summary</code></td><td>body</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>lecture_id</code></td><td>body</td><td>integer</td><td>No</td><td></td></tr>
+<tr><td><code>description</code></td><td>body</td><td>string</td><td>No</td><td></td></tr>
+<tr><td><code>uid</code></td><td>body</td><td>string</td><td>No</td><td></td></tr>
+<tr><td><code>recurrence_id</code></td><td>body</td><td>string</td><td>No</td><td></td></tr>
+<tr><td><code>dt_start</code></td><td>body</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>dt_end</code></td><td>body</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>rrule</code></td><td>body</td><td>RecurrenceRule</td><td>No</td><td></td></tr>
+<tr><td><code>enable_lectureroom</code></td><td>body</td><td>boolean</td><td>No</td><td></td></tr>
+<tr><td><code>lectureroom_auto_recording</code></td><td>body</td><td>boolean</td><td>No</td><td></td></tr>
+<tr><td><code>lectureroom_is_chat_disabled</code></td><td>body</td><td>boolean</td><td>No</td><td></td></tr>
+<tr><td><code>reschedule_source_dt</code></td><td>body</td><td>string</td><td>No</td><td></td></tr>
+<tr><td><code>educator_member_id</code></td><td>body</td><td>string</td><td>No</td><td></td></tr>
+<tr><td><code>alarm_offset_seconds</code></td><td>body</td><td>integer</td><td>No</td><td></td></tr>
+<tr><td><code>send_email</code></td><td>body</td><td>boolean</td><td>No</td><td></td></tr>
+<tr><td><code>classroom_time_zone</code></td><td>body</td><td>ClassroomTimeZone</td><td>No</td><td></td></tr>
+</tbody></table><div class="example">
+<h4>Response 예시 (200)</h4>
+<pre>{}</pre>
+<div class="src">source: openapi schema</div>
+<h4>Response 예시 (403)</h4>
+<pre>{
+  &quot;code&quot;: &quot;string&quot;,
+  &quot;message&quot;: &quot;string&quot;,
+  &quot;detail&quot;: {}
+}</pre>
+<div class="src">source: openapi schema</div>
+</div></div></div>
+<div class="ep collapsed" data-url="/schedule/by_date" data-name="Schedule By Date Get">
+<div class="ep-header" onclick="toggleEp(this)"><span class="badge" style="background:#61affe">GET</span><span class="ep-url">/schedule/by_date</span></div>
+<div class="ep-detail">
+<div class="ep-name">Schedule By Date Get</div>
+<p class="auth"><span class="tag" style="background:#e67e22">AUTH Bearer</span>Authorization: Bearer &lt;access token&gt; 필수 (HTTPBearer) · 기관 스코프</p>
+<p style="color:#999;font-size:.9em">### Error codes
+- **model_not_found**:Failed to find target model.Check specific information in detail.</p>
+<table><thead><tr><th>Name</th><th>In</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>classroom_id</code></td><td>query</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>date</code></td><td>query</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>x-elice-org-name-short</code></td><td>header</td><td>string</td><td>No</td><td></td></tr>
+</tbody></table><div class="example">
+<h4>Response 예시 (200)</h4>
+<pre>[
+  {
+    &quot;date&quot;: &quot;string&quot;,
+    &quot;relative_date&quot;: null,
+    &quot;schedules&quot;: []
+  }
+]</pre>
+<div class="src">source: openapi schema</div>
+<h4>Response 예시 (403)</h4>
+<pre>{
+  &quot;code&quot;: &quot;string&quot;,
+  &quot;message&quot;: &quot;string&quot;,
+  &quot;detail&quot;: {}
+}</pre>
+<div class="src">source: openapi schema</div>
+</div></div></div>
+<div class="ep collapsed" data-url="/schedule/count" data-name="Schedule Count Get">
+<div class="ep-header" onclick="toggleEp(this)"><span class="badge" style="background:#61affe">GET</span><span class="ep-url">/schedule/count</span></div>
+<div class="ep-detail">
+<div class="ep-name">Schedule Count Get</div>
+<p class="auth"><span class="tag" style="background:#e67e22">AUTH Bearer</span>Authorization: Bearer &lt;access token&gt; 필수 (HTTPBearer) · 기관 스코프</p>
+<p style="color:#999;font-size:.9em">### Error codes
+- **model_not_found**:Failed to find target model.Check specific information in detail.</p>
+<table><thead><tr><th>Name</th><th>In</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>classroom_id</code></td><td>query</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>dt_start_ge</code></td><td>query</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>dt_start_le</code></td><td>query</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>x-elice-org-name-short</code></td><td>header</td><td>string</td><td>No</td><td></td></tr>
+</tbody></table><div class="example">
+<h4>Response 예시 (200)</h4>
+<pre>{
+  &quot;count&quot;: 0
+}</pre>
+<div class="src">source: openapi schema</div>
+<h4>Response 예시 (403)</h4>
+<pre>{
+  &quot;code&quot;: &quot;string&quot;,
+  &quot;message&quot;: &quot;string&quot;,
+  &quot;detail&quot;: {}
+}</pre>
+<div class="src">source: openapi schema</div>
+</div></div></div>
+<div class="ep collapsed" data-url="/schedule/ics" data-name="Schedule Ics Get">
+<div class="ep-header" onclick="toggleEp(this)"><span class="badge" style="background:#61affe">GET</span><span class="ep-url">/schedule/ics</span></div>
+<div class="ep-detail">
+<div class="ep-name">Schedule Ics Get</div>
+<p class="auth"><span class="tag" style="background:#e67e22">AUTH Bearer</span>Authorization: Bearer &lt;access token&gt; 필수 (HTTPBearer) · 기관 스코프</p>
+<p style="color:#999;font-size:.9em">### Error codes
+- **model_not_found**:Failed to find target model.Check specific information in detail.</p>
+<table><thead><tr><th>Name</th><th>In</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>classroom_id</code></td><td>query</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>dt_start_ge</code></td><td>query</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>dt_start_le</code></td><td>query</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>offset</code></td><td>query</td><td>integer</td><td>No</td><td></td></tr>
+<tr><td><code>count</code></td><td>query</td><td>integer</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>timezone</code></td><td>query</td><td>string</td><td>No</td><td></td></tr>
+<tr><td><code>x-elice-org-name-short</code></td><td>header</td><td>string</td><td>No</td><td></td></tr>
+</tbody></table><div class="example">
+<h4>Response 예시 (403)</h4>
+<pre>{
+  &quot;code&quot;: &quot;string&quot;,
+  &quot;message&quot;: &quot;string&quot;,
+  &quot;detail&quot;: {}
+}</pre>
+<div class="src">source: openapi schema</div>
+<h4>Response 예시 (409)</h4>
+<pre>{
+  &quot;code&quot;: &quot;string&quot;,
+  &quot;message&quot;: &quot;string&quot;,
+  &quot;detail&quot;: {}
+}</pre>
+<div class="src">source: openapi schema</div>
+</div></div></div>
+<div class="ep collapsed" data-url="/schedule/summary" data-name="Schedule Summary Get">
+<div class="ep-header" onclick="toggleEp(this)"><span class="badge" style="background:#61affe">GET</span><span class="ep-url">/schedule/summary</span></div>
+<div class="ep-detail">
+<div class="ep-name">Schedule Summary Get</div>
+<p class="auth"><span class="tag" style="background:#e67e22">AUTH Bearer</span>Authorization: Bearer &lt;access token&gt; 필수 (HTTPBearer) · 기관 스코프</p>
+<p style="color:#999;font-size:.9em">### Error codes
+- **model_not_found**:Failed to find target model.Check specific information in detail.
+- **invalid_params**:Invalid params</p>
+<table><thead><tr><th>Name</th><th>In</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>classroom_id</code></td><td>query</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>date_start</code></td><td>query</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>date_end</code></td><td>query</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>x-elice-org-name-short</code></td><td>header</td><td>string</td><td>No</td><td></td></tr>
+</tbody></table><div class="example">
+<h4>Response 예시 (200)</h4>
+<pre>{
+  &quot;days&quot;: [
+    {
+      &quot;date&quot;: null,
+      &quot;schedule_exists&quot;: null
+    }
+  ]
+}</pre>
+<div class="src">source: openapi schema</div>
+<h4>Response 예시 (403)</h4>
+<pre>{
+  &quot;code&quot;: &quot;string&quot;,
+  &quot;message&quot;: &quot;string&quot;,
+  &quot;detail&quot;: {}
+}</pre>
+<div class="src">source: openapi schema</div>
+</div></div></div>
+<div class="ep collapsed" data-url="/schedule/{schedule_id}" data-name="Schedule  Schedule Id  Delete">
+<div class="ep-header" onclick="toggleEp(this)"><span class="badge" style="background:#f93e3e">DELETE</span><span class="ep-url">/schedule/{schedule_id}</span></div>
+<div class="ep-detail">
+<div class="ep-name">Schedule  Schedule Id  Delete</div>
+<p class="auth"><span class="tag" style="background:#e67e22">AUTH Bearer</span>Authorization: Bearer &lt;access token&gt; 필수 (HTTPBearer) · 기관 스코프</p>
+<table><thead><tr><th>Name</th><th>In</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>schedule_id</code></td><td>path</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>x-elice-org-name-short</code></td><td>header</td><td>string</td><td>No</td><td></td></tr>
+<tr><td><code>classroom_id</code></td><td>body</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+</tbody></table><div class="example">
+<h4>Response 예시 (200)</h4>
+<pre>{}</pre>
+<div class="src">source: openapi schema</div>
+<h4>Response 예시 (403)</h4>
+<pre>{
+  &quot;code&quot;: &quot;string&quot;,
+  &quot;message&quot;: &quot;string&quot;,
+  &quot;detail&quot;: {}
+}</pre>
+<div class="src">source: openapi schema</div>
+</div></div></div>
+<div class="ep collapsed" data-url="/schedule/{schedule_id}" data-name="Schedule  Schedule Id  Get">
+<div class="ep-header" onclick="toggleEp(this)"><span class="badge" style="background:#61affe">GET</span><span class="ep-url">/schedule/{schedule_id}</span></div>
+<div class="ep-detail">
+<div class="ep-name">Schedule  Schedule Id  Get</div>
+<p class="auth"><span class="tag" style="background:#e67e22">AUTH Bearer</span>Authorization: Bearer &lt;access token&gt; 필수 (HTTPBearer) · 기관 스코프</p>
+<table><thead><tr><th>Name</th><th>In</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>schedule_id</code></td><td>path</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>classroom_id</code></td><td>query</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>x-elice-org-name-short</code></td><td>header</td><td>string</td><td>No</td><td></td></tr>
+</tbody></table><div class="example">
+<h4>Response 예시 (200)</h4>
+<pre>{
+  &quot;id&quot;: &quot;string&quot;,
+  &quot;uid&quot;: &quot;string&quot;,
+  &quot;recurrence_id&quot;: &quot;string&quot;,
+  &quot;summary&quot;: &quot;string&quot;,
+  &quot;lecture_title&quot;: &quot;string&quot;,
+  &quot;description&quot;: &quot;string&quot;,
+  &quot;dt_start&quot;: &quot;string&quot;,
+  &quot;dt_end&quot;: &quot;string&quot;,
+  &quot;rrule&quot;: {
+    &quot;freq&quot;: null,
+    &quot;until&quot;: null,
+    &quot;count&quot;: null,
+    &quot;interval&quot;: null,
+    &quot;bymonth&quot;: null,
+    &quot;byday&quot;: null,
+    &quot;bymonthday&quot;: null,
+    &quot;exdate&quot;: null
+  },
+  &quot;tags&quot;: {}
+}</pre>
+<div class="src">source: openapi schema</div>
+<h4>Response 예시 (403)</h4>
+<pre>{
+  &quot;code&quot;: &quot;string&quot;,
+  &quot;message&quot;: &quot;string&quot;,
+  &quot;detail&quot;: {}
+}</pre>
+<div class="src">source: openapi schema</div>
+</div></div></div>
+<div class="ep collapsed" data-url="/schedule/{schedule_id}" data-name="Schedule  Schedule Id  Patch">
+<div class="ep-header" onclick="toggleEp(this)"><span class="badge" style="background:#50e3c2">PATCH</span><span class="ep-url">/schedule/{schedule_id}</span></div>
+<div class="ep-detail">
+<div class="ep-name">Schedule  Schedule Id  Patch</div>
+<p class="auth"><span class="tag" style="background:#e67e22">AUTH Bearer</span>Authorization: Bearer &lt;access token&gt; 필수 (HTTPBearer) · 기관 스코프</p>
+<table><thead><tr><th>Name</th><th>In</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>schedule_id</code></td><td>path</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>x-elice-org-name-short</code></td><td>header</td><td>string</td><td>No</td><td></td></tr>
+<tr><td><code>classroom_id</code></td><td>body</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>course_id</code></td><td>body</td><td>integer</td><td>No</td><td></td></tr>
+<tr><td><code>summary</code></td><td>body</td><td>string</td><td>No</td><td></td></tr>
+<tr><td><code>lecture_id</code></td><td>body</td><td>integer</td><td>No</td><td></td></tr>
+<tr><td><code>description</code></td><td>body</td><td>string</td><td>No</td><td></td></tr>
+<tr><td><code>dt_start</code></td><td>body</td><td>string</td><td>No</td><td></td></tr>
+<tr><td><code>dt_end</code></td><td>body</td><td>string</td><td>No</td><td></td></tr>
+<tr><td><code>rrule</code></td><td>body</td><td>RecurrenceRule</td><td>No</td><td></td></tr>
+<tr><td><code>enable_lectureroom</code></td><td>body</td><td>boolean</td><td>No</td><td></td></tr>
+<tr><td><code>lectureroom_auto_recording</code></td><td>body</td><td>boolean</td><td>No</td><td></td></tr>
+<tr><td><code>educator_member_id</code></td><td>body</td><td>string</td><td>No</td><td></td></tr>
+<tr><td><code>alarm_offset_seconds</code></td><td>body</td><td>integer</td><td>No</td><td></td></tr>
+<tr><td><code>send_email</code></td><td>body</td><td>boolean</td><td>No</td><td></td></tr>
+<tr><td><code>classroom_time_zone</code></td><td>body</td><td>ClassroomTimeZone</td><td>No</td><td></td></tr>
+</tbody></table><div class="example">
+<h4>Response 예시 (200)</h4>
+<pre>{}</pre>
+<div class="src">source: openapi schema</div>
+<h4>Response 예시 (403)</h4>
+<pre>{
+  &quot;code&quot;: &quot;string&quot;,
+  &quot;message&quot;: &quot;string&quot;,
+  &quot;detail&quot;: {}
+}</pre>
+<div class="src">source: openapi schema</div>
+</div></div></div>
+</div></div>
+<div class="category" data-cat="Tutor Feedback">
+<div class="category-header" onclick="toggleCategory(this)"><span>Tutor Feedback <span class="count">(6)</span></span><span class="arrow">&#9660;</span></div>
+<div class="category-body">
+<div class="ep collapsed" data-url="/tutor_feedback" data-name="Tutor Feedback Get">
+<div class="ep-header" onclick="toggleEp(this)"><span class="badge" style="background:#61affe">GET</span><span class="ep-url">/tutor_feedback</span></div>
+<div class="ep-detail">
+<div class="ep-name">Tutor Feedback Get</div>
+<p class="auth"><span class="tag" style="background:#e67e22">AUTH Bearer</span>Authorization: Bearer &lt;access token&gt; 필수 (HTTPBearer) · 기관 스코프</p>
+<p style="color:#999;font-size:.9em">### Error codes
+- **model_not_found**:Failed to find target model.Check specific information in detail.
+- **has_no_permission**:You have no permission</p>
+<table><thead><tr><th>Name</th><th>In</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>classroom_id</code></td><td>query</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>filter_course_id</code></td><td>query</td><td>integer</td><td>No</td><td></td></tr>
+<tr><td><code>filter_lecture_id</code></td><td>query</td><td>integer</td><td>No</td><td></td></tr>
+<tr><td><code>filter_student_account_id</code></td><td>query</td><td>integer</td><td>No</td><td></td></tr>
+<tr><td><code>offset</code></td><td>query</td><td>integer</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>count</code></td><td>query</td><td>integer</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>x-elice-org-name-short</code></td><td>header</td><td>string</td><td>No</td><td></td></tr>
+</tbody></table><div class="example">
+<h4>Response 예시 (200)</h4>
+<pre>[
+  {
+    &quot;id&quot;: &quot;string&quot;,
+    &quot;classroom_id&quot;: &quot;string&quot;,
+    &quot;course_id&quot;: 0,
+    &quot;lecture_id&quot;: 0,
+    &quot;student_account_id&quot;: 0,
+    &quot;tutor_account_id&quot;: 0,
+    &quot;message&quot;: &quot;string&quot;
+  }
+]</pre>
+<div class="src">source: openapi schema</div>
+<h4>Response 예시 (403)</h4>
+<pre>{
+  &quot;code&quot;: &quot;string&quot;,
+  &quot;message&quot;: &quot;string&quot;,
+  &quot;detail&quot;: {}
+}</pre>
+<div class="src">source: openapi schema</div>
+</div></div></div>
+<div class="ep collapsed" data-url="/tutor_feedback" data-name="Tutor Feedback Post">
+<div class="ep-header" onclick="toggleEp(this)"><span class="badge" style="background:#49cc90">POST</span><span class="ep-url">/tutor_feedback</span></div>
+<div class="ep-detail">
+<div class="ep-name">Tutor Feedback Post</div>
+<p class="auth"><span class="tag" style="background:#e67e22">AUTH Bearer</span>Authorization: Bearer &lt;access token&gt; 필수 (HTTPBearer) · 기관 스코프</p>
+<p style="color:#999;font-size:.9em">### Error codes
+- **model_not_found**:Failed to find target model.Check specific information in detail.
+- **has_no_permission**:You have no permission</p>
+<table><thead><tr><th>Name</th><th>In</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>classroom_id</code></td><td>query</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>course_id</code></td><td>query</td><td>integer</td><td>No</td><td></td></tr>
+<tr><td><code>lecture_id</code></td><td>query</td><td>integer</td><td>No</td><td></td></tr>
+<tr><td><code>student_account_id</code></td><td>query</td><td>integer</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>message</code></td><td>query</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>x-elice-org-name-short</code></td><td>header</td><td>string</td><td>No</td><td></td></tr>
+</tbody></table><div class="example">
+<h4>Response 예시 (200)</h4>
+<pre>{
+  &quot;id&quot;: &quot;string&quot;
+}</pre>
+<div class="src">source: openapi schema</div>
+<h4>Response 예시 (403)</h4>
+<pre>{
+  &quot;code&quot;: &quot;string&quot;,
+  &quot;message&quot;: &quot;string&quot;,
+  &quot;detail&quot;: {}
+}</pre>
+<div class="src">source: openapi schema</div>
+</div></div></div>
+<div class="ep collapsed" data-url="/tutor_feedback/count" data-name="Tutor Feedback Count Get">
+<div class="ep-header" onclick="toggleEp(this)"><span class="badge" style="background:#61affe">GET</span><span class="ep-url">/tutor_feedback/count</span></div>
+<div class="ep-detail">
+<div class="ep-name">Tutor Feedback Count Get</div>
+<p class="auth"><span class="tag" style="background:#e67e22">AUTH Bearer</span>Authorization: Bearer &lt;access token&gt; 필수 (HTTPBearer) · 기관 스코프</p>
+<p style="color:#999;font-size:.9em">### Error codes
+- **model_not_found**:Failed to find target model.Check specific information in detail.
+- **has_no_permission**:You have no permission</p>
+<table><thead><tr><th>Name</th><th>In</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>classroom_id</code></td><td>query</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>filter_course_id</code></td><td>query</td><td>integer</td><td>No</td><td></td></tr>
+<tr><td><code>filter_lecture_id</code></td><td>query</td><td>integer</td><td>No</td><td></td></tr>
+<tr><td><code>filter_student_account_id</code></td><td>query</td><td>integer</td><td>No</td><td></td></tr>
+<tr><td><code>x-elice-org-name-short</code></td><td>header</td><td>string</td><td>No</td><td></td></tr>
+</tbody></table><div class="example">
+<h4>Response 예시 (200)</h4>
+<pre>{
+  &quot;count&quot;: 0
+}</pre>
+<div class="src">source: openapi schema</div>
+<h4>Response 예시 (403)</h4>
+<pre>{
+  &quot;code&quot;: &quot;string&quot;,
+  &quot;message&quot;: &quot;string&quot;,
+  &quot;detail&quot;: {}
+}</pre>
+<div class="src">source: openapi schema</div>
+</div></div></div>
+<div class="ep collapsed" data-url="/tutor_feedback/{tutor_feedback_id}" data-name="Tutor Feedback  Tutor Feedback Id  Delete">
+<div class="ep-header" onclick="toggleEp(this)"><span class="badge" style="background:#f93e3e">DELETE</span><span class="ep-url">/tutor_feedback/{tutor_feedback_id}</span></div>
+<div class="ep-detail">
+<div class="ep-name">Tutor Feedback  Tutor Feedback Id  Delete</div>
+<p class="auth"><span class="tag" style="background:#e67e22">AUTH Bearer</span>Authorization: Bearer &lt;access token&gt; 필수 (HTTPBearer) · 기관 스코프</p>
+<p style="color:#999;font-size:.9em">### Error codes
+- **model_not_found**:Failed to find target model.Check specific information in detail.
+- **has_no_permission**:You have no permission</p>
+<table><thead><tr><th>Name</th><th>In</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>tutor_feedback_id</code></td><td>path</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>classroom_id</code></td><td>query</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>message</code></td><td>query</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>x-elice-org-name-short</code></td><td>header</td><td>string</td><td>No</td><td></td></tr>
+</tbody></table><div class="example">
+<h4>Response 예시 (200)</h4>
+<pre>{}</pre>
+<div class="src">source: openapi schema</div>
+<h4>Response 예시 (403)</h4>
+<pre>{
+  &quot;code&quot;: &quot;string&quot;,
+  &quot;message&quot;: &quot;string&quot;,
+  &quot;detail&quot;: {}
+}</pre>
+<div class="src">source: openapi schema</div>
+</div></div></div>
+<div class="ep collapsed" data-url="/tutor_feedback/{tutor_feedback_id}" data-name="Tutor Feedback  Tutor Feedback Id  Get">
+<div class="ep-header" onclick="toggleEp(this)"><span class="badge" style="background:#61affe">GET</span><span class="ep-url">/tutor_feedback/{tutor_feedback_id}</span></div>
+<div class="ep-detail">
+<div class="ep-name">Tutor Feedback  Tutor Feedback Id  Get</div>
+<p class="auth"><span class="tag" style="background:#e67e22">AUTH Bearer</span>Authorization: Bearer &lt;access token&gt; 필수 (HTTPBearer) · 기관 스코프</p>
+<p style="color:#999;font-size:.9em">### Error codes
+- **model_not_found**:Failed to find target model.Check specific information in detail.
+- **has_no_permission**:You have no permission</p>
+<table><thead><tr><th>Name</th><th>In</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>tutor_feedback_id</code></td><td>path</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>classroom_id</code></td><td>query</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>x-elice-org-name-short</code></td><td>header</td><td>string</td><td>No</td><td></td></tr>
+</tbody></table><div class="example">
+<h4>Response 예시 (200)</h4>
+<pre>{
+  &quot;id&quot;: &quot;string&quot;,
+  &quot;classroom_id&quot;: &quot;string&quot;,
+  &quot;course_id&quot;: 0,
+  &quot;lecture_id&quot;: 0,
+  &quot;student_account_id&quot;: 0,
+  &quot;tutor_account_id&quot;: 0,
+  &quot;message&quot;: &quot;string&quot;
+}</pre>
+<div class="src">source: openapi schema</div>
+<h4>Response 예시 (403)</h4>
+<pre>{
+  &quot;code&quot;: &quot;string&quot;,
+  &quot;message&quot;: &quot;string&quot;,
+  &quot;detail&quot;: {}
+}</pre>
+<div class="src">source: openapi schema</div>
+</div></div></div>
+<div class="ep collapsed" data-url="/tutor_feedback/{tutor_feedback_id}" data-name="Tutor Feedback  Tutor Feedback Id  Patch">
+<div class="ep-header" onclick="toggleEp(this)"><span class="badge" style="background:#50e3c2">PATCH</span><span class="ep-url">/tutor_feedback/{tutor_feedback_id}</span></div>
+<div class="ep-detail">
+<div class="ep-name">Tutor Feedback  Tutor Feedback Id  Patch</div>
+<p class="auth"><span class="tag" style="background:#e67e22">AUTH Bearer</span>Authorization: Bearer &lt;access token&gt; 필수 (HTTPBearer) · 기관 스코프</p>
+<p style="color:#999;font-size:.9em">### Error codes
+- **model_not_found**:Failed to find target model.Check specific information in detail.
+- **has_no_permission**:You have no permission</p>
+<table><thead><tr><th>Name</th><th>In</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>tutor_feedback_id</code></td><td>path</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>classroom_id</code></td><td>query</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>message</code></td><td>query</td><td>string</td><td><strong>Yes</strong></td><td></td></tr>
+<tr><td><code>x-elice-org-name-short</code></td><td>header</td><td>string</td><td>No</td><td></td></tr>
+</tbody></table><div class="example">
+<h4>Response 예시 (200)</h4>
+<pre>{}</pre>
+<div class="src">source: openapi schema</div>
+<h4>Response 예시 (403)</h4>
+<pre>{
+  &quot;code&quot;: &quot;string&quot;,
+  &quot;message&quot;: &quot;string&quot;,
+  &quot;detail&quot;: {}
+}</pre>
+<div class="src">source: openapi schema</div>
+</div></div></div>
+</div></div>
+<div class="category" data-cat="_Ping">
+<div class="category-header" onclick="toggleCategory(this)"><span>_Ping <span class="count">(1)</span></span><span class="arrow">&#9660;</span></div>
+<div class="category-body">
+<div class="ep collapsed" data-url="/_ping" data-name=" Ping Get">
+<div class="ep-header" onclick="toggleEp(this)"><span class="badge" style="background:#61affe">GET</span><span class="ep-url">/_ping</span></div>
+<div class="ep-detail">
+<div class="ep-name"> Ping Get</div>
+<p class="auth"><span class="tag" style="background:#7f8c8d">AUTH Skip</span>인증 불필요 (비로그인 호출 가능)</p>
+<p style="color:#999;font-size:.9em">No parameters.</p>
+<div class="example">
+<h4>Response 예시 (200)</h4>
+<pre>{
+  &quot;okay&quot;: true
+}</pre>
+<div class="src">source: openapi schema</div>
+<h4>Response 예시 (403)</h4>
+<pre>{
+  &quot;code&quot;: &quot;string&quot;,
+  &quot;message&quot;: &quot;string&quot;,
+  &quot;detail&quot;: {}
+}</pre>
+<div class="src">source: openapi schema</div>
+</div></div></div>
+</div></div>
+<script>
+function toggleCategory(el){el.parentElement.classList.toggle("collapsed")}
+function toggleEp(el){el.parentElement.classList.toggle("collapsed")}
+function filterEndpoints(q){
+  q=q.toLowerCase().trim();
+  document.querySelectorAll(".category").forEach(cat=>{
+    let v=0;
+    cat.querySelectorAll(".ep").forEach(ep=>{
+      const m=!q||ep.dataset.url.includes(q)||ep.dataset.name.includes(q);
+      ep.style.display=m?"":"none";
+      if(m){v++;if(!ep.classList.contains("collapsed"))ep.classList.add("collapsed")}
+    });
+    cat.style.display=v?"":"none";
+    if(q&&v){cat.classList.remove("collapsed")}
+    else if(!q){cat.classList.add("collapsed")}
+  });
+}
+document.querySelectorAll(".category").forEach(c=>c.classList.add("collapsed"));
+</script></div></body></html>

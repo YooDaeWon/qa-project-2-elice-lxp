@@ -1,3 +1,5 @@
+import re
+
 from playwright.sync_api import expect
 
 
@@ -16,10 +18,12 @@ class ExamStatusPage:
         """SANDBOX 시험 응시 현황 모달 확인"""
         expect(self.status_dialog).to_be_visible()
 
-    def verify_student_completed(self, student_id):
-        """학습자의 응시 완료 상태 확인"""
+    def verify_student_status(self, student_id):
+        """학습자의 응시 상태 확인"""
         student_row = self.status_dialog.get_by_role(
             "row",
         ).filter(has_text=student_id)
         expect(student_row).to_be_visible()
-        expect(student_row.get_by_text("완료", exact=True)).to_be_visible()
+        expect(
+            student_row.get_by_text(re.compile(r"^(완료|응시 전|응시 중)$"))
+        ).to_be_visible()

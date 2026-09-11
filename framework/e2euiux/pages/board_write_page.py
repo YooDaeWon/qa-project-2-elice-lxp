@@ -41,7 +41,7 @@ class BoardWritePage:
         """게시물 제목 최대 길이 확인"""
         expect(self.title_input).to_have_value(expected_title)
 
-    def fill_content(self, content): 
+    def fill_content(self, content):
         """게시물 내용 앞부분(나눠입력함)"""
         self.content_editor.click()
         self.content_editor.type(content)
@@ -53,7 +53,7 @@ class BoardWritePage:
         self.content_editor.type(content)
 
     def verify_save_enabled(self):
-        """저장 버튼 활성화 확인""" 
+        """저장 버튼 활성화 확인"""
         expect(self.save_button).to_be_enabled()
 
     def save(self):
