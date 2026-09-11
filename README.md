@@ -45,9 +45,24 @@ Elice LXP(Dev)를 대상으로 기능, 보안, 성능 및 사용자 흐름을 �
 
 ### 프로젝트 성과
 
+#### 자동화 테스트 결과
+
+| 테스트 영역 | 전체 TC | Pass | Fail | Not Available | Pass 비율 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| API | 68 | 65 | 1 | 2 | 95.59% |
+| API Security | 47 | 27 | 16 | 4 | 57.45% |
+| Load | 16 | 13 | 2 | 1 | 81.25% |
+| E2E/UI/UX | 60 | 53 | 7 | 0 | 88.33% |
+| 전체 | 191 | 158 | 26 | 7 | 82.72% |
+
 - 로그인, 클래스 · 과목 · 시험, 게시판, 수업 일정 등 사용자의 핵심 흐름을 E2E 테스트로 자동화하고 반응형 UI와 주요 예외 상황을 검증함
 - 학습자·교육자 계정별 client를 활용해 클래스 · 과목 · 일정 · 게시판 API의 요청 · 응답과 역할별 권한을 검증함
 - API Security 테스트를 통해 인증·토큰·세션, BOLA, 권한 상승, 인젝션 및 정보 노출 등 주요 보안 위험을 검증함
+
+
+
+* Pass 비율은 전체 TC 대비 Pass 비율이며, `Not Available`은 기획 변경·자료 부족·테스트 대상 제외 등의 사유로 별도 집계된 항목임
+* `Blocked`와 `Not Tested`는 전체 영역에서 0건임
 
 ---
 
@@ -57,7 +72,7 @@ Elice LXP(Dev)를 대상으로 기능, 보안, 성능 및 사용자 흐름을 �
 | --- | --- | --- | --- |
 | 이효민 | 팀장 | 부하 테스트 | QA 자동화 테스트 계획서, 최종 발표 자료|
 | 박성빈 | 팀원 | API 테스트 | |
-| 유대원 | 팀원 | API 보안 테스트 | |
+| 유대원 | 팀원 | API 보안 테스트 | QA(이슈) 리포트 |
 | 홍성우 | 팀원 | E2E/UI/UX 테스트 | QA 자동화 테스트 결과 보고서, README.md |
 
 ---
@@ -137,6 +152,9 @@ seethrough/
 
 ### 테스트 영역별 구성
 
+<details>
+<summary>테스트 영역별 구성 보기</summary>
+
 | 테스트 영역 | 테스트 경로 | Framework/Client | 구성 |
 | --- | --- | --- | --- |
 | E2E/UI/UX | `tests/e2euiux/` | `framework/e2euiux/` | 사용자 흐름, 예외 상황, 반응형 UI 검증 |
@@ -144,27 +162,28 @@ seethrough/
 | API Security | `tests/api_security/` | `framework/api_security/`, `clients/` | 인증, 세션, BOLA, 권한상승, 인젝션 검증 |
 | Load | `tests/loadtest/` | `framework/loadtest/` | 단계별 동시 사용자와 안전성 통제 검증 |
 
+</details>
+
 ---
 
 ## 5. 코드 작성 기준
 
-### 영역별 코드 구조
-
-| 테스트 영역 | 주요 위치 | 구성 기준 |
-| --- | --- | --- |
-| API | `framework/api/`, `clients/`, `utils/` | 영역별 요청 클라이언트와 공통 HTTP 요청·응답 검증 기능 분리 |
-| API Security | `framework/api_security/`, `clients/`, `utils/` | 보안 대상별 요청 객체와 토큰·명세 분석 및 공통 응답 검증 기능 분리 |
-| E2E/UI/UX | `framework/e2euiux/pages/`, `framework/e2euiux/flows.py` | 페이지 내부 동작은 POM, 여러 페이지를 잇는 반복 절차는 flow로 관리 |
-| Load | `framework/loadtest/` | 계정, 요청 클라이언트, pacing, 안전성 통제와 리포트 기능 분리 |
-
 ### E2E POM 기준
+
+<details>
+<summary>E2E POM 기준 보기</summary>
 
 | 구분 | 위치 | 기준 |
 | --- | --- | --- |
 | Page Object | `framework/e2euiux/pages/` | 페이지별 locator, 동작과 화면 검증 관리 |
 | Flow | `framework/e2euiux/flows.py` | 여러 페이지에서 반복되는 공통 절차 관리 |
 
+</details>
+
 ### fixture 사용 기준
+
+<details>
+<summary>Fixture 사용 기준 보기</summary>
 
 | 테스트 영역 | 주요 fixture | 사용 기준 |
 | --- | --- | --- |
@@ -175,30 +194,19 @@ seethrough/
 | Load | `accounts` | 전체 부하 시나리오에서 사용할 계정 목록을 `session` scope로 한 번 로드 |
 | 종료 처리 | 생성 데이터, 브라우저 context와 외부 자원 | fixture에서 생성한 자원은 가능한 경우 `yield` 이후 정리하고 테스트 간 영향을 최소화 |
 
+</details>
 
-### marker 및 Allure 메타데이터
+
+### Allure 메타데이터
 
 | 구분 | 적용 기준 |
 | --- | --- |
-| pytest marker | 테스트 영역과 flow를 선택 실행하는 기준 |
 | `tc_id` | Google Sheet TC와 자동화 결과 연결 |
 | `priority` | `P0`, `P1`, `P2` 중요도 구분 |
 | `owner` | 테스트 담당자 표시 |
 | `team` | 담당 팀 표시 |
 | Allure title/feature | API Security 테스트의 기능과 목적 표시 |
 
-marker 목록은 `pytest.ini`, E2E 메타데이터와 수집 순서는 `tests/e2euiux/conftest.py`에서 관리합니다.
-
-### 테스트 실행 순서
-
-| 영역 | 실행 순서 기준 |
-| --- | --- |
-| E2E/UI/UX | `E2E_FLOW_ORDER`의 flow 순서와 Allure `tc_id` 오름차순 |
-| API | 테스트 파일과 함수 수집 순서 |
-| API Security | 보안 카테고리별 테스트 파일 수집 순서 |
-| Load | marker와 단계별 가상 사용자 수 기준 |
-
-E2E flow는 이전 TC의 화면 상태를 이어받을 수 있으므로 개별 ID만 단독으로 실행하지 않으며, 병렬 실행 옵션을 사용하지 않습니다.
 
 ---
 
@@ -219,15 +227,6 @@ E2E flow는 이전 TC의 화면 상태를 이어받을 수 있으므로 개별 I
 python -m venv venv
 .\venv\Scripts\Activate.ps1
 ```
-
-Linux / macOS / Jenkins 에이전트에서는 다음을 사용합니다.
-
-```bash
-python3 -m venv venv
-source venv/bin/activate
-```
-
-활성화 후 프롬프트에 `(venv)`가 보이면 가상환경에 진입한 상태입니다. 이후 패키지·Playwright 설치와 테스트 실행은 모두 이 환경에서 진행합니다.
 
 ### 패키지 설치
 
@@ -402,42 +401,37 @@ except SafetyKillSwitchError as error:
 
 ### 전체 실행 순서
 
-```text
-1. 코드 커밋 / 푸시
-   - 개발자가 GitLab(dev 등)에 코드를 push하거나 Merge한다.
-   - GitLab Push Event Webhook이 Jenkins Job을 트리거한다.
-     (Webhook·브랜치 범위는 Jenkins/GitLab 작업 설정에 따름)
-
-2. Jenkins 빌드 실행 (Jenkinsfile)
-   2-1. Checkout
-        - SCM에서 소스 checkout
-   2-2. Environment Setup
-        - Python venv 생성, requirements.txt 설치
-        - Playwright Chromium 설치
-        - Allure 3.15.0 CLI 준비 (필요 시 portable Node)
-   2-3. Test Execution
-        - Jenkins Credentials(`env` Secret file)로 환경변수 주입
-        - `SEETHROUGH_USE_CREDENTIALS=1` 설정 → `.env` 파일 로드 생략
-        - 공유 자원 lock(`qa-shared-env`) 후 pytest 실행
-        - 통합 Job(`Jenkinsfile`):
-            pytest --alluredir=allure-results --junitxml=junit-report.xml ...
-            → pytest.ini testpaths 기준 tests/e2euiux, tests/api, tests/api_security
-        - 영역별 Job(선택):
-            Jenkinsfile.api / .api_security / .e2euiux 는 해당 경로만 실행
-        - 산출물: allure-results/, junit-report.xml
-          (실패 시 E2E 영상은 --video=retain-on-failure)
-        - 부하(tests/loadtest)는 CI 기본 실행에서 제외 (별도 실행)
-
-3. Allure 리포트 생성 (post always)
-   - Allure 플러그인이 allure-results/ 를 읽어 allure-report 게시
-   - Jenkins 빌드 페이지에서 대시보드 확인
-
-4. Discord 결과 알림 (post success / unstable / failure)
-   - junit-report.xml 로 Total / Pass / Fail / 성공률 집계
-   - Discord Webhook으로 요약 + Jenkins 빌드(Allure) 링크 전송
+```bash
+┌──────────────────────┐
+│ GitLab Push / Merge  │
+└──────────┬───────────┘
+           │ Webhook
+           ▼
+┌─────────────────────────────────────────┐
+│ Jenkins CI (Docker)                     │
+│                                         │
+│ [1 Checkout]                            │
+│       ↓                                 │
+│ [2 Environment Setup]                   │
+│    venv · requirements · Chromium       │
+│    Credentials                          │
+│       ↓                                 │
+│ [3 Test Execution]                      │
+│    E2E/UI/UX · API · API_SECURITY       │
+│    Load 테스트는 별도 실행              │
+└──────────────────┬──────────────────────┘
+                   ▼
+          ┌────────────────────┐
+          │ [4 Allure Report]  │
+          │ allure-results     │
+          │ junit-report.xml   │
+          └─────────┬──────────┘
+                    ▼
+          ┌────────────────────┐
+          │ Discord 결과 알림  │
+          │ 결과 요약 · 링크   │
+          └────────────────────┘
 ```
-
-로컬에서는 `pytest` → `allure serve allure-results`(또는 `allure generate`)로 2~3단계에 해당하는 검증·리포트만 재현할 수 있다. Discord 알림은 Jenkins Pipeline `post`에서만 동작한다.
 
 ### GitLab 자동 빌드 조건
 
@@ -447,40 +441,14 @@ except SafetyKillSwitchError as error:
 
 ### Jenkins Credentials
 
-Pipeline은 Secret file Credentials로 테스트용 환경변수를 주입한다. 워크스페이스 `.env` 파일은 checkout·실행·post 단계에서 삭제하며, `SEETHROUGH_USE_CREDENTIALS=1`일 때 `config/settings.py`는 `.env`를 읽지 않는다.
+- CI 실행에 필요한 테스트용 계정·토큰 등 민감정보는 Jenkins Credentials에서 관리하고 실행 시 환경변수로 주입한다.<br>로컬에서는 `.env.sample`을 참고해 `.env`를 구성한다.
 
-| 항목 | 값 |
-| --- | --- |
-| Credentials 종류 | Secret file |
-| Credentials ID | `env` (`Jenkinsfile`, `Jenkinsfile.api`, `Jenkinsfile.api_security`, `Jenkinsfile.e2euiux` 공통) |
-| 주입 방식 | `withCredentials([file(credentialsId: 'env', variable: 'DOTENV_FILE')])` 후 `set -a; . "$DOTENV_FILE"; set +a` |
-| 코드 연동 | `export SEETHROUGH_USE_CREDENTIALS=1` → dotenv 파일 로드 건너뜀 |
-| 로컬 대응 | `.env.sample`을 복사한 `.env` (Git 커밋 금지) |
-
-Secret file 내용은 `.env.sample`과 동일한 키 형식의 dotenv이며, 최소 아래 범주를 포함한다.
-
-| 범주 | 주요 키 예시 | 용도 |
-| --- | --- | --- |
-| API Base URL | `API_BASE_URL`, `ACCOUNT_API_BASE_URL`, `CLASSROOM_API_BASE_URL`, `DASHBOARD_API_BASE_URL` | 서비스 호스트 |
-| 기관·리소스 | `ORG`, `CLASSROOM_ID`, `COURSE_ID` 등 | 테스트 대상 데이터 |
-| 학습자/교육자 | `ST_ID`/`ST_PW`, `TC_ID`/`TC_PW`, 세션 토큰(`STSESSION_KEY`, `TCSESSION_KEY` 등) | E2E·API·Security 인증 |
-| 더미 계정 | `DUMMY_ID`/`DUMMY_PW`, `DUMMY_2_ID`/`DUMMY_2_PW` | 브루트포스·API TC60/61/67 등 |
-| 보안 전용 | `SEC_WITHDRAW_ID`/`SEC_WITHDRAW_PW` | API Security ID-30 등 |
-| 자동 준비 플래그 | `AUTO_DISCOVER`, `AUTO_SETUP_TEST_DATA`, `AUTO_CLEANUP` 등 | API 데이터 준비/정리 |
-
-운영 시 주의사항:
-
-- Credentials 값을 변경할 때는 Jenkins UI에서 Secret file을 **통째로 다시 업로드**한다. (파일형 Credentials는 내용 조회·부분 수정이 어렵다)
-- 계정·토큰·비밀번호는 README·Git·Discord 메시지·Allure 첨부 원문에 올리지 않는다.
-- GitLab checkout용 SCM Credentials는 Job/Folder 설정에서 별도 관리하며, 위 `env` Secret file과는 역할이 다르다.
-- 영역별 Job이 동일 `env` Credentials와 `qa-shared-env` lock을 공유하므로, 계정·CLASSROOM/COURSE 충돌을 막기 위해 테스트 실행 구간은 직렬화된다.
+- 실제 자격증명은 Git, README, Discord 메시지, Allure 첨부와 실행 로그에 기록하지 않는다.
 
 ### Allure 및 Discord 연동
 
-- pytest 실행 시 `allure-results/`에 Allure 원본 결과를 저장하고 `junit-report.xml`에 테스트 결과를 기록한다
-- Jenkins Pipeline 종료 후 Allure 플러그인이 `allure-results/`를 기반으로 `allure-report`를 생성하고 게시한다
-- Jenkins는 JUnit 결과에서 전체·통과·실패·오류·스킵 건수와 최종 성공률을 계산한다
-- 빌드 상태가 `SUCCESS`, `UNSTABLE`, `FAILURE`일 때 각각 Discord Webhook으로 테스트 요약과 Jenkins 빌드 상세 링크를 전송한다
+- pytest 결과를 Allure 원본과 JUnit 형식으로 저장하고 Jenkins에서 Allure 리포트로 게시한다
+- Jenkins 빌드 완료 후 테스트 요약과 상세 리포트 링크를 Discord로 전송한다
 
 <img src="docs/images/discord_test_summary.png" alt="Discord 테스트 결과 요약 알림" width="360">
 
