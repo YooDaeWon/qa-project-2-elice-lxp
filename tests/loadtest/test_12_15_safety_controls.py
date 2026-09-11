@@ -1,24 +1,29 @@
+import allure
 import concurrent.futures
-import random
-import time
 
 import pytest
 import requests
 
 from framework.loadtest.client import LoadClient
+from framework.loadtest.pacing import pause_after_stage, ramp_up_wait, think_time
 from framework.loadtest.report import attach_load_summary
 from framework.loadtest.safety import SafetyKillSwitchError, SafetySession
 
 
-pytestmark = pytest.mark.load_safety
+pytestmark = [
+    pytest.mark.load_safety,
+    allure.label("owner", "leehyomin"),
+    allure.label("team", "QA4"),
+]
 
 
-def execute_safety_controlled_flow(account, user_index):
+def execute_safety_controlled_flow(account, user_index, user_count):
     """Loop 3회, Timer 지연, Kill Switch가 적용된 트랜잭션"""
+    ramp_up_wait(user_index, user_count)
     login_id = account.get("login_id")
     password = account.get("password")
     session = requests.Session()
-    client = LoadClient(session=SafetySession(session), timeout=6)
+    client = LoadClient(session=SafetySession(session))
     completed_loops = 0
 
     for loop in range(1, 4):
@@ -27,18 +32,22 @@ def execute_safety_controlled_flow(account, user_index):
             if login_response.status_code != 200:
                 return False, f"로그인 실패 (상태코드: {login_response.status_code})"
 
+            think_time()
             course_response = client.course.get_course()
             if course_response.status_code != 200:
                 return False, f"과목 로딩 실패 (상태코드: {course_response.status_code})"
 
+            think_time()
             enter_response = client.exam.enter()
             if enter_response.status_code not in [200, 201]:
                 return False, f"시험 입장 실패 (상태코드: {enter_response.status_code})"
 
+            think_time()
             submit_response = client.exam.submit()
             if submit_response.status_code != 200:
                 return False, f"답안 제출 실패 (상태코드: {submit_response.status_code})"
 
+            think_time()
             reset_response = client.exam.reset()
             if reset_response.status_code != 200:
                 return (
@@ -49,7 +58,7 @@ def execute_safety_controlled_flow(account, user_index):
             completed_loops += 1
 
             if loop < 3:
-                time.sleep(random.uniform(3.0, 5.0))
+                think_time()
         except SafetyKillSwitchError as error:
             return False, str(error)
         except Exception as error:
@@ -62,6 +71,7 @@ def execute_safety_controlled_flow(account, user_index):
 
 
 @pytest.mark.parametrize("target_users", [5, 10, 20, 30])
+@allure.label("tc_id", "12")
 def test_id_12_15_safety_controls(accounts, target_users):
     """ID 12~15 안전성 통제 검증"""
     if len(accounts) < target_users:
@@ -77,7 +87,9 @@ def test_id_12_15_safety_controls(accounts, target_users):
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=target_users) as executor:
         futures = [
-            executor.submit(execute_safety_controlled_flow, accounts[index], index)
+            executor.submit(
+                execute_safety_controlled_flow, accounts[index], index, target_users
+            )
             for index in range(target_users)
         ]
 
@@ -109,3 +121,4 @@ def test_id_12_15_safety_controls(accounts, target_users):
         f"안전성 통제 검증 실패: {target_users}명 환경에서 허용 에러율(1%)을 초과했거나 "
         f"안전성 통제(Kill Switch 등)에 의해 테스트가 중단되었습니다. 사유: {failure_reasons}"
     )
+    pause_after_stage(target_users)

@@ -5,7 +5,27 @@ from dotenv import load_dotenv
 
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
-load_dotenv(ROOT_DIR / ".env")
+
+
+def _use_injected_credentials() -> bool:
+    """Jenkins Credentials로 환경 변수를 주입한 뒤에만 파일 로드를 건너뛴다."""
+    return os.getenv("SEETHROUGH_USE_CREDENTIALS", "").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+    }
+
+
+def load_local_dotenv() -> None:
+    """로컬·기존 Jenkins 워크스페이스는 .env를 읽고, Credentials 주입 빌드는 파일을 열지 않는다."""
+    if _use_injected_credentials():
+        return
+    env_path = ROOT_DIR / ".env"
+    if env_path.exists():
+        load_dotenv(env_path)
+
+
+load_local_dotenv()
 
 
 def _env(name: str, default: str = "") -> str:
@@ -29,6 +49,12 @@ class Settings:
     API_BASE_URL = _env("API_BASE_URL")
     CLASSROOM_API_BASE_URL = _env("CLASSROOM_API_BASE_URL")
     DASHBOARD_API_BASE_URL = _env("DASHBOARD_API_BASE_URL")
+    # Jenkins 워크스페이스 .env에는 이 키가 없는 경우가 많다.
+    # 빈 문자열이면 dotenv 기본값이 적용되지 않으므로, 비어 있으면 QA account-api를 쓴다.
+    ACCOUNT_API_BASE_URL = (
+        _env("ACCOUNT_API_BASE_URL")
+        or "https://dev-qatrack-account-api.dev.elicer.io"
+    )
 
     AUTH_HEADER = _env("AUTH_HEADER", "Authorization")
     # 따옴표로 "Bearer "를 넣어 trailing space 유지
@@ -39,6 +65,11 @@ class Settings:
     TCSESSION_KEY = _env("TCSESSION_KEY")
     STSESSION_A_KEY = _env("STSESSION_A_KEY")
     STSESSION_B_KEY = _env("STSESSION_B_KEY")
+
+    # TC60/TC61/TC67 전용 더미 학습자 로그인 계정
+    # 기존 STSESSION_B_KEY는 다른 테스트에서 계속 사용한다.
+    DUMMY_2_ID = _env("DUMMY_2_ID")
+    DUMMY_2_PW = _env("DUMMY_2_PW")
 
     # 개발가이드의 기관 경로는 /org/academy/... 이다.
     # 기존 .env에 qatrack이 남아 있어도 AUTO_DISCOVER 시 후보를 실제 API로 검사해 교정한다.
