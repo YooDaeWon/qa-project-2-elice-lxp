@@ -417,7 +417,7 @@ except SafetyKillSwitchError as error:
 │    Credentials                          │
 │       ↓                                 │
 │ [3 Test Execution]                      │
-│    E2E/UI/UX · API · API_SECURITY       │
+│    E2E/UI/UX · API · API_SECURITY         │
 │    Load 테스트는 별도 실행              │
 └──────────────────┬──────────────────────┘
                    ▼
@@ -428,8 +428,8 @@ except SafetyKillSwitchError as error:
           └─────────┬──────────┘
                     ▼
           ┌────────────────────┐
-          │ Discord 결과 알림  │
-          │ 결과 요약 · 링크   │
+          │ Discord 결과 알림   │
+          │ 결과 요약 · 링크     │
           └────────────────────┘
 ```
 
@@ -492,7 +492,6 @@ except SafetyKillSwitchError as error:
 
 | 안전 항목 | 적용 기준 |
 | --- | --- |
-| 테스트 대상 환경 제한 | Dev 환경만 사용하며 운영 서비스와 타 과목은 테스트하지 않음 |
 | 동시성 및 호출 빈도 제한 | `ThreadPoolExecutor(max_workers=target_users)`로 동시 사용자 수를 5·10·20·30명으로 제한함. `ramp_up_wait`로 1초 동안 가상 사용자 기동을 분산하고, API·단계 사이에는 3~5초 `think_time`과 단계별 대기를 적용해 순간 호출을 완화함 |
 | 부하 테스트 분리 | 기본 `pytest`에서 `tests/loadtest`를 제외하고 별도 명령과 담당자를 통해 실행 |
 | 재시도 및 Kill Switch | 테스트 결과를 숨기지 않도록 자동 재시도는 적용하지 않음. `SafetySession`이 HTTP 500을 감지하면 해당 가상 사용자 흐름을 즉시 중단하고, 중단 사유와 에러율을 Allure에 기록함. 에러율이 1%를 초과하면 테스트를 실패 처리함 |
