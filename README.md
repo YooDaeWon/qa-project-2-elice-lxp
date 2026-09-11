@@ -417,7 +417,7 @@ except SafetyKillSwitchError as error:
 │    Credentials                          │
 │       ↓                                 │
 │ [3 Test Execution]                      │
-│    E2E/UI/UX · API · API_SECURITY         │
+│    E2E/UI/UX · API · API_SECURITY       │
 │    Load 테스트는 별도 실행              │
 └──────────────────┬──────────────────────┘
                    ▼
