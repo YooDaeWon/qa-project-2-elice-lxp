@@ -342,16 +342,22 @@ def test_api_01(student_client):
 <details>
 <summary>API Security</summary>
 
-로그인 성공 시 HTTP 200과 access token 발급 여부를 검증합니다.
+토큰 payload의 사용자 id를 타인 값으로 변조해 타인 데이터 접근을 시도하고, 차단 여부를 검증합니다.
 
 ```python
-@allure.title("ID-1 정상 로그인 시 토큰 정상 발급")
-def test_id01_정상_로그인_토큰_발급(self, account_client):
-    response = account_client.login(STUDENT_ID, STUDENT_PW)
-    body = json_body(response)
+@allure.title("ID-14 토큰 ID 변조로 타인 데이터 접근 차단")
+def test_id14_payload_id_변조_차단(self, account_client):
+    token = account_client.get_access_token(STUDENT_ID, STUDENT_PW)
+    tampered = token_utils.tamper_payload(
+        token, _id=OTHER_STUDENT_ID, account_id=OTHER_STUDENT_ID
+    )
+    client = APIClient(token=tampered, role="probe")
+    response = client.get(
+        f"{DASHBOARD_URL}/student/{OTHER_STUDENT_ID}",
+        params={"classroom_id": CLASSROOM_ID},
+    )
 
-    assert response.status_code == 200
-    assert body.get("access_token")
+    assert_business_rejected(response, context="_id 변조 토큰 타인 데이터 접근")
 ```
 
 </details>
