@@ -39,7 +39,7 @@ Elice LXP(Dev)를 대상으로 기능, 보안, 성능 및 사용자 흐름을 �
 | 테스트 영역 | TC 수 | 주요 검증 범위 |
 | --- | ---: | --- |
 | [API](https://docs.google.com/spreadsheets/d/19UYRMJlXTdcG8zDIy5Gt8rRAlB0yT8is74YtEo1CMWM/edit?gid=1167603962#gid=1167603962) | 68 | 클래스 홈, 학습 과목, 수업 일정, 게시판 API의 조회·생성·수정·삭제와 학습자·교육자 권한 검증 |
-| [API 호출 보안](https://docs.google.com/spreadsheets/d/19UYRMJlXTdcG8zDIy5Gt8rRAlB0yT8is74YtEo1CMWM/edit?gid=1399124983#gid=1399124983) | 47 | 인증 강도, 토큰·세션, BOLA, 권한 상승, 기관·클래스 접근 통제, 비즈니스 로직, 인젝션 및 정보 노출 검증 |
+| [API 호출 보안](https://docs.google.com/spreadsheets/d/19UYRMJlXTdcG8zDIy5Gt8rRAlB0yT8is74YtEo1CMWM/edit?gid=1399124983#gid=1399124983) | 47 | 인증 강도, 토큰·세션, 객체 권한 우회, 권한 상승, 기관·클래스 접근 통제, 비즈니스 로직, 인젝션 및 정보 노출 검증 |
 | [부하 테스트](https://docs.google.com/spreadsheets/d/19UYRMJlXTdcG8zDIy5Gt8rRAlB0yT8is74YtEo1CMWM/edit?gid=151845502#gid=151845502) | 16 | 계정·토큰 준비, 과목 조회와 시험 입장·제출·재응시 흐름, 5~30명 부하 프로필, Kill Switch와 호출 간격 검증 |
 | [E2E/UI/UX](https://docs.google.com/spreadsheets/d/19UYRMJlXTdcG8zDIy5Gt8rRAlB0yT8is74YtEo1CMWM/edit?gid=1802487519#gid=1802487519) | 60 | 로그인, 클래스·과목·시험, 게시판, 수업 일정, 반응형 UI와 네트워크·중복 요청·시간 초과·HTTP 오류 등 예외 흐름 검증 |
 
@@ -57,7 +57,7 @@ Elice LXP(Dev)를 대상으로 기능, 보안, 성능 및 사용자 흐름을 �
 
 - 로그인, 클래스 · 과목 · 시험, 게시판, 수업 일정 등 사용자의 핵심 흐름을 E2E 테스트로 자동화하고 반응형 UI와 주요 예외 상황을 검증함
 - 학습자·교육자 계정별 client를 활용해 클래스 · 과목 · 일정 · 게시판 API의 요청 · 응답과 역할별 권한을 검증함
-- API Security 테스트를 통해 인증·토큰·세션, BOLA, 권한 상승, 인젝션 및 정보 노출 등 주요 보안 위험을 검증함
+- API Security 테스트를 통해 인증·토큰·세션, 객체 권한 우회, 권한 상승, 인젝션 및 정보 노출 등 주요 보안 위험을 검증함
 
 
 
@@ -342,16 +342,22 @@ def test_api_01(student_client):
 <details>
 <summary>API Security</summary>
 
-로그인 성공 시 HTTP 200과 access token 발급 여부를 검증합니다.
+토큰 payload의 사용자 id를 타인 값으로 변조해 타인 데이터 접근을 시도하고, 차단 여부를 검증합니다.
 
 ```python
-@allure.title("ID-1 정상 로그인 시 토큰 정상 발급")
-def test_id01_정상_로그인_토큰_발급(self, account_client):
-    response = account_client.login(STUDENT_ID, STUDENT_PW)
-    body = json_body(response)
+@allure.title("ID-14 토큰 ID 변조로 타인 데이터 접근 차단")
+def test_id14_payload_id_변조_차단(self, account_client):
+    token = account_client.get_access_token(STUDENT_ID, STUDENT_PW)
+    tampered = token_utils.tamper_payload(
+        token, _id=OTHER_STUDENT_ID, account_id=OTHER_STUDENT_ID
+    )
+    client = APIClient(token=tampered, role="probe")
+    response = client.get(
+        f"{DASHBOARD_URL}/student/{OTHER_STUDENT_ID}",
+        params={"classroom_id": CLASSROOM_ID},
+    )
 
-    assert response.status_code == 200
-    assert body.get("access_token")
+    assert_business_rejected(response, context="_id 변조 토큰 타인 데이터 접근")
 ```
 
 </details>
@@ -401,7 +407,7 @@ except SafetyKillSwitchError as error:
 
 ### 전체 실행 순서
 
-```text
+```
 ┌──────────────────────┐
 │ GitLab Push / Merge  │
 └──────────┬───────────┘
@@ -428,8 +434,8 @@ except SafetyKillSwitchError as error:
           └─────────┬──────────┘
                     ▼
           ┌────────────────────┐
-          │ Discord 결과 알림  │
-          │ 결과 요약 · 링크   │
+          │ Discord 결과 알림   │
+          │ 결과 요약 · 링크     │
           └────────────────────┘
 ```
 
@@ -492,7 +498,6 @@ except SafetyKillSwitchError as error:
 
 | 안전 항목 | 적용 기준 |
 | --- | --- |
-| 테스트 대상 환경 제한 | Dev 환경만 사용하며 운영 서비스와 타 과목은 테스트하지 않음 |
 | 동시성 및 호출 빈도 제한 | `ThreadPoolExecutor(max_workers=target_users)`로 동시 사용자 수를 5·10·20·30명으로 제한함. `ramp_up_wait`로 1초 동안 가상 사용자 기동을 분산하고, API·단계 사이에는 3~5초 `think_time`과 단계별 대기를 적용해 순간 호출을 완화함 |
 | 부하 테스트 분리 | 기본 `pytest`에서 `tests/loadtest`를 제외하고 별도 명령과 담당자를 통해 실행 |
 | 재시도 및 Kill Switch | 테스트 결과를 숨기지 않도록 자동 재시도는 적용하지 않음. `SafetySession`이 HTTP 500을 감지하면 해당 가상 사용자 흐름을 즉시 중단하고, 중단 사유와 에러율을 Allure에 기록함. 에러율이 1%를 초과하면 테스트를 실패 처리함 |
