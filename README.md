@@ -86,7 +86,7 @@ Elice LXP(Dev)를 대상으로 기능, 보안, 성능 및 사용자 흐름을 �
 | 테스트 실행 | pytest | 테스트 수집, fixture 및 실행 결과 관리 |
 | UI 자동화 | Playwright | Chromium 기반 E2E/UI/UX 테스트 |
 | API 테스트 | Requests | HTTP 요청 및 응답 검증 |
-| 부하 테스트 | Requests, JMeter |  |
+| 부하 테스트 | Requests, JMeter | 동시 사용자 접속 및 성능 한계 측정 |
 
 ### 언어 및 라이브러리
 
