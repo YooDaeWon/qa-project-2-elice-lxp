@@ -401,7 +401,7 @@ except SafetyKillSwitchError as error:
 
 ### 전체 실행 순서
 
-```python
+```
 ┌──────────────────────┐
 │ GitLab Push / Merge  │
 └──────────┬───────────┘
