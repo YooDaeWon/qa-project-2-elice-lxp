@@ -1,4 +1,4 @@
-# seethrough
+    # seethrough
 
 ## 목차
 
@@ -70,10 +70,16 @@ Elice LXP(Dev)를 대상으로 기능, 보안, 성능 및 사용자 흐름을 �
 
 | 팀원 | 역할 | 담당 테스트 영역 | 담당 업무 |
 | --- | --- | --- | --- |
-| 이효민 | 팀장 | 부하 테스트 | QA 자동화 테스트 계획서, 최종 발표 자료 작성|
+| 이효민 | 팀장 | 부하 테스트 | QA 자동화 테스트 계획서, 최종 발표 자료 작성, Jenkins CI 구축|
 | 박성빈 | 팀원 | API 테스트 | API 기능 분류, 프로젝트 트러블슈팅 사례 정리 |
-| 유대원 | 팀원 | API 보안 테스트 | QA(이슈) 리포트 작성, 주요 버그 리포트 선별 및 자료정리|
+| 유대원 | 팀원 | API 보안 테스트 | QA(이슈) 리포트 작성, 주요 버그 리포트 선별 및 자료정리, Jenkins CI 구축 보조|
 | 홍성우 | 팀원 | E2E/UI/UX 테스트 | QA 자동화 테스트 결과 보고서, README 작성 |
+
+#### 유대원 담당 상세
+
+- **담당 코드**: [`tests/api_security/`](tests/api_security/) — 인증·토큰/세션·권한 우회·권한 상승·접근 통제·비즈니스 로직·인젝션·정보 노출 8종 테스트
+- **테스트 결과**: 47건 중 Pass 27 / Fail 16 / Not Available 4 — Fail 16건은 탐지된 결함으로 이슈 리포트에 등록
+- **추가 역할**: 팀 전체 이슈 리포트 통합 관리, 위험도 높은 대표 버그 선정, Jenkins CI 구축 보조
 
 ---
 
@@ -159,7 +165,7 @@ seethrough/
 | --- | --- | --- | --- |
 | E2E/UI/UX | `tests/e2euiux/` | `framework/e2euiux/` | 사용자 흐름, 예외 상황, 반응형 UI 검증 |
 | API | `tests/api/` | `framework/api/`, `clients/` | 클래스, 과목, 일정, 게시판 API 검증 |
-| API Security | `tests/api_security/` | `framework/api_security/`, `clients/` | 인증, 세션, BOLA, 권한상승, 인젝션 검증 |
+| API Security | `tests/api_security/` | `framework/api_security/`, `clients/` | 인증, 세션, 객체 권한 우회, 권한상승, 인젝션 검증 |
 | Load | `tests/loadtest/` | `framework/loadtest/` | 단계별 동시 사용자와 안전성 통제 검증 |
 
 </details>
